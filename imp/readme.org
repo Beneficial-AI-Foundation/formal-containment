@@ -1,0 +1,4 @@
+#+title: Imp with hoare logic
+#+subtitle: Minimal imperative programming
+
+I stole/forked [[https://github.com/david-christiansen/ssft24][David Christiansen's tutorial]], stripped out some extraneous stuff, and added hoare logic

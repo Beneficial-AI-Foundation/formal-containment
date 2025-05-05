@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: typst compile main.typ
+      - uses: typst-community/setup-typst@v4
+      - run: typst compile main.typ main.pdf
         working-directory: whitepaper
 
   protocol-uv:
