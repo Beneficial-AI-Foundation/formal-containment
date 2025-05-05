@@ -1,0 +1,10 @@
+name = "imp"
+version = "0.1.0"
+defaultTargets = ["imp"]
+
+[[lean_lib]]
+name = "Imp"
+
+[[lean_exe]]
+name = "imp"
+root = "Main"
