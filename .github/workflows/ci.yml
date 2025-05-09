@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: typst-community/setup-typst@v4
       - run: typst compile main.typ main.pdf
-        working-directory: whitepaper
+        working-directory: comms/whitepaper
 
   protocol-uv:
     runs-on: ubuntu-latest

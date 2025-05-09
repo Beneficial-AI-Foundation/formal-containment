@@ -103,7 +103,6 @@ macro_rules
   | `(expr{($e)}) => `(expr{$e})
   | `(expr{~$stx}) => pure stx
 
-
 -- Copied from Lean's term parenthesizer - applies the precedence rules in the grammar to add
 -- parentheses as needed. This isn't needed when adding new input syntax to Lean, but because the
 -- file `Delab.lean` makes Lean use this syntax in its output, the parentheses are needed.

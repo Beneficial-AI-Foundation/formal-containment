@@ -37,9 +37,9 @@ Recent work from AI Control and Safeguarded AI have reignited interest in this l
 
 = The formal containment protocol
 
-A box is constructed in the MCP standard.
+A box is constructed in the MCP standard @ModelContextProtocol2025.
 
-Let an MCP @ModelContextProtocol2025 server's codomain be the data structure formed from an oracle's completion formatted to be sent over the MCP wire. The *interface* between the box and the world is an MCP client equipped with a *whitelist*, which is a subtype of the codomain of the MCP server that wraps the llm/oracle. The client has children, aspects of the world (like a git repo or deployment environment). The client decides whether a completion can be sent to the world based on some criterion programmed in by the user.
+Let an MCP server's codomain be the data structure formed from an oracle's completion formatted to be sent over the MCP wire. The *interface* between the box and the world is an MCP client equipped with a *whitelist*, which is a subtype of the codomain of the MCP server that wraps the llm/oracle. The client has children, aspects of the world (like a git repo or deployment environment). The client decides whether a completion can be sent to the world based on some criterion programmed in by the user.
 
 In this whitepaper, the criterion will be a precondition and postcondition of a hoare triple @Hoare_PLF, since the oracle throughout this prototype is an imp programmer. Imp is a minimal imperative programming language known for its pedagogical properties.
 

@@ -85,6 +85,18 @@ theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
       rw [h2] at h1
       contradiction
 
+theorem Falsy.not_truthy : Falsy v → ¬Truthy v := by
+  intro h1 h2
+  simp [Truthy, Falsy] at *
+  cases v <;> simp at *
+  case some v =>
+    cases v <;> simp at *
+    case int x =>
+      contradiction
+    case str s =>
+      rw [h1] at h2
+      contradiction
+
 namespace Stmt
 
 /--
