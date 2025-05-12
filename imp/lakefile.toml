@@ -1,10 +1,13 @@
 name = "imp"
 version = "0.1.0"
-defaultTargets = ["imp"]
+defaultTargets = ["check"]
 
 [[lean_lib]]
 name = "Imp"
 
+[[lean_lib]]
+name = "Artifacts"
+
 [[lean_exe]]
-name = "imp"
-root = "Main"
+name = "check"
+root = "Check"

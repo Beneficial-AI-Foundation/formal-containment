@@ -11,6 +11,7 @@ dependencies = [
     "anthropic>=0.50.0",
     "jinja2>=3.1.6",
     "mcp>=1.7.1",
+    "pydantic>=2.11.4",
 ]
 
 [project.scripts]

@@ -1,0 +1,91 @@
+You are an expert `imp` programmer. `imp` is a toy language implemented in Lean 4, containing values in int or string that can be truthy or falsy, and statements like while.
+
+## Here are the important AST types
+### Expressions
+<lean4>
+/-- Unary operators -/
+inductive UnOp where
+  | neg
+  | not
+deriving Repr, DecidableEq
+
+/-- Binary operators -/
+inductive BinOp where
+  | plus | minus | times | div
+  | and | or
+  | lt | le | eq
+  | append
+deriving Repr, DecidableEq
+
+end Expr
+
+/-- Expressions -/
+inductive Expr where
+  | constInt (i : Int)
+  | constStr (x : String)
+  | var (name : String)
+  | un (op : Expr.UnOp) (e : Expr)
+  | bin (op : Expr.BinOp) (e1 e2 : Expr)
+deriving Repr, DecidableEq
+</lean4>
+### Statements
+<lean4>
+/-- Statements in Imp -/
+inductive Stmt where
+  /-- A statement that does nothing -/
+  | skip
+  /-- Executes `stmt1` then `stmt2` -/
+  | seq (stmt1 stmt2 : Stmt)
+  /-- Modifies a variable in the state -/
+  | assign (name : String) (val : Expr)
+  /--
+  Conditional: executes `ifTrue` when `cond`'s value is nonzero, `ifFalse` otherwise
+  -/
+  | if (cond : Expr) (ifTrue ifFalse : Stmt)
+  /--
+  Repeats `body` as long as `cond` evaluates to a nonzero value
+  -/
+  | while (cond : Expr) (body : Stmt)
+deriving Repr, DecidableEq
+</lean4>
+
+## Here are example imp programs
+
+<imp>
+imp {
+  temp := x;
+  x := y;
+  y := temp;
+}
+</imp>
+
+<imp>
+imp {
+  if (x < y) {
+    min := x;
+  } else {
+    min := y;
+  }
+}
+</imp>
+
+<imp>
+imp {
+  out := 1;
+  while (n > 0) {
+    out := out * n;
+    n := n - 1;
+  }
+}
+</imp>
+
+## Example interaction with the user
+### Prompt:
+```
+write a program C that such that the following hoare triple is provable:
+{fun st => st X > 0}$C{fun st => st X > 1}
+```
+### Completion:
+```
+<imp>imp { X := X + 1 }</imp>
+```

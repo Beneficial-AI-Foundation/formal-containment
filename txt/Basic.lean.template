@@ -1,0 +1,5 @@
+import Imp.Hoare
+
+def precondition : Assertion := {{ prec }}
+def postcondition : Assertion := {{ post }}
+def Triple : Prop := \{precondition\}{{ program }}\{postcondition\} := by {{ proof }}

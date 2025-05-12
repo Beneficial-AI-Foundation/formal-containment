@@ -14,12 +14,13 @@ jobs:
         with:
           lake-package-directory: "imp"
 
-  paper-typst:
+  comms-typst:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: typst-community/setup-typst@v4
-      - run: typst compile main.typ main.pdf
+      - name: Whitepaper compile
+        run: typst compile main.typ main.pdf
         working-directory: comms/whitepaper
 
   protocol-uv:

@@ -33,7 +33,7 @@ This rule describes the formal containment protocol for safely interfacing an AI
 
 ## Implementation 
 
-Implement the containment protocol in Python 3.13 as a `uv` package in the `./containment` subdirectory. Use type hints. Try to isolate effects, use many small functions. Tool use should import the `Imp` implementation from the lake package in the `./imp` directory. Use `jinja2` templates for prompting if you like.
+Implement the containment protocol in Python 3.13 as a `uv` package in the `./containment` subdirectory. Use type hints. Try to isolate effects, use many small functions. Tool use should import the `Imp` implementation from the lake package in the `./imp` directory. Use `jinja2` templates for prompting if you like. Use the MCP SDK for Python ([mcppy.mdc](mdc:.cursor/rules/mcppy.mdc)). Use a hybrid of MCP best practices and Pydantic data validation. Use prompts and prompt templates from the `./txt` directory.
 
 ## References
 - See `./comms/whitepaper/main.typ` for the full protocol description and example.
