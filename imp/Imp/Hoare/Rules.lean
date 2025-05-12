@@ -147,4 +147,7 @@ example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1
     simp [Expr.eval] at h2_eq
     simp [Env.set]
     simp [Env.get] at h2_eq
+    cases h2_eq
+    rw [Value.int_lt]
+    simp [*]
     sorry

@@ -5,37 +5,46 @@ open Lean
 namespace Imp
 
 inductive Value where
-| str : String -> Value
-| int : Int -> Value
+  | int : Int -> Value
+  deriving Repr, DecidableEq
 
-instance : OfNat Value n := by
+instance Value.LT : LT Value where
+  lt (a b : Value) := match a, b with
+    | .int i, .int j => i < j
+
+instance Value.LE : LE Value where
+  le (a b : Value) := match a, b with
+    | .int i, .int j => i ≤ j
+
+instance Value.OfNat : OfNat Value n := by
   constructor
-  exact (Value.int n)
+  exact Value.int n
 
-instance : LE Value where
-  le := fun a b => match a, b with
-    | .int i1, .int i2 => i1 <= i2
-    | .str s1, .str s2 => s1 <= s2
-    | _, _ => false
+instance : Coe Int Value where
+  coe i := Value.int i
+instance : Coe Value Int where
+  coe v := match v with
+    | .int i => i
 
-instance : LT Value where
-  lt := fun a b => match a, b with
-    | .int i1, .int i2 => i1 < i2
-    | .str s1, .str s2 => s1 < s2
-    | _, _ => false
+theorem Value.int_lt (a b : Value) : a < b ↔ (a : Int) < (b : Int) := by
+  constructor <;> intros h <;>
+    cases a with
+    | int i =>
+      cases b with
+      | int j =>
+        have h' : i < j := h
+        assumption
 
-theorem Value.lt_implies_le: forall (a b : Value), a < b → a <= b := by
-  intros a b h
-  match a, b with
-  | .int i1, .int i2 =>
-    have h' : i1 < i2 := h
-    rw [Int.lt_iff_le_not_le] at h'
-    cases h';
-    assumption
-  | .str s1, .str s2 =>
-    sorry
-  | .str s1, .int i2
-  | .int i1, .str s2 => contradiction
+theorem Value.lt_implies_le {a b : Value} : a < b → a ≤ b := by
+  intros h
+  cases a with
+  | int i =>
+    cases b with
+    | int j =>
+      have h' : i < j := h
+      rw [Int.lt_iff_le_not_le] at h'
+      cases h'
+      assumption
 
 /-- An environment maps variables names to their values (no pointers) -/
 def Env := String → Value
@@ -78,8 +87,6 @@ namespace Expr
 def UnOp.apply : UnOp → Value → Option Value
   | .neg, .int i => (Value.int ∘ Int.neg) <$> some i
   | .not, .int b => if b == 0 then some (Value.int 1) else some (Value.int 0)
-  | .not, .str s => some $ Value.int (if s.isEmpty then 1 else 0)
-  | _, _ => none
 
 /-- Helper that implements binary operators -/
 def BinOp.apply : BinOp → Value → Value → Option Value
@@ -88,15 +95,10 @@ def BinOp.apply : BinOp → Value → Value → Option Value
   | .times, .int i, .int j => some $ Value.int (i * j)
   | .div, .int i, .int j => if j == 0 then none else some $ Value.int (i / j)
   | .and, .int b, .int c => some $ Value.int (b * c)
-  | .and, .str b, .str c => some $ Value.int (b ++ c).length
   | .or, .int b, .int c => some $ Value.int (b + c)
-  | .or, .str s, .str t => some $ Value.str (s ++ t)
   | .eq, .int i, .int j => some $ if i == j then Value.int 1 else Value.int 0
-  | .eq, .str s, .str t => some $ if s == t then (Value.int 1) else (Value.int 0)
   | .le, .int i, .int j => some (if i <= j then Value.int 1 else Value.int 0)
   | .lt, .int i, .int j => some $ if i < j then Value.int 1 else Value.int 0
-  | .append, .str s, .str t => some $ Value.str (s ++ t)
-  | _, _, _ => none
 
 /--
 Evaluates an expression, finding the value if it has one.
@@ -104,8 +106,7 @@ Evaluates an expression, finding the value if it has one.
 Expressions that divide by zero don't have values - the result is undefined.
 -/
 def eval (σ : Env) : Expr → Option Value
-  | .constInt i => some $ .int i
-  | .constStr s => some $ .str s
+  | .const i => some $ .int i
   | .var x => σ.get x
   | .un op e => do
     let v ← e.eval σ

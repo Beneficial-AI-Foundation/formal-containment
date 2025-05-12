@@ -11,14 +11,12 @@ def Truthy (v : Option Value) : Prop :=
   match v with
   | some v => match v with
     | .int x => x ≠ 0
-    | .str s => ¬ s.isEmpty
   | none => False
 
 instance : Decidable (Truthy v) :=
   match v with
   | some v => match v with
     | .int x => if h : x ≠ 0 then .isTrue h else .isFalse h
-    | .str s => if h : ¬ s.isEmpty then .isTrue h else .isFalse h
   | none => .isFalse id
 
 @[simp]
@@ -30,11 +28,7 @@ theorem Truthy.not_none : Truthy none = False := by
   simp [Truthy]
 
 @[simp]
-theorem Truthy.eval_const_int : Truthy (Expr.eval σ (.constInt v)) = (v ≠ 0) := by
-  simp [Truthy, Expr.eval]
-
-@[simp]
-theorem Truthy.eval_const_str : Truthy (Expr.eval σ (.constStr v)) = ¬ v.isEmpty := by
+theorem Truthy.eval_const : Truthy (Expr.eval σ (.const v)) = (v ≠ 0) := by
   simp [Truthy, Expr.eval]
 
 /--
@@ -43,15 +37,10 @@ Falsiness: the result of evaluating an expression is "falsy" if it's 0
 def Falsy (v : Option Value) : Prop := match v with
   | some v => match v with
     | .int x => x = 0
-    | .str s => s.isEmpty
   | none => False
 
 @[simp]
-theorem Falsy.eval_const_int : Falsy (Expr.eval σ (.constInt v)) = (v = 0) := by
-  simp [Falsy, Expr.eval]
-
-@[simp]
-theorem Falsy.eval_const_str : Falsy (Expr.eval σ (.constStr v)) = v.isEmpty := by
+theorem Falsy.eval_const : Falsy (Expr.eval σ (.const v)) = (v = 0) := by
   simp [Falsy, Expr.eval]
 
 @[simp]
@@ -64,13 +53,11 @@ theorem Falsy.not_none : Falsy none = False := by
 
 def Value.truthy : Value → Prop
   | .int x => x ≠ 0
-  | .str s => ¬ s.isEmpty
 
 instance : Decidable (Falsy v) :=  -- inferInstanceAs (Decidable (v = 0))
   match v with
   | some v => match v with
     | .int x => if h : x = 0 then .isTrue h else .isFalse h
-    | .str s => if h : s.isEmpty then .isTrue h else .isFalse h
   | none => .isFalse id
 
 theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
@@ -81,9 +68,6 @@ theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
     cases v <;> simp at *
     case int x =>
       contradiction
-    case str s =>
-      rw [h2] at h1
-      contradiction
 
 theorem Falsy.not_truthy : Falsy v → ¬Truthy v := by
   intro h1 h2
@@ -92,9 +76,6 @@ theorem Falsy.not_truthy : Falsy v → ¬Truthy v := by
   case some v =>
     cases v <;> simp at *
     case int x =>
-      contradiction
-    case str s =>
-      rw [h1] at h2
       contradiction
 
 namespace Stmt
@@ -199,7 +180,7 @@ theorem infinite_loop : ¬ BigStep σ loop σ' := by
   case whileFalse cFalse =>
     unfold loop at h'
     cases h'
-    simp at cFalse
+    simp [Falsy.eval_const] at cFalse
 
 /--
 Run a program, with the depth of the recursive calls limited by the `Nat` parameter. Returns `none`

@@ -31,7 +31,7 @@ partial def delabExprInner : DelabM (TSyntax `exp) := do
   let e ← getExpr
   let stx ←
     match_expr e with
-    | Expr.constInt x =>
+    | Expr.const x =>
       match_expr x with
       | OfNat.ofNat _ n _ =>
         if let some n' := n.nat? then
@@ -47,7 +47,7 @@ partial def delabExprInner : DelabM (TSyntax `exp) := do
         else withAppArg `(exp| ~$(← delab))
       | BitVec.ofNat _ _ => (⟨·.raw⟩) <$> (withAppArg <| withAppArg <| delab)
       | _ =>
-        `(exp| ~(Expr.constInt $(← withAppArg delab)))
+        `(exp| ~(Expr.const $(← withAppArg delab)))
     | Expr.var _ => do
       let x ← withAppArg delabNameInner
       `(exp|$x:varname)
@@ -64,7 +64,6 @@ partial def delabExprInner : DelabM (TSyntax `exp) := do
       | BinOp.lt => `(exp| $s1 < $s2)
       | BinOp.le => `(exp| $s1 ≤ $s2)
       | BinOp.eq => `(exp| $s1 == $s2)
-      | BinOp.append => `(exp| $s1 ++ $s2)
       | _ => `(exp|~(Expr.bin $(← withAppFn <| withAppFn <| withAppArg delab) $(← withAppFn <| withAppArg delab) $(← withAppArg delab)))
     | Expr.un op _ =>
       let s ← withAppArg delabExprInner
@@ -91,19 +90,11 @@ partial def delabExpr : Delab := do
 
 /- info: expr { 5 } : Expr -/
 -- #guard_msgs in
-#check Expr.constInt 5
+#check Expr.const 5
 
 /- info: expr { 5 } : Expr -/
 -- #guard_msgs in
 #check expr { 5 }
-
-/- info: expr { [a] } : Expr -/
--- #guard_msgs in
-#check Expr.constStr "a"
-
-/- info: expr { [a] } : Expr -/
--- #guard_msgs in
--- #check expr { [a] }
 
 /-- info: expr { x } : Expr -/
 #guard_msgs in
@@ -118,8 +109,7 @@ partial def delabExpr : Delab := do
 #check expr { 5 + (23 - 10) }
 
 /-
-info: let x := expr { 23 };
-expr { ~x * ~x } : Expr
+info: let x := expr { 23 }; expr { ~x * ~x } : Expr
 -/
 -- #guard_msgs in
 #check let x := expr {23}; expr {~x * ~x}

@@ -32,9 +32,6 @@ syntax varname : exp
 /-- Numeric constant -/
 syntax num : exp
 
-/-- Strings -/
-syntax:1 "[" str "]": exp
-
 /-- Arithmetic complement -/
 syntax:75 "-" exp:75 : exp
 
@@ -66,9 +63,6 @@ syntax:35 exp:35 " && " exp:36 : exp
 /-- Boolean disjunction -/
 syntax:35 exp:35 " || " exp:36 : exp
 
-/-- String append -/
-syntax:30 exp:30 " ++ " exp:31 : exp
-
 /-- Parentheses for grouping -/
 syntax "(" exp ")" : exp
 
@@ -81,7 +75,7 @@ syntax:min "expr " "{ " exp " }" : term
 open Lean in
 macro_rules
   | `(expr{$x:ident}) => `(Expr.var $(quote x.getId.toString))
-  | `(expr{$n:num}) => `(Expr.constInt $(quote n.getNat))
+  | `(expr{$n:num}) => `(Expr.const $(quote n.getNat))
 
   | `(expr{-$e}) => `(Expr.un .neg (expr{$e}))
   | `(expr{!$e}) => `(Expr.un .not (expr{$e}))
@@ -99,7 +93,6 @@ macro_rules
   | `(expr{$e1 == $e2}) => `(Expr.bin .eq (expr{$e1}) (expr{$e2}))
   | `(expr{$e1 ≥ $e2}) => `(Expr.bin .le (expr{$e2}) (expr{$e1}))
   | `(expr{$e1 > $e2}) => `(Expr.bin .lt (expr{$e2}) (expr{$e1}))
-  | `(expr{$e1 ++ $e2}) => `(Expr.bin .append (expr{$e1}) (expr{$e2}))
   | `(expr{($e)}) => `(expr{$e})
   | `(expr{~$stx}) => pure stx
 
