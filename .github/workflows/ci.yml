@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
         with:
-          lake-package-directory: "imp"
+          lake-package-directory: imp
 
   comms-typst:
     runs-on: ubuntu-latest
@@ -28,5 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv run ruff check .
-        working-directory: containment
+      - run: uv run ruff check src
+        working-directory: fcp
+      - run: uv run ruff format --check src
+        working-directory: fcp
