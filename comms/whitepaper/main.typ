@@ -45,12 +45,12 @@ In this whitepaper, the criterion will be a precondition and postcondition of a 
 
 == Example
 
-MCP server $S$ has a Lean tool use and the following codomain
+MCP server $S$ has a Lean tool use with the following codomain
 
 ```
 Enumerated codS {
-  Pass: prec x post -> codS,
-  Fail: prec x post -> stderr -> codS
+  Pass: (prec, post) -> codS,
+  Fail: (prec, post) -> stderr -> codS
 }
 ```
 

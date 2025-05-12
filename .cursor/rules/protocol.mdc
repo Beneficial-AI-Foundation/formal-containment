@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Formal Containment Protocol
+
+This rule describes the formal containment protocol for safely interfacing an AI (oracle) with the outside world using the Model Context Protocol (MCP).
+
+## Protocol Overview
+- The protocol constructs a "box" using the MCP standard, isolating the AI from the world.
+- The MCP server (the AI/oracle) produces completions formatted for the MCP wire.
+- The MCP client acts as an interface between the box and the world, equipped with a *whitelist* (a subtype of the server's codomain) that determines which outputs are allowed to pass through.
+- The client may have children representing aspects of the world (e.g., a git repo, deployment environment).
+
+### Whitelist and Criteria
+- The whitelist is a set of allowed outputs, defined as a subtype of the MCP server's codomain.
+- The criterion for allowing an output is programmable by the user. In the whitepaper, this is a pair of precondition and postcondition (a Hoare triple) for a minimal imperative language (Imp).
+
+### Protocol Flow
+1. The MCP server's Lean tool use returns data structured in a codomain such as:
+   ```
+   Enumerated codS {
+     Pass: (prec, post) -> codS,
+     Fail: (prec, post) -> stderr -> codS
+   }
+   ```
+2. From that type, the MCP client is equipped with the `Pass` constructor (its whitelist).
+3. For a given precondition and postcondition, the client checks if a program `c` provided by the oracle satisfies the Hoare triple `{prec} c {post}`.
+4. The client sends the triple to a proof oracle in one thread, and its negation in another thread:
+   - If the negative thread succeeds, the client blocks the program and requests a new attempt.
+   - If the positive thread succeeds, the client allows the program to be executed in the world.
+
+## Implementation 
+
+Implement the containment protocol in Python 3.13 as a `uv` package in the `./containment` subdirectory. Use type hints. Try to isolate effects, use many small functions. Tool use should import the `Imp` implementation from the lake package in the `./imp` directory. Use `jinja2` templates for prompting if you like.
+
+## References
+- See `./comms/whitepaper/main.typ` for the full protocol description and example.
+- Prerequisites: Hoare triples, errors as values, MCP standard.

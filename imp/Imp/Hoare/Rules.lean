@@ -71,7 +71,6 @@ theorem hoare_consequence : forall (P P' Q Q' : Assertion) c,
   assumption
   assumption
 
--- currently wrong
 theorem hoare_if : forall P Q (b : Expr) c1 c2,
   {{(P ∧ b)}}c1{{Q}} →
   {{(P ∧ !b)}}c2{{Q}} →
@@ -94,7 +93,6 @@ theorem hoare_if : forall P Q (b : Expr) c1 c2,
       assumption
     . assumption
 
--- currently wrong
 theorem hoare_while : forall P (b : Expr) c,
   {{(P ∧ b)}}c{{P}} →
   {{P}}(imp { while (~b) { ~c } }){{(P ∧ !b)}} := by

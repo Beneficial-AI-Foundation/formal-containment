@@ -3,5 +3,6 @@
 .lake/
 .ruff_cache/
 __pycache__/
-/dist/
-.venv
+dist/
+.venv/
+.env
