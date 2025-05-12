@@ -1,5 +1,6 @@
-from mcp.server.fastmcp import FastMCP
+import subprocess
 import json
+from mcp.server.fastmcp import FastMCP
 from containment.structures import (
     VerificationResult,
     Specification,
@@ -7,7 +8,18 @@ from containment.structures import (
     VerificationResponse,
 )
 
-mcp = FastMCP("Formal Containment Protocol")
+mcp = FastMCP("Formal Containment Process")
+
+
+@mcp.tool()
+def lake_exe_check() -> tuple[int, str, str]:
+    """
+    Check if `./../imp/` compiles.
+    """
+    result = subprocess.run(
+        ["lake", "exe", "check"], capture_output=True, text=True, cwd="./../imp"
+    )
+    return result.returncode, result.stdout, result.stderr
 
 
 @mcp.tool()
@@ -57,33 +69,6 @@ def verify_hoare_triple(
         return json.dumps(
             {"result": VerificationResult.FAIL.value, "error_message": str(e)}
         )
-
-
-@mcp.tool()
-def generate_hoare_spec(requirements: str, context: dict | None = None) -> str:
-    """
-    Generate a Hoare triple specification from natural language requirements.
-
-    Args:
-        requirements: Natural language description of the program requirements
-        context: Optional context information for specification generation
-
-    Returns:
-        A JSON string containing the generated Hoare triple
-    """
-    try:
-        # TODO: Implement actual specification generation
-        # This should convert natural language requirements into formal pre/post conditions
-
-        spec = {
-            "precondition": "λ st. st X > 0",  # Example from whitepaper
-            "postcondition": "λ st. st X > 1",  # Example from whitepaper
-            "description": requirements,
-        }
-
-        return json.dumps(spec)
-    except Exception as e:
-        return json.dumps({"error": str(e)})
 
 
 @mcp.resource("fcp://specs/{spec_id}")

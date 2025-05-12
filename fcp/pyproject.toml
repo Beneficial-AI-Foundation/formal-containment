@@ -12,10 +12,12 @@ dependencies = [
     "jinja2>=3.1.6",
     "mcp>=1.7.1",
     "pydantic>=2.11.4",
+    "python-dotenv>=1.1.0",
+    "typer>=0.15.3",
 ]
 
 [project.scripts]
-containment = "containment:main"
+contain = "containment:contain"
 
 [build-system]
 requires = ["hatchling"]

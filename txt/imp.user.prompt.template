@@ -1,0 +1,2 @@
+Write a program C that such that the following hoare triple is provable:
+\{ {{ precondition }} \} $C \{ {{ postcondition }} \}

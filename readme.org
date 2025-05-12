@@ -2,4 +2,4 @@
 
 [[file:comms/whitepaper/images/frontierbox.png]]
 
-Nix flake devShell or nix with direnv (self explanatory), or install `uv` and `elan` manually.
+Nix flake devShell or nix with direnv (self explanatory), or install ~uv~ and ~elan~ manually.

@@ -1,7 +1,7 @@
-from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
+from jinja2 import Environment, FileSystemLoader
+from containment.structures import Specification
 
-# Set up Jinja2 environment
 template_dir = (
     Path(__file__).parent.parent.parent.parent / "txt"
 )  # Go up to monorepo root
@@ -23,7 +23,7 @@ def load_prompt(template_name: str, **kwargs) -> str:
     return template.render(**kwargs)
 
 
-def get_oracle_system_prompt(language_instructions: str) -> str:
+def get_oracle_system_prompt(language: str) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -33,8 +33,15 @@ def get_oracle_system_prompt(language_instructions: str) -> str:
     Returns:
         The complete system prompt for the oracle
     """
-    with open(template_dir / language_instructions, "r") as f:
+    with open(template_dir / f"{language}.system.prompt", "r") as f:
         language_instructions = f.read()
     return load_prompt(
-        "oracle.system.prompt", language_instructions=language_instructions
+        "oracle.system.prompt.template", language_instructions=language_instructions
     )
+
+
+def get_imp_user_prompt(spec: Specification) -> str:
+    """
+    Get the user prompt for the imp oracle.
+    """
+    return load_prompt("imp.user.prompt.template", **spec.__dict__)
