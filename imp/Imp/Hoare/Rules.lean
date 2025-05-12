@@ -1,7 +1,5 @@
-import Imp.Expr.Eval
-import Imp.Expr.Syntax
-import Imp.Stmt.BigStep
-import Imp.Stmt.Basic
+import Imp.Expr
+import Imp.Stmt
 import Imp.Hoare.Basic
 
 open Imp Stmt
@@ -114,3 +112,39 @@ theorem hoare_while : forall P (b : Expr) c,
     . simp [Assertion.not]
       apply Falsy.not_truthy
       assumption
+
+example : {{(fun σ => σ "x" < σ "y")}}swap{{(fun σ => σ "x" >= σ "y")}} := by
+  simp [ValidHoareTriple]
+  intros σ σ' h1 h2
+  simp [swap] at h2
+  cases h2 with
+  | seq h2_1 h2_2 =>
+    cases h2_2 with
+    | seq h2_2_1 h2_2_2 =>
+      cases h2_1 with
+      | assign h2_1_eq =>
+        cases h2_2_1 with
+        | assign h2_2_1_eq =>
+          cases h2_2_2 with
+          | assign h2_2_2_eq =>
+            simp [Env.set]
+            simp [Expr.eval] at h2_1_eq
+            simp [Expr.eval] at h2_2_1_eq
+            simp [Expr.eval] at h2_2_2_eq
+            rw [h2_2_2_eq] at h2_1_eq
+            simp [Env.get] at h2_1_eq
+            simp [Env.get] at h2_2_1_eq
+            subst h2_2_2_eq
+            rw [h2_1_eq, h2_2_1_eq] at h1
+            apply Value.lt_implies_le
+            assumption
+
+example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1)}} := by
+  simp [ValidHoareTriple]
+  intros σ σ' h1 h2
+  cases h2 with
+  | assign h2_eq =>
+    simp [Expr.eval] at h2_eq
+    simp [Env.set]
+    simp [Env.get] at h2_eq
+    sorry

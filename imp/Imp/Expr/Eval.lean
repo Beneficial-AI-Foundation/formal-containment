@@ -12,6 +12,31 @@ instance : OfNat Value n := by
   constructor
   exact (Value.int n)
 
+instance : LE Value where
+  le := fun a b => match a, b with
+    | .int i1, .int i2 => i1 <= i2
+    | .str s1, .str s2 => s1 <= s2
+    | _, _ => false
+
+instance : LT Value where
+  lt := fun a b => match a, b with
+    | .int i1, .int i2 => i1 < i2
+    | .str s1, .str s2 => s1 < s2
+    | _, _ => false
+
+theorem Value.lt_implies_le: forall (a b : Value), a < b → a <= b := by
+  intros a b h
+  match a, b with
+  | .int i1, .int i2 =>
+    have h' : i1 < i2 := h
+    rw [Int.lt_iff_le_not_le] at h'
+    cases h';
+    assumption
+  | .str s1, .str s2 =>
+    sorry
+  | .str s1, .int i2
+  | .int i1, .str s2 => contradiction
+
 /-- An environment maps variables names to their values (no pointers) -/
 def Env := String → Value
 

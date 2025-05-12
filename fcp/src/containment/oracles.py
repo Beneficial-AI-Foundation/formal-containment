@@ -55,14 +55,13 @@ class Oracle:
     def __init__(self, system_prompt: str):
         self.client = get_oracle_client()
         self.system_prompt = system_prompt
-        self.complete = complete(self.client, self.system_prompt, cache=False)
+        self.complete = complete(self.client, system_prompt, cache=False)
 
 
 class Loop:
     def __init__(
         self, system_prompt: str, tool: list[str] | Callable[[str], list[str]]
     ):
-        self.system_prompt = system_prompt
         self.oracle = Oracle(system_prompt)
         self.tool = tool  # the executable (to be used with subprocess.run)
 
@@ -77,13 +76,13 @@ def imp_oracle(spec: Specification) -> str | list[dict]:
     imp_user_prompt = get_imp_user_prompt(spec)
     oracle = Oracle(system_prompt)
     completion = oracle.complete([{"role": "user", "content": imp_user_prompt}])
-    program = parse_program_completion(completion)
+    program = parse_program_completion(completion, "imp")
     if program is None:
         return completion
     return program
 
 
-def proof_oracle(spec: HoareTriple) -> list[dict]:
+def proof_oracle(triple: HoareTriple) -> list[dict]:
     """
     Oracle hoare proof expert.
     """
