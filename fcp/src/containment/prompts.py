@@ -1,6 +1,7 @@
 from pathlib import Path
+from dataclasses import asdict
 from jinja2 import Environment, FileSystemLoader
-from containment.structures import Specification
+from containment.structures import Specification, HoareTriple
 
 template_dir = (
     Path(__file__).parent.parent.parent.parent / "txt"
@@ -44,4 +45,12 @@ def get_imp_user_prompt(spec: Specification) -> str:
     """
     Get the user prompt for the imp oracle.
     """
-    return load_prompt("imp.user.prompt.template", **spec.__dict__)
+    return load_prompt("imp.user.prompt.template", **asdict(spec))
+
+
+def get_proof_user_prompt(triple: HoareTriple) -> str:
+    """
+    Get the user prompt for the proof oracle.
+    """
+
+    return load_prompt("proof.user.prompt.template", **asdict(triple))

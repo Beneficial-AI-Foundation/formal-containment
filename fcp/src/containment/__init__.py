@@ -1,8 +1,8 @@
 """Formal containment protocol implementation."""
 
 import typer
-from containment.structures import Specification
-from containment.oracles import imp_oracle
+from containment.structures import HoareTriple, Specification
+from containment.oracles import imp_oracle, proof_oracle
 from containment.mcp_server import mcp
 
 __all__ = ["mcp"]
@@ -16,11 +16,16 @@ def contain() -> None:
         """
         Take a precondition and postcondition and ask the LLM to fill in the hoare triple and prove it.
         """
-        print(f"Precondition: {precondition}")
-        print(f"Postcondition: {postcondition}")
         spec = Specification(precondition, postcondition)
-        program_completion = imp_oracle(spec)
-        print(f"Program completion: {program_completion}")
+        program = imp_oracle(spec)
+        if program is None:
+            raise ValueError("No program found")
+        triple = HoareTriple(spec, program)
+        print(f"Hoare triple: {triple}")
+        proof = proof_oracle(triple)
+        if proof is None:
+            raise ValueError("No proof found")
+        print(f"Proof: {proof}")
 
     @cli.command()
     def imp_complete(precondition: str, postcondition: str) -> None:

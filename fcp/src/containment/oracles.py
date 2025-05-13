@@ -6,11 +6,15 @@ import os
 from typing import Callable, Literal
 import dotenv
 from anthropic import Anthropic
-from containment.structures import Specification, HoareTriple
+from containment.structures import HoareTriple, Specification
 from containment.xml_utils import parse_xml
-from containment.prompts import get_oracle_system_prompt, get_imp_user_prompt
+from containment.prompts import (
+    get_imp_user_prompt,
+    get_oracle_system_prompt,
+    get_proof_user_prompt,
+)
 
-dotenv.load_dotenv("..")
+dotenv.load_dotenv("./..")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 
@@ -21,7 +25,7 @@ def get_oracle_client() -> Anthropic:
     return Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
-def complete(
+def mk_complete(
     client: Anthropic, system_prompt: str, cache: bool = True
 ) -> Callable[[list[dict]], list[dict]]:
     """
@@ -55,7 +59,7 @@ class Oracle:
     def __init__(self, system_prompt: str):
         self.client = get_oracle_client()
         self.system_prompt = system_prompt
-        self.complete = complete(self.client, system_prompt, cache=False)
+        self.complete = mk_complete(self.client, system_prompt, cache=False)
 
 
 class Loop:
@@ -68,7 +72,7 @@ class Loop:
     # TODO: implement stateful loop that feeds error message from tool use back into oracle
 
 
-def imp_oracle(spec: Specification) -> str | list[dict]:
+def imp_oracle(spec: Specification) -> str | None:
     """
     Oracle imp expert.
     """
@@ -77,17 +81,16 @@ def imp_oracle(spec: Specification) -> str | list[dict]:
     oracle = Oracle(system_prompt)
     completion = oracle.complete([{"role": "user", "content": imp_user_prompt}])
     program = parse_program_completion(completion, "imp")
-    if program is None:
-        return completion
     return program
 
 
-def proof_oracle(triple: HoareTriple) -> list[dict]:
+def proof_oracle(triple: HoareTriple) -> str | None:
     """
     Oracle hoare proof expert.
     """
     system_prompt = get_oracle_system_prompt("proof")
-    # proof_user_prompt = get_proof_user_prompt(spec)
-    _oracle = Oracle(system_prompt)
-    # return oracle.complete([{"role": "user", "content": proof_user_prompt}])
-    return []
+    proof_user_prompt = get_proof_user_prompt(triple)
+    oracle = Oracle(system_prompt)
+    completion = oracle.complete([{"role": "user", "content": proof_user_prompt}])
+    proof = parse_program_completion(completion, "proof")
+    return proof

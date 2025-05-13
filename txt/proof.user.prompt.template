@@ -1,0 +1,2 @@
+Write a proof of the following hoare triple
+\{ {{ specification.precondition }} \} {{ command }} \{ {{ specification.postcondition }} \}
