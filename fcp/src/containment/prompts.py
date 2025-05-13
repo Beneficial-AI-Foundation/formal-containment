@@ -53,4 +53,4 @@ def get_proof_user_prompt(triple: HoareTriple) -> str:
     Get the user prompt for the proof oracle.
     """
 
-    return load_prompt("proof.user.prompt.template", **asdict(triple))
+    return load_prompt("proof.user.init.prompt.template", **asdict(triple))

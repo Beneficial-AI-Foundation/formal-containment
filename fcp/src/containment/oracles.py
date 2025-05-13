@@ -62,16 +62,6 @@ class Oracle:
         self.complete = mk_complete(self.client, system_prompt, cache=False)
 
 
-class Loop:
-    def __init__(
-        self, system_prompt: str, tool: list[str] | Callable[[str], list[str]]
-    ):
-        self.oracle = Oracle(system_prompt)
-        self.tool = tool  # the executable (to be used with subprocess.run)
-
-    # TODO: implement stateful loop that feeds error message from tool use back into oracle
-
-
 def imp_oracle(spec: Specification) -> str | None:
     """
     Oracle imp expert.
