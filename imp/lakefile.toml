@@ -2,6 +2,11 @@ name = "imp"
 version = "0.1.0"
 defaultTargets = ["check"]
 
+[[require]]
+name = "aesop"
+git = "https://github.com/leanprover-community/aesop"
+rev = "v4.20.0-rc2"
+
 [[lean_lib]]
 name = "Imp"
 

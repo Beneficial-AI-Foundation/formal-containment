@@ -1,5 +1,5 @@
+import Aesop
 import Imp.Expr
-
 import Imp.Stmt.Delab
 
 namespace Imp
@@ -60,6 +60,7 @@ instance : Decidable (Falsy v) :=  -- inferInstanceAs (Decidable (v = 0))
     | .int x => if h : x = 0 then .isTrue h else .isFalse h
   | none => .isFalse id
 
+@[simp]
 theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
   intro h1 h2
   simp [Truthy, Falsy] at *
@@ -69,6 +70,7 @@ theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
     case int x =>
       contradiction
 
+@[simp]
 theorem Falsy.not_truthy : Falsy v → ¬Truthy v := by
   intro h1 h2
   simp [Truthy, Falsy] at *
@@ -84,6 +86,7 @@ namespace Stmt
 Big-step semantics: `BigStep σ s σ'` means that running the program `s` in the starting state `σ` is
 termination with the final state `σ'`.
 -/
+@[aesop unsafe [constructors 25%, cases 60%]]
 inductive BigStep : Env → Stmt → Env → Prop where
   | skip :
     BigStep σ (imp {skip;}) σ
@@ -113,6 +116,10 @@ attribute [simp] BigStep.skip
 syntax term:60 " / " term:61 " ↓ " term:62 : term
 macro_rules
   | `($s / $σ ↓ $σ') => `(BigStep $σ $s $σ')
+
+theorem BigStep.deterministic : forall (σ σ' σ'' : Env) c, c / σ ↓  σ' → c / σ ↓ σ'' → σ'' = σ' := by
+  intro σ σ' σ'' c h1
+  sorry
 
 /--
 `swap` terminates, and the resulting environment contains swapped inputs.
