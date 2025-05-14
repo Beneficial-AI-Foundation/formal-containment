@@ -83,9 +83,9 @@ imp {
 ### Prompt:
 ```
 write a program C that such that the following hoare triple is provable:
-{fun st => st X > 0}$C{fun st => st X > 1}
+{fun st => st "X" > 0}$C{fun st => st "X" > 1}
 ```
 ### Completion:
 ```
-<imp>imp { X := X + 1 }</imp>
+<imp>imp { X := X + 1; }</imp>
 ```

@@ -4,17 +4,18 @@ Loop scaffold making up the imp and proof oracle.
 
 import os
 from typing import Callable, Literal
+from pathlib import Path
 import dotenv
 from anthropic import Anthropic
 from containment.structures import HoareTriple, Specification
-from containment.xml_utils import parse_xml
+from containment.parse_xml import parse_xml
 from containment.prompts import (
     get_imp_user_prompt,
     get_oracle_system_prompt,
     get_proof_user_prompt,
 )
 
-dotenv.load_dotenv("./..")
+dotenv.load_dotenv(Path.cwd())
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 
@@ -48,7 +49,7 @@ def mk_complete(
 
 
 def parse_program_completion(
-    program_completion: list[dict], tag: Literal["imp", "proof"]
+    program_completion: list, tag: Literal["imp", "proof"]
 ) -> str | None:
     program_tree = parse_xml(program_completion[0].text)
     program = program_tree.text if program_tree.tag == tag else None
@@ -74,13 +75,19 @@ def imp_oracle(spec: Specification) -> str | None:
     return program
 
 
-def proof_oracle(triple: HoareTriple) -> str | None:
+def proof_oracle(
+    conversation_so_far: list,
+    triple: HoareTriple,
+    stderr: str | None = None,
+) -> tuple[str | None, list[dict]]:
     """
     Oracle hoare proof expert.
     """
     system_prompt = get_oracle_system_prompt("proof")
-    proof_user_prompt = get_proof_user_prompt(triple)
+    proof_user_prompt = get_proof_user_prompt(triple, stderr)
+    curr_conversation = [{"role": "user", "content": proof_user_prompt}]
+    conversation = conversation_so_far + curr_conversation
     oracle = Oracle(system_prompt)
-    completion = oracle.complete([{"role": "user", "content": proof_user_prompt}])
+    completion = oracle.complete(conversation)
     proof = parse_program_completion(completion, "proof")
-    return proof
+    return proof, conversation

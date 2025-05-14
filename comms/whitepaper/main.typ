@@ -56,8 +56,8 @@ Enumerated codS {
 
 MCP client $B$ is equipped with the `Pass` constructor of `codS` (it's _whitelist_).
 
-Let criterion $C$ be the pair $("prec", "post") := (lambda "st". "st" X > 0, lambda "st". "st" X > 1)$.
+Let criterion $C$ be the pair $("prec", "post") := (X > 0, X > 1)$.
 
-Then, programs $c$ provided by imp oracle $cal(O)_i$ at relevant prompt $p$ will form the command at the center of the hoare triple. In other words, $forall c ~ cal(O)_i (p), {"prec"} c {"post"}$ is either provable or not.
+Then, programs $c$ provided by imp oracle $cal(O)_i$ at relevant prompt $p := p("prec", "post")$ will form the command at the center of the hoare triple. In other words, $forall c ~ cal(O)_i (p), {"prec"} c {"post"}$ is either provable or not. (In this easy case, $cal(O)_i$ submits $X := X + 1$ under any reasonable prompt).
 
 When $cal(O)_i$ submits a program $c$ to the interface client $B$, $B$ sends the triple ${"prec"} c {"post"}$ to the proof oracle $cal(O)_p$ in one thread and the triple's negation in another thread. If the negative thread terminates in success, then a negative certificate is sent to $B$ and $B$ informs $cal(O)_i$ that it shall not run that code in the world, and that $cal(O)_i$ must try again. If the positive thread terminates in success, then the positive certificate is sent to $B$ and $B$ passes along program $c$ to its children to be run in the world.

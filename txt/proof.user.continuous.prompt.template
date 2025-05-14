@@ -1,4 +1,4 @@
-Getting warmer: your previous attempt got the following error message:
+Getting warmer, your previous attempt got the following error message:
 {{ stderr }}
 
 Write a proof of the following hoare triple

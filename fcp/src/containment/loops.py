@@ -1,47 +1,70 @@
-import tempfile
-from typing import Callable
-from pathlib import Path
 import shutil
-from containment.structures import ToolResponse
+import tempfile
+from pathlib import Path
+
+from containment.artifacts import write_artifact
+from containment.lake import Checker
+from containment.oracles import Oracle, proof_oracle
 from containment.prompts import get_oracle_system_prompt
-from containment.oracles import Oracle
-from containment.tools import lake_exe_check
+from containment.structures import HoareTriple, ToolResponse
 
 UP = ".."
-CWD = Path(".") / UP / "imp"
+LAKE_DIR = Path.cwd() / UP / "imp"
+PROOF_SYSTEM_PROMPT = get_oracle_system_prompt("proof")
 
 
 class Loop:
+    """
+    Loop class for running a tool and feeding the result back into the oracle.
+
+    Prover of hoare triples.
+    """
+
     def __init__(
         self,
         system_prompt: str,
-        tool: Callable[[Path], ToolResponse],
-        working_dir: Path,
+        max_iterations: int,
     ):
         self.oracle = Oracle(system_prompt)
-        self.tool = tool
-        self.working_dir = working_dir
+        self.max_iterations = max_iterations
+        self.lake_dir = LAKE_DIR
+        self.tmpdir = Path(tempfile.mkdtemp())
+        shutil.copytree(
+            self.lake_dir,
+            self.tmpdir,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(".lake/"),
+        )
+        self.conversation = []
 
-    def _loop_init(self) -> ToolResponse:
-        return ToolResponse(1, "TODO", "TODO")
+    def _iter(self, triple: HoareTriple, stderr: str | None) -> ToolResponse:
+        """Iteration of the loop."""
 
-    def run_tool(self) -> ToolResponse:
-        """
-        Run the tool and return the result.
-        """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = Path(tmpdir)
-            shutil.copytree(
-                self.working_dir,
-                tmpdir,
-                dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns(".lake/"),
-            )
-            result = self.tool(tmpdir)
-        return result
+        proof, self.conversation = proof_oracle(self.conversation, triple, stderr)
+        checker = Checker(self.tmpdir)
+        return checker.run(triple, proof)
 
-    # TODO: implement stateful loop that feeds error message from tool use back into oracle
+    def _loop_init(self, triple: HoareTriple) -> ToolResponse:
+        """0th iteration of the loop."""
+        return self._iter(triple, None)
+
+    def run(self, triple: HoareTriple) -> ToolResponse:
+        """Continue the loop until lake succeeds or max iterations are reached."""
+        lake_response = self._loop_init(triple)
+        if lake_response.exit_code == 0:
+            return lake_response
+        for iteration in range(self.max_iterations):
+            self.conversation = self.conversation[-6:]
+            lake_response = self._iter(triple, lake_response.stderr)
+            if lake_response.exit_code == 0:
+                break
+        write_artifact(self.tmpdir, triple)
+        return lake_response
 
 
-proof_system_prompt = get_oracle_system_prompt("proof")
-proof_loop = Loop(proof_system_prompt, lake_exe_check, CWD)
+def proof_loop(max_iterations: int = 25) -> Loop:
+    """
+    Create a proof loop with the given max iterations.
+    """
+    loop = Loop(PROOF_SYSTEM_PROMPT, max_iterations)
+    return loop

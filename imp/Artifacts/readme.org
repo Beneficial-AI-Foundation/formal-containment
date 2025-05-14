@@ -2,4 +2,4 @@
 
 File ~Basic.lean~ is a like a build artifact, it changes every time the program is run because it is an LLM completion.
 
-File ~Basic.lean.jinja2~ is the template out of which ~Basic.lean~ is formed.
+File ~Basic.lean.template~ is the template out of which ~Basic.lean~ is formed.

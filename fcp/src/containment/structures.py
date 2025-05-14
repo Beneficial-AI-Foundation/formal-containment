@@ -19,6 +19,18 @@ class HoareTriple:
     specification: Specification
     command: str
 
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.specification.precondition,
+                self.command,
+                self.specification.postcondition,
+            )
+        )
+
+    def __str__(self) -> str:
+        return f"\\{{ {self.specification.precondition} \\}} {self.command} \\{{ {self.specification.postcondition} \\}}"
+
 
 @dataclass
 class VerificationResponse:

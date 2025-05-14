@@ -1,0 +1,9 @@
+import Aesop
+import Imp
+
+example : {{ "{{" + specification.precondition + "}}" }}({{ command }}){{ "{{" + specification.postcondition + "}}" }} → False := by
+  {% if proof is defined and proof is not none and proof %}
+  {{ proof }}
+  {% else %}
+  sorry
+  {% endif %}
