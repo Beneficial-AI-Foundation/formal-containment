@@ -15,25 +15,25 @@ macro_rules
   | `({{ $P }} $c{{ $Q }}) => `(ValidHoareTriple $P $c $Q)
 
 @[simp]
-def assertImplies (P Q : Assertion) : Prop :=
-  forall σ, P σ -> Q σ
+def Assertion.implies (P Q : Assertion) : Prop :=
+  forall σ, P σ → Q σ
 syntax term:90 "->>" term:91 : term
 macro_rules
-  | `($P ->> $Q) => `(assertImplies $P $Q)
+  | `($P ->> $Q) => `(Assertion.implies $P $Q)
 
 @[simp]
-def assertIff (P Q : Assertion) : Prop :=
-  forall σ, P σ <-> Q σ
+def Assertion.iff (P Q : Assertion) : Prop :=
+  forall σ, P σ ↔ Q σ
 syntax term:90 "<<->>" term:91 : term
 macro_rules
-  | `($P <<->> $Q) => `(assertIff $P $Q)
+  | `($P <<->> $Q) => `(Assertion.iff $P $Q)
 
 @[simp]
-def assertionSubstitution (P : Assertion) (x : String) (a : Expr) : Assertion :=
+def Assertion.substitution (P : Assertion) (x : String) (a : Expr) : Assertion :=
   fun σ => P (σ.setOption x (a.eval σ))
 syntax term " [ " ident " ↦ " term "]" : term
 macro_rules
-  | `($P [$x ↦ $a]) => `(assertionSubstitution $P $x $a)
+  | `($P [$x ↦ $a]) => `(Assertion.substitution $P $x $a)
 
 instance : Coe Expr Assertion where
   coe b := fun σ => Truthy $ b.eval σ
@@ -49,3 +49,8 @@ def Assertion.not (P : Assertion) : Assertion :=
   fun σ => ¬ P σ
 macro_rules
   | `(! $P) => `(Assertion.not $P)
+
+@[simp]
+theorem Truthy.assert_true : ∀ (b : Expr), (fun σ => Truthy (b.eval σ)) <<->> b := by
+  intro b σ
+  constructor <;> intro h <;> assumption

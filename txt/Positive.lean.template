@@ -1,5 +1,6 @@
 import Aesop
 import Imp
+open Imp
 
 example : {{ "{{" + specification.precondition + "}}" }}({{ command }}){{ "{{" + specification.postcondition + "}}" }} := by
   {{ proof }}

@@ -62,8 +62,8 @@ instance : Decidable (Falsy v) :=  -- inferInstanceAs (Decidable (v = 0))
 
 @[simp]
 theorem Truthy.not_falsy : Truthy v → ¬Falsy v := by
+  simp [Truthy, Falsy]
   intro h1 h2
-  simp [Truthy, Falsy] at *
   cases v <;> simp at *
   case some v =>
     cases v <;> simp at *

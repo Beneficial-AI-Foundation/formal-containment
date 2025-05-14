@@ -11,6 +11,7 @@ from containment.structures import HoareTriple, ToolResponse
 UP = ".."
 LAKE_DIR = Path.cwd() / UP / "imp"
 PROOF_SYSTEM_PROMPT = get_oracle_system_prompt("proof")
+MAX_CONVERSATION_LENGTH = 8
 
 
 class Loop:
@@ -54,7 +55,7 @@ class Loop:
         if lake_response.exit_code == 0:
             return lake_response
         for iteration in range(self.max_iterations):
-            self.conversation = self.conversation[-6:]
+            self.conversation = self.conversation[-MAX_CONVERSATION_LENGTH:]
             lake_response = self._iter(triple, lake_response.stderr)
             if lake_response.exit_code == 0:
                 break
