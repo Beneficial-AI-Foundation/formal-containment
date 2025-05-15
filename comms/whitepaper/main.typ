@@ -3,7 +3,7 @@
 #show: ieee.with(
   title: [Formal Containment *draft*],
   abstract: [
-    We would like to put the AI in a box. We show how to create an _interface_ between the *box* and the *world* using specifications in Lean. It is the AI's responsibility to provide a proof that it's (restricted) output abides by the spec.
+    We would like to put the AI in a box. We show how to create an _interface_ between the *box* and the *world* using specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.
   ],
   authors: (
     (
@@ -61,3 +61,7 @@ Let criterion $C$ be the pair $("prec", "post") := (X > 0, X > 1)$.
 Then, programs $c$ provided by imp oracle $cal(O)_i$ at relevant prompt $p := p("prec", "post")$ will form the command at the center of the hoare triple. In other words, $forall c ~ cal(O)_i (p), {"prec"} c {"post"}$ is either provable or not. (In this easy case, $cal(O)_i$ submits $X := X + 1$ under any reasonable prompt).
 
 When $cal(O)_i$ submits a program $c$ to the interface client $B$, $B$ sends the triple ${"prec"} c {"post"}$ to the proof oracle $cal(O)_p$ in one thread and the triple's negation in another thread. If the negative thread terminates in success, then a negative certificate is sent to $B$ and $B$ informs $cal(O)_i$ that it shall not run that code in the world, and that $cal(O)_i$ must try again. If the positive thread terminates in success, then the positive certificate is sent to $B$ and $B$ passes along program $c$ to its children to be run in the world.
+
+= Related Work
+
+Our work is well situated within proof carrying code @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying.

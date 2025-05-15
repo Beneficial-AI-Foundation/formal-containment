@@ -1,12 +1,10 @@
-"""Formal containment protocol implementation."""
+"""Formal containment protocol CLI."""
 
 import typer
 from containment.structures import HoareTriple, Specification
 from containment.oracles import imp_oracle
 from containment.loops import proof_loop
 from containment.mcp_server import mcp
-
-__all__ = ["mcp"]
 
 
 def contain() -> None:
@@ -28,6 +26,7 @@ def contain() -> None:
         loop = proof_loop(max_iterations)
         response = loop.run(triple)
         print(f"Proof loop exit code: {response.exit_code}")
+        return None
 
     @cli.command()
     def imp_complete(precondition: str, postcondition: str) -> None:
@@ -36,7 +35,10 @@ def contain() -> None:
         """
         spec = Specification(precondition, postcondition)
         program = imp_oracle(spec)
-        print(f"\\{{ {precondition} \\}} {program} \\{{ {postcondition} \\}}")
+        if program is None:
+            raise ValueError("No program found. Xml parse error probably.")
+        print(HoareTriple(spec, program))
+        return None
 
     cli()
 

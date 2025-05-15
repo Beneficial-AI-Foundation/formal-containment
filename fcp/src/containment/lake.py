@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from pathlib import Path
 from containment.structures import HoareTriple, ToolResponse
 from containment.prompts import load_template
@@ -10,19 +9,24 @@ class Checker:
         self.cwd = cwd
         self.basic_path = cwd / "Artifacts" / "Basic.lean"
 
-    def write_proof(self, triple: HoareTriple, proof: str | None) -> None:
+    def write_proof(
+        self, triple: HoareTriple, proof: str | None, positive: bool
+    ) -> None:
         """
         Write the proof to a file in the tmpdir.
         """
+        polarity = "Positive" if positive else "Negative"
         basic = load_template(
-            "Positive.lean.template",
+            f"{polarity}.lean.template",
             proof=proof,
-            **asdict(triple),
+            **triple.dictionary,
         )
-        with open(self.basic_path, "w") as thefile:
-            thefile.write(basic)
+        with open(self.basic_path, "w") as basic_dot_lean:
+            basic_dot_lean.write(basic)
 
-    def run(self, triple: HoareTriple, proof: str | None = None) -> ToolResponse:
+    def run(
+        self, triple: HoareTriple, proof: str | None = None, positive: bool = True
+    ) -> ToolResponse:
         """
         Run the lake tool and return the result. (None option for proof is just for testing).
 
@@ -33,6 +37,6 @@ class Checker:
         Returns:
             ToolResponse: The result of the lake tool
         """
-        self.write_proof(triple, proof)
+        self.write_proof(triple, proof, positive)
         result = lake_exe_check(self.cwd)
         return result

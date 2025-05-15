@@ -18,6 +18,7 @@ dependencies = [
 
 [project.scripts]
 contain = "containment:contain"
+mcp_server = "containment:mcp_server_run"
 
 [build-system]
 requires = ["hatchling"]

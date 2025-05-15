@@ -25,9 +25,11 @@ class Loop:
         self,
         system_prompt: str,
         max_iterations: int,
+        max_conversation_length: int = MAX_CONVERSATION_LENGTH,
     ):
         self.oracle = Oracle(system_prompt)
         self.max_iterations = max_iterations
+        self.max_conversation_length = max_conversation_length
         self.lake_dir = LAKE_DIR
         self.tmpdir = Path(tempfile.mkdtemp())
         shutil.copytree(
@@ -55,7 +57,7 @@ class Loop:
         if lake_response.exit_code == 0:
             return lake_response
         for iteration in range(self.max_iterations):
-            self.conversation = self.conversation[-MAX_CONVERSATION_LENGTH:]
+            self.conversation = self.conversation[-self.max_conversation_length :]
             lake_response = self._iter(triple, lake_response.stderr)
             if lake_response.exit_code == 0:
                 break

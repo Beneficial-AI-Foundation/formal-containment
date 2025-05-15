@@ -1,17 +1,15 @@
-from dataclasses import dataclass
-from enum import Enum
+from dataclasses import dataclass, asdict
 from subprocess import CompletedProcess
-
-
-class VerificationResult(Enum):
-    PASS = "pass"
-    FAIL = "fail"
 
 
 @dataclass
 class Specification:
     precondition: str
     postcondition: str
+
+    @property
+    def dictionary(self) -> dict:
+        return asdict(self)
 
 
 @dataclass
@@ -31,12 +29,23 @@ class HoareTriple:
     def __str__(self) -> str:
         return f"\\{{ {self.specification.precondition} \\}} {self.command} \\{{ {self.specification.postcondition} \\}}"
 
+    @property
+    def dictionary(self) -> dict:
+        return asdict(self)
+
 
 @dataclass
-class VerificationResponse:
-    result: VerificationResult
+class VerificationSuccess:
     triple: HoareTriple
-    error_message: str | None = None
+
+
+@dataclass
+class VerificationFailure:
+    triple: HoareTriple
+    error_message: str
+
+
+type VerificationResult = VerificationSuccess | VerificationFailure
 
 
 @dataclass

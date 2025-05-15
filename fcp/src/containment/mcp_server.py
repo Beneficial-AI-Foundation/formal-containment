@@ -1,4 +1,3 @@
-import subprocess
 import json
 from mcp.server.fastmcp import FastMCP
 from containment.structures import (
@@ -9,17 +8,6 @@ from containment.structures import (
 )
 
 mcp = FastMCP("Formal Containment Process")
-
-
-@mcp.tool()
-def lake_exe_check() -> tuple[int, str, str]:
-    """
-    Check if `./../imp/` compiles.
-    """
-    result = subprocess.run(
-        ["lake", "exe", "check"], capture_output=True, text=True, cwd="./../imp"
-    )
-    return result.returncode, result.stdout, result.stderr
 
 
 @mcp.tool()
@@ -93,3 +81,8 @@ def get_hoare_spec(spec_id: str) -> str:
     }
 
     return json.dumps(spec)
+
+
+@mcp.resource("fcp://triples/{triple_hash}")
+def get_hoare_triple(triple_hash: str) -> str:
+    return triple_hash

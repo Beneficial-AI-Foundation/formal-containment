@@ -1,12 +1,13 @@
 from pathlib import Path
-from dataclasses import asdict
 from typing import Literal
 from jinja2 import Environment, FileSystemLoader
 from containment.structures import Specification, HoareTriple
 
 template_dir = (
     # Path(__file__).parent.parent.parent.parent / "txt"
-    Path.cwd() / ".." / "txt"
+    Path.cwd()
+    / ".."
+    / "txt"
 )  # Go up to monorepo root
 env = Environment(loader=FileSystemLoader(template_dir))
 
@@ -30,7 +31,7 @@ def get_oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
     Get the system prompt for the oracle.
 
     Args:
-        language: The language of the oracle (e.g., "imp", "proof")
+        language: The language of the oracle
 
     Returns:
         The complete system prompt for the oracle
@@ -46,7 +47,7 @@ def get_imp_user_prompt(spec: Specification) -> str:
     """
     Get the user prompt for the imp oracle.
     """
-    return load_template("imp.user.prompt.template", **asdict(spec))
+    return load_template("imp.user.prompt.template", **spec.dictionary)
 
 
 def proof_user_template(stage: str) -> str:
@@ -60,6 +61,6 @@ def get_proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str
 
     if stderr is not None:
         return load_template(
-            proof_user_template("continuous"), stderr=stderr, **asdict(triple)
+            proof_user_template("continuous"), stderr=stderr, **triple.dictionary
         )
-    return load_template(proof_user_template("init"), **asdict(triple))
+    return load_template(proof_user_template("init"), **triple.dictionary)
