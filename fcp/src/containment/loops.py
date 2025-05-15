@@ -1,17 +1,15 @@
-import shutil
-import tempfile
 from pathlib import Path
-
 from containment.artifacts import write_artifact
 from containment.lake import Checker
 from containment.oracles import Oracle, proof_oracle
 from containment.prompts import get_oracle_system_prompt
 from containment.structures import HoareTriple, ToolResponse
+from containment.tools import temp_lakeproj_init
 
 UP = ".."
 LAKE_DIR = Path.cwd() / UP / "imp"
 PROOF_SYSTEM_PROMPT = get_oracle_system_prompt("proof")
-MAX_CONVERSATION_LENGTH = 8
+MAX_CONVERSATION_LENGTH = 16
 
 
 class Loop:
@@ -31,13 +29,7 @@ class Loop:
         self.max_iterations = max_iterations
         self.max_conversation_length = max_conversation_length
         self.lake_dir = LAKE_DIR
-        self.tmpdir = Path(tempfile.mkdtemp())
-        shutil.copytree(
-            self.lake_dir,
-            self.tmpdir,
-            dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns(".lake/"),
-        )
+        self.tmpdir = temp_lakeproj_init()
         self.conversation = []
 
     def _iter(self, triple: HoareTriple, stderr: str | None) -> ToolResponse:
@@ -57,6 +49,8 @@ class Loop:
         if lake_response.exit_code == 0:
             return lake_response
         for iteration in range(self.max_iterations):
+            if iteration % 5 == 0:
+                print(f"iteration num {iteration}/{self.max_iterations}")
             self.conversation = self.conversation[-self.max_conversation_length :]
             lake_response = self._iter(triple, lake_response.stderr)
             if lake_response.exit_code == 0:

@@ -5,9 +5,7 @@ from containment.structures import Specification, HoareTriple
 
 template_dir = (
     # Path(__file__).parent.parent.parent.parent / "txt"
-    Path.cwd()
-    / ".."
-    / "txt"
+    Path.cwd() / ".." / "txt"
 )  # Go up to monorepo root
 env = Environment(loader=FileSystemLoader(template_dir))
 
