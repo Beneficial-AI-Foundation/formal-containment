@@ -3,11 +3,8 @@ from typing import Literal
 from jinja2 import Environment, FileSystemLoader
 from containment.structures import Specification, HoareTriple
 
-template_dir = (
-    # Path(__file__).parent.parent.parent.parent / "txt"
-    Path.cwd() / ".." / "txt"
-)  # Go up to monorepo root
-env = Environment(loader=FileSystemLoader(template_dir))
+TEMPLATE_DIR = Path.cwd() / ".." / "txt"
+env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
 
 def load_template(template_name: str, **kwargs) -> str:
@@ -24,7 +21,7 @@ def load_template(template_name: str, **kwargs) -> str:
     return template.render(**kwargs)
 
 
-def get_oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
+def oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -34,14 +31,15 @@ def get_oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
     Returns:
         The complete system prompt for the oracle
     """
-    with open(template_dir / f"{language}.system.prompt", "r") as f:
-        language_instructions = f.read()
+    language_instructions = load_template(f"{language}.system.prompt")
+    # with open(TEMPLATE_DIR / f"{language}.system.prompt", "r") as f:
+    #    language_instructions = f.read()
     return load_template(
         "oracle.system.prompt.template", language_instructions=language_instructions
     )
 
 
-def get_imp_user_prompt(spec: Specification) -> str:
+def imp_user_prompt(spec: Specification) -> str:
     """
     Get the user prompt for the imp oracle.
     """
@@ -52,7 +50,7 @@ def proof_user_template(stage: str) -> str:
     return f"proof.user.{stage}.prompt.template"
 
 
-def get_proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
+def proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
     """
     Get the user prompt for the proof oracle.
     """

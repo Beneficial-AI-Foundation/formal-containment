@@ -2,13 +2,18 @@ from pathlib import Path
 from containment.artifacts import write_artifact
 from containment.lake import Checker
 from containment.oracles import Oracle, proof_oracle
-from containment.prompts import get_oracle_system_prompt
-from containment.structures import HoareTriple, ToolResponse
+from containment.prompts import oracle_system_prompt
+from containment.structures import (
+    HoareTriple,
+    LakeResponse,
+    VerificationSuccess,
+    VerificationFailure,
+    VerificationResult,
+)
 from containment.tools import temp_lakeproj_init
 
 UP = ".."
-LAKE_DIR = Path.cwd() / UP / "imp"
-PROOF_SYSTEM_PROMPT = get_oracle_system_prompt("proof")
+IMP_DIR = Path.cwd() / UP / "imp"
 MAX_CONVERSATION_LENGTH = 16
 
 
@@ -28,40 +33,47 @@ class Loop:
         self.oracle = Oracle(system_prompt)
         self.max_iterations = max_iterations
         self.max_conversation_length = max_conversation_length
-        self.lake_dir = LAKE_DIR
+        self.lake_dir = IMP_DIR
         self.tmpdir = temp_lakeproj_init()
         self.conversation = []
+        self.proof = None
 
-    def _iter(self, triple: HoareTriple, stderr: str | None) -> ToolResponse:
+    def _iter(
+        self, triple: HoareTriple, stderr: str | None, positive: bool
+    ) -> LakeResponse:
         """Iteration of the loop."""
 
-        proof, self.conversation = proof_oracle(self.conversation, triple, stderr)
+        self.proof, self.conversation = proof_oracle(self.conversation, triple, stderr)
         checker = Checker(self.tmpdir)
-        return checker.run(triple, proof)
+        return checker.run(triple, self.proof, positive)
 
-    def _loop_init(self, triple: HoareTriple) -> ToolResponse:
-        """0th iteration of the loop."""
-        return self._iter(triple, None)
-
-    def run(self, triple: HoareTriple) -> ToolResponse:
+    def run(self, triple: HoareTriple, *, positive: bool) -> VerificationResult | None:
         """Continue the loop until lake succeeds or max iterations are reached."""
-        lake_response = self._loop_init(triple)
-        if lake_response.exit_code == 0:
-            return lake_response
+        lake_response = self._iter(triple, None, positive)
+        if lake_response.exit_code == 0 and self.proof is not None:
+            return VerificationSuccess(triple, self.proof)
         for iteration in range(self.max_iterations):
             if iteration % 5 == 0:
                 print(f"iteration num {iteration}/{self.max_iterations}")
             self.conversation = self.conversation[-self.max_conversation_length :]
-            lake_response = self._iter(triple, lake_response.stderr)
+            lake_response = self._iter(triple, lake_response.stderr, positive)
             if lake_response.exit_code == 0:
                 break
         write_artifact(self.tmpdir, triple)
-        return lake_response
+        if (
+            lake_response.exit_code != 0
+            and lake_response.stderr
+            and self.proof is not None
+        ):
+            return VerificationFailure(triple, self.proof, lake_response.stderr)
+        if self.proof is not None:
+            return VerificationSuccess(triple, self.proof)
+        return None
 
 
 def proof_loop(max_iterations: int = 25) -> Loop:
     """
     Create a proof loop with the given max iterations.
     """
-    loop = Loop(PROOF_SYSTEM_PROMPT, max_iterations)
-    return loop
+    system_prompt = oracle_system_prompt("proof")
+    return Loop(system_prompt, max_iterations)

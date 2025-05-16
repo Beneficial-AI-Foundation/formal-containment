@@ -1,7 +1,12 @@
 """Formal containment protocol CLI."""
 
 import typer
-from containment.structures import HoareTriple, Specification
+from containment.structures import (
+    HoareTriple,
+    Specification,
+    VerificationSuccess,
+    VerificationFailure,
+)
 from containment.oracles import imp_oracle
 from containment.loops import proof_loop
 from containment.mcp_server import mcp
@@ -24,8 +29,14 @@ def contain() -> None:
         triple = HoareTriple(spec, program)
         print(f"Hoare triple: {triple}")
         loop = proof_loop(max_iterations)
-        response = loop.run(triple)
-        print(f"Proof loop exit code: {response.exit_code}")
+        result = loop.run(triple, positive=True)
+        if isinstance(result, VerificationSuccess):
+            msg = f"Exit code 0 at proof={result.proof}"
+        elif isinstance(result, VerificationFailure):
+            msg = f"Exit code 1 at proof={result.proof} with error: {result.error_message}"
+        else:
+            msg = "Unknown result. Probably an XML parse error"
+        print(msg)
         return None
 
     @cli.command()

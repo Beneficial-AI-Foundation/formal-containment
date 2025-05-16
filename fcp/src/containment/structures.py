@@ -1,4 +1,5 @@
 from dataclasses import dataclass, asdict
+from pathlib import Path
 from subprocess import CompletedProcess
 
 
@@ -37,11 +38,13 @@ class HoareTriple:
 @dataclass
 class VerificationSuccess:
     triple: HoareTriple
+    proof: str
 
 
 @dataclass
 class VerificationFailure:
     triple: HoareTriple
+    proof: str
     error_message: str
 
 
@@ -49,7 +52,7 @@ type VerificationResult = VerificationSuccess | VerificationFailure
 
 
 @dataclass
-class ToolResponse:
+class LakeResponse:
     exit_code: int
     stdout: str
     stderr: str
@@ -58,9 +61,18 @@ class ToolResponse:
     def from_subprocess_result(
         cls,
         result: CompletedProcess[str],
-    ) -> "ToolResponse":
+    ) -> "LakeResponse":
         return cls(
             exit_code=result.returncode,
             stdout=result.stdout,
             stderr=result.stderr,
         )
+
+
+@dataclass
+class CheckerBase:
+    cwd: Path
+
+    @property
+    def basic_path(self) -> Path:
+        return self.cwd / "Artifacts" / "Basic.lean"

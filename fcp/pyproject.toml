@@ -1,15 +1,16 @@
 [project]
 name = "containment"
 version = "0.1.0"
-description = "Add your description here"
+description = "Formal containment protocol"
 readme = "README.md"
 authors = [
-    { name = "Quinn Dougherty", email = "quinn.dougherty.forall@gmail.com" }
+    { name = "Quinn Dougherty", email = "quinn@beneficialaifoundation.org" }
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "anthropic>=0.50.0",
+    "anthropic>=0.51.0",
     "jinja2>=3.1.6",
+    "logfire>=3.16.0",
     "mcp>=1.7.1",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
@@ -18,7 +19,7 @@ dependencies = [
 
 [project.scripts]
 contain = "containment:contain"
-mcp_server = "containment:mcp_server_run"
+mcp-server = "containment:mcp_server_run"
 
 [build-system]
 requires = ["hatchling"]

@@ -9,7 +9,7 @@ ARTIFACTS = Path.cwd() / UP / "artifacts"
 
 def write_artifact(tmpdir: Path, triple: HoareTriple) -> None:
     """
-    Write Artifact.Basic from tmpdir to artifacts/<hash>.lean.
+    Write Artifacts.Basic from tmpdir to artifacts/{hash(triple)}.lean.
     """
     target_dir = ARTIFACTS / datetime.now().strftime("%Y%m%d-%H%M")
     target_dir.mkdir(parents=True, exist_ok=True)
