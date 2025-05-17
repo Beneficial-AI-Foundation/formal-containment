@@ -1,8 +1,7 @@
 from pathlib import Path
 from containment.artifacts import write_artifact
 from containment.lake import Checker
-from containment.oracles import Oracle, proof_oracle
-from containment.prompts import oracle_system_prompt
+from containment.oracles import proof_oracle
 from containment.structures import (
     HoareTriple,
     LakeResponse,
@@ -26,11 +25,9 @@ class Loop:
 
     def __init__(
         self,
-        system_prompt: str,
         max_iterations: int,
         max_conversation_length: int = MAX_CONVERSATION_LENGTH,
     ):
-        self.oracle = Oracle(system_prompt)
         self.max_iterations = max_iterations
         self.max_conversation_length = max_conversation_length
         self.lake_dir = IMP_DIR
@@ -44,14 +41,14 @@ class Loop:
         """Iteration of the loop."""
 
         self.proof, self.conversation = proof_oracle(self.conversation, triple, stderr)
-        checker = Checker(self.tmpdir)
+        checker = Checker(cwd=self.tmpdir)
         return checker.run(triple, self.proof, positive)
 
     def run(self, triple: HoareTriple, *, positive: bool) -> VerificationResult | None:
         """Continue the loop until lake succeeds or max iterations are reached."""
         lake_response = self._iter(triple, None, positive)
         if lake_response.exit_code == 0 and self.proof is not None:
-            return VerificationSuccess(triple, self.proof)
+            return VerificationSuccess(triple=triple, proof=self.proof)
         for iteration in range(self.max_iterations):
             if iteration % 5 == 0:
                 print(f"iteration num {iteration}/{self.max_iterations}")
@@ -65,9 +62,11 @@ class Loop:
             and lake_response.stderr
             and self.proof is not None
         ):
-            return VerificationFailure(triple, self.proof, lake_response.stderr)
+            return VerificationFailure(
+                triple=triple, proof=self.proof, error_message=lake_response.stderr
+            )
         if self.proof is not None:
-            return VerificationSuccess(triple, self.proof)
+            return VerificationSuccess(triple=triple, proof=self.proof)
         return None
 
 
@@ -75,5 +74,4 @@ def proof_loop(max_iterations: int = 25) -> Loop:
     """
     Create a proof loop with the given max iterations.
     """
-    system_prompt = oracle_system_prompt("proof")
-    return Loop(system_prompt, max_iterations)
+    return Loop(max_iterations)

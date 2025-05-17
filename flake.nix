@@ -26,6 +26,7 @@
                 uv
                 typst
                 typstyle
+                nodejs_24
               ];
             in
             pkgs.mkShell { inherit name buildInputs; };

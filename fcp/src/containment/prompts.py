@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import Literal
 from jinja2 import Environment, FileSystemLoader
-from containment.structures import Specification, HoareTriple
+from containment.structures import Specification, HoareTriple, Language
 
 TEMPLATE_DIR = Path.cwd() / ".." / "txt"
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
@@ -21,7 +20,7 @@ def load_template(template_name: str, **kwargs) -> str:
     return template.render(**kwargs)
 
 
-def oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
+def oracle_system_prompt(language: Language) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -43,7 +42,7 @@ def imp_user_prompt(spec: Specification) -> str:
     """
     Get the user prompt for the imp oracle.
     """
-    return load_template("imp.user.prompt.template", **spec.dictionary)
+    return load_template("imp.user.prompt.template", **spec.model_dump())
 
 
 def proof_user_template(stage: str) -> str:
@@ -53,10 +52,12 @@ def proof_user_template(stage: str) -> str:
 def proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
     """
     Get the user prompt for the proof oracle.
+
+    TODO: handle polarity
     """
 
     if stderr is not None:
         return load_template(
-            proof_user_template("continuous"), stderr=stderr, **triple.dictionary
+            proof_user_template("continuous"), stderr=stderr, **triple.model_dump()
         )
-    return load_template(proof_user_template("init"), **triple.dictionary)
+    return load_template(proof_user_template("init"), **triple.model_dump())
