@@ -1,20 +1,28 @@
-from dataclasses import dataclass, asdict
+import json
 from pathlib import Path
 from subprocess import CompletedProcess
+from typing import Literal
+from pydantic import BaseModel
+
+type Language = Literal["imp", "proof"]
 
 
-@dataclass
-class Specification:
+class Structure(BaseModel):
+    """
+    Base class for all structures.
+    """
+
+    @property
+    def jsons(self) -> str:
+        return json.dumps(self.model_dump())
+
+
+class Specification(Structure):
     precondition: str
     postcondition: str
 
-    @property
-    def dictionary(self) -> dict:
-        return asdict(self)
 
-
-@dataclass
-class HoareTriple:
+class HoareTriple(Structure):
     specification: Specification
     command: str
 
@@ -30,19 +38,13 @@ class HoareTriple:
     def __str__(self) -> str:
         return f"\\{{ {self.specification.precondition} \\}} {self.command} \\{{ {self.specification.postcondition} \\}}"
 
-    @property
-    def dictionary(self) -> dict:
-        return asdict(self)
 
-
-@dataclass
-class VerificationSuccess:
+class VerificationSuccess(Structure):
     triple: HoareTriple
     proof: str
 
 
-@dataclass
-class VerificationFailure:
+class VerificationFailure(Structure):
     triple: HoareTriple
     proof: str
     error_message: str
@@ -51,8 +53,7 @@ class VerificationFailure:
 type VerificationResult = VerificationSuccess | VerificationFailure
 
 
-@dataclass
-class LakeResponse:
+class LakeResponse(Structure):
     exit_code: int
     stdout: str
     stderr: str
@@ -69,8 +70,7 @@ class LakeResponse:
         )
 
 
-@dataclass
-class CheckerBase:
+class CheckerBase(Structure):
     cwd: Path
 
     @property

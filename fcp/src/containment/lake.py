@@ -22,7 +22,7 @@ class Checker(CheckerBase):
         basic = load_template(
             f"{polarity}.lean.template",
             proof=proof,
-            **triple.dictionary,
+            **triple.model_dump(),
         )
         self.write_code(basic)
         return None
