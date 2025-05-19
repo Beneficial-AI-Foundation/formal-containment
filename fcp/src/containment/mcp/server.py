@@ -37,7 +37,7 @@ def get_proof_user_prompt2(triple: HoareTriple, stderr: str | None) -> str:
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
 def get_proof_user_prompt(
-    precondition: str, command: str, postcondition: str, stderr: str | None
+    precondition: str, command: str, postcondition: str, stderr: str
 ) -> str:
     """
     Get the proof user prompt.
@@ -51,15 +51,15 @@ def get_proof_user_prompt(
     Returns:
         A string containing the proof user prompt
     """
-    return proof_user_prompt(
-        HoareTriple(
-            specification=Specification(
-                precondition=precondition, postcondition=postcondition
-            ),
-            command=command,
+    triple = HoareTriple(
+        specification=Specification(
+            precondition=precondition, postcondition=postcondition
         ),
-        stderr,
+        command=command,
     )
+    if not stderr:
+        return proof_user_prompt(triple)
+    return proof_user_prompt(triple, stderr)
 
 
 @mcp.prompt(

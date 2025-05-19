@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Literal
@@ -57,6 +58,11 @@ class LakeResponse(Structure):
             stdout=result.stdout,
             stderr=result.stderr,
         )
+
+    @classmethod
+    def from_jsons(cls, result: str) -> "LakeResponse":
+        """The MCP server json RPC will return a str that json decodes into the arguments for LakeResponse"""
+        return cls(**json.loads(result))
 
 
 class CheckerBase(Structure):
