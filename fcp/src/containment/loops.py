@@ -1,3 +1,5 @@
+"""Proving hoare triples without MCP."""
+
 from pathlib import Path
 from containment.artifacts import write_artifact
 from containment.lake import Checker
@@ -48,7 +50,9 @@ class Loop:
         """Continue the loop until lake succeeds or max iterations are reached."""
         lake_response = self._iter(triple, None, positive)
         if lake_response.exit_code == 0 and self.proof is not None:
-            return VerificationSuccess(triple=triple, proof=self.proof)
+            return VerificationSuccess(
+                triple=triple, proof=self.proof, audit_trail=self.tmpdir
+            )
         for iteration in range(self.max_iterations):
             if iteration % 5 == 0:
                 print(f"iteration num {iteration}/{self.max_iterations}")
@@ -63,10 +67,15 @@ class Loop:
             and self.proof is not None
         ):
             return VerificationFailure(
-                triple=triple, proof=self.proof, error_message=lake_response.stderr
+                triple=triple,
+                proof=self.proof,
+                error_message=lake_response.stderr,
+                audit_trail=self.tmpdir,
             )
         if self.proof is not None:
-            return VerificationSuccess(triple=triple, proof=self.proof)
+            return VerificationSuccess(
+                triple=triple, proof=self.proof, audit_trail=self.tmpdir
+            )
         return None
 
 

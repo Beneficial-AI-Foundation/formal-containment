@@ -29,6 +29,5 @@ def temp_lakeproj_init(lake_dir: Path = LAKE_DIR) -> Path:
         lake_dir,
         tmpdir,
         dirs_exist_ok=True,
-        # ignore=shutil.ignore_patterns(".lake/"),
     )
     return tmpdir

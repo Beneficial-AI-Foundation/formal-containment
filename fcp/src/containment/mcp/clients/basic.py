@@ -18,7 +18,7 @@ class MCPClient(MCPClientBase):
     def _mk_complete(self, system_prompt: str) -> Callable[[list[dict]], list[dict]]:
         return mk_complete(self.client, system_prompt, cache=False)
 
-    async def _connect_to_server_and_run(self):
+    async def _connect_to_server_and_run(self) -> Any:
         async with stdio_client(self.SERVER_PARAMETERS) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()

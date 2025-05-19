@@ -69,9 +69,10 @@ def imp_oracle(spec: Specification) -> str | None:
     """
     Expert imp programmer.
     """
+    failed_attempts = ""
     client = get_oracle_client()
     system_prompt = oracle_system_prompt("imp")
-    user_prompt = imp_user_prompt(spec)
+    user_prompt = imp_user_prompt(spec, failed_attempts=failed_attempts)
     complete = mk_complete(client, system_prompt, cache=False)
     completion = complete([{"role": "user", "content": user_prompt}])
     program = parse_program_completion(completion, "imp")

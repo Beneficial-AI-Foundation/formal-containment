@@ -39,11 +39,13 @@ def oracle_system_prompt(language: Language) -> str:
     )
 
 
-def imp_user_prompt(spec: Specification) -> str:
+def imp_user_prompt(spec: Specification, failed_attempts: str) -> str:
     """
     Get the user prompt for the imp oracle.
     """
-    return load_txt("imp.user.prompt.template", **spec.model_dump())
+    return load_txt(
+        "imp.user.prompt.template", failed_attempts=failed_attempts, **spec.model_dump()
+    )
 
 
 def proof_user_template(stage: str) -> str:

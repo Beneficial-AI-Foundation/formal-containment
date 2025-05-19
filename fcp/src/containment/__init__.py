@@ -12,17 +12,16 @@ from containment.structures import (
 from containment.oracles import imp_oracle
 from containment.loops import proof_loop
 from containment.mcp.server import mcp
-
-# from containment.mcp.clients.boundary import Boundary
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
+from containment.protocol import Boundary
 
 
 def mcp_server_run() -> None:
     mcp.run(transport="stdio")
 
 
-def test() -> None:
+def test_no_mcp() -> None:
     """MCP-free test runs."""
     cli = Typer()
 
@@ -74,9 +73,9 @@ def inspector() -> None:
     )
 
 
-def main() -> None:
+def test() -> None:
     """
-    Containment protocol CLI.
+    Test runs.
     """
     cli = AsyncTyper()
 
@@ -115,6 +114,40 @@ def main() -> None:
 
         expert = await ImpExpert.connect_and_run(spec)
         print(expert.triple)
+        return None
+
+    cli()
+
+
+def contain() -> None:
+    """
+    Run the containment protocol.
+    """
+    cli = AsyncTyper()
+
+    @cli.command()
+    async def protocol(
+        precondition: str,
+        postcondition: str,
+        proof_loop_budget: int = 10,
+        attempt_budget: int = 5,
+    ) -> None:
+        """
+        Run the containment protocol at the given precondition-postcondition pair.
+        """
+        boundary = Boundary(precondition, postcondition)
+        result = await boundary.run(
+            proof_loop_budget=proof_loop_budget, attempt_budget=attempt_budget
+        )
+        if result:
+            print(
+                f"The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
+            )
+            print(
+                f"The lean code of the proof for you to audit is located in {result.audit_trail}"
+            )
+        else:
+            print("Failed to find code that is provably safe to run in the world.")
         return None
 
     cli()

@@ -7,7 +7,7 @@ UP = ".."
 ARTIFACTS = Path.cwd() / UP / "artifacts"
 
 
-def write_artifact(tmpdir: Path, triple: HoareTriple) -> None:
+def write_artifact(tmpdir: Path, triple: HoareTriple) -> Path:
     """
     Write Artifacts.Basic from tmpdir to artifacts/{hash(triple)}.lean.
     """
@@ -17,3 +17,4 @@ def write_artifact(tmpdir: Path, triple: HoareTriple) -> None:
         tmpdir / "Artifacts" / "Basic.lean",
         target_dir / f"{hash(triple)}.lean",
     )
+    return target_dir

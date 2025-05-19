@@ -32,12 +32,14 @@ class HoareTriple(Structure):
 class VerificationSuccess(Structure):
     triple: HoareTriple
     proof: str
+    audit_trail: Path
 
 
 class VerificationFailure(Structure):
     triple: HoareTriple
     proof: str
     error_message: str
+    audit_trail: Path
 
 
 type VerificationResult = VerificationSuccess | VerificationFailure

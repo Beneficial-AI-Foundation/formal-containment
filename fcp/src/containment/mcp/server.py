@@ -15,24 +15,6 @@ mcp = FastMCP("Formal Containment Process")
 
 
 @mcp.prompt(
-    name="hoare_proof_user_prompt2",
-    description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
-)
-def get_proof_user_prompt2(triple: HoareTriple, stderr: str | None) -> str:
-    """
-    Get the proof user prompt: structured input edition
-
-    Args:
-        triple: A Hoare triple containing the specification and command
-        stderr: The standard error output from the lake tool
-
-    Returns:
-        A string containing the proof user prompt
-    """
-    return proof_user_prompt(triple, stderr)
-
-
-@mcp.prompt(
     name="hoare_proof_user_prompt",
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
@@ -63,36 +45,24 @@ def get_proof_user_prompt(
 
 
 @mcp.prompt(
-    name="imp_user_prompt2", description="Ask the oracle to fill in the hoare triple."
-)
-def get_imp_user_prompt2(spec: Specification) -> str:
-    """
-    Get the user prompt for the imp oracle: structured input edition
-
-    Args:
-        spec: A specification containing the precondition and postcondition
-
-    Returns:
-        A string containing the imp user prompt
-    """
-    return imp_user_prompt(spec)
-
-
-@mcp.prompt(
     "imp_user_prompt", description="Ask the oracle to fill in the hoare triple."
 )
-def get_imp_user_prompt(precondition: str, postcondition: str) -> str:
+def get_imp_user_prompt(
+    precondition: str, postcondition: str, failed_attempts: str
+) -> str:
     """
     Get the user prompt for the imp oracle.
 
     Args:
-        spec: A specification containing the precondition and postcondition
-
+        precondition: The precondition of the specification
+        postcondition: The postcondition of the specification
+        failed_attempts: Previously attempted imp programs formatted for the prompt
     Returns:
         A string containing the imp user prompt
     """
     return imp_user_prompt(
-        Specification(precondition=precondition, postcondition=postcondition)
+        Specification(precondition=precondition, postcondition=postcondition),
+        failed_attempts,
     )
 
 

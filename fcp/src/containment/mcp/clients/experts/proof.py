@@ -87,26 +87,41 @@ class ProofExpert(MCPClient):
     async def _prove_loop(self) -> VerificationResult | None:
         cwd, lake_response = await self._iter("")
         if lake_response.exit_code == 0 and self.proof is not None:
-            return VerificationSuccess(triple=self.triple, proof=self.proof)
+            artifact_dir = write_artifact(cwd, self.triple)
+            return VerificationSuccess(
+                triple=self.triple, proof=self.proof, audit_trail=artifact_dir
+            )
         for iteration in range(self.max_iterations):
             if not iteration % 5:
-                print(f"iteration num {iteration}/{self.max_iterations}")
+                print(
+                    f"\tAttempt to prove hoare triple {(self.triple.specification.precondition, hash(self.triple.command), self.triple.specification.postcondition)}: iteration num {iteration}/{self.max_iterations}"
+                )
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
             if lake_response.exit_code == 0:
                 break
-        write_artifact(cwd, self.triple)
+        artifact_dir = write_artifact(cwd, self.triple)
         if (
             lake_response.exit_code != 0
             and lake_response.stderr
             and self.proof is not None
         ):
             return VerificationFailure(
-                triple=self.triple, proof=self.proof, error_message=lake_response.stderr
+                triple=self.triple,
+                proof=self.proof,
+                error_message=lake_response.stderr,
+                audit_trail=artifact_dir,
             )
         if self.proof is not None:
-            return VerificationSuccess(triple=self.triple, proof=self.proof)
-        return None
+            return VerificationSuccess(
+                triple=self.triple, proof=self.proof, audit_trail=artifact_dir
+            )
+        return VerificationFailure(
+            triple=self.triple,
+            proof="",
+            error_message="For some reason, the proof field is still None",
+            audit_trail=artifact_dir,
+        )
 
     async def run(self) -> VerificationResult | None:
         """

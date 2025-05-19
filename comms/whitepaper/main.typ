@@ -1,7 +1,7 @@
 #import "@preview/charged-ieee:0.1.3": ieee
 
 #show: ieee.with(
-  title: [Formal Containment *draft*],
+  title: [Formal Containment *draft*: AI Control via Proof Carrying Code],
   abstract: [
     We would like to put the AI in a box. We show how to create an _interface_ between the *box* and the *world* using specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.
   ],

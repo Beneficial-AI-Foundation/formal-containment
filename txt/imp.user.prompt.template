@@ -1,2 +1,8 @@
 Write a program C that such that the following hoare triple is provable:
 \{ {{ precondition }} \} $C \{ {{ postcondition }} \}
+{% if failed_attempts %}
+You previously attempted the following solutions:
+{{ failed_attempts }}
+Note that it's possible a previously attempted imp program was right you just didn't find the proof within the allotted proof loop budget.
+If you're sure that the hoare triple is true and that the imp syntax is correct, feel free to repeat an attempted program.
+{% endif %}
