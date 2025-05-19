@@ -38,6 +38,5 @@ class MCPClient(MCPClientBase):
     @abstractmethod
     async def run(self) -> Any:
         """
-        Run the client.
+        Run the client's functionality.
         """
-        pass

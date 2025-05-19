@@ -91,6 +91,7 @@ def main() -> None:
         expert = await ImpExpert.connect_and_run(spec)
         if expert.triple is None:
             raise ValueError("No program found. XML parse error probably.")
+        print(expert.triple)
         prover_pos = await ProofExpert.connect_and_run(
             expert.triple, positive=True, max_iterations=max_iterations
         )

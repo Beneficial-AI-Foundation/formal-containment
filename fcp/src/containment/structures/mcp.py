@@ -6,5 +6,6 @@ class MCPClientBase:
     Base class for the Model Context Protocol (MCP) client.
     """
 
-    conversation = []
-    client = get_oracle_client()
+    def __init__(self) -> None:
+        self.conversation = []
+        self.client = get_oracle_client()
