@@ -28,7 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+        working-directory: fcp
       - run: uv run ruff check src
         working-directory: fcp
       - run: uv run ruff format --check src
+        working-directory: fcp
+      - run: uv run pyright src
         working-directory: fcp

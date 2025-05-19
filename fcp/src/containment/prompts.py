@@ -1,13 +1,11 @@
 from pathlib import Path
-from typing import Literal
 from jinja2 import Environment, FileSystemLoader
-from containment.structures import Specification, HoareTriple
+from containment.structures import Specification, HoareTriple, Language
 
 TEMPLATE_DIR = Path.cwd() / ".." / "txt"
-env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
 
-def load_template(template_name: str, **kwargs) -> str:
+def load_txt(template_name: str | Path, **kwargs) -> str:
     """
     Load and render a prompt template from the txt directory in the monorepo root.
 
@@ -17,11 +15,15 @@ def load_template(template_name: str, **kwargs) -> str:
     Returns:
         Rendered prompt string
     """
-    template = env.get_template(template_name)
-    return template.render(**kwargs)
+    if isinstance(template_name, str) and template_name.endswith(".template"):
+        env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+        template = env.get_template(template_name)
+        return template.render(**kwargs)
+    with open(TEMPLATE_DIR / template_name, "r") as template_file:
+        return template_file.read()
 
 
-def oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
+def oracle_system_prompt(language: Language) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -31,10 +33,8 @@ def oracle_system_prompt(language: Literal["imp", "proof"]) -> str:
     Returns:
         The complete system prompt for the oracle
     """
-    language_instructions = load_template(f"{language}.system.prompt")
-    # with open(TEMPLATE_DIR / f"{language}.system.prompt", "r") as f:
-    #    language_instructions = f.read()
-    return load_template(
+    language_instructions = load_txt(f"{language}.system.prompt")
+    return load_txt(
         "oracle.system.prompt.template", language_instructions=language_instructions
     )
 
@@ -43,7 +43,7 @@ def imp_user_prompt(spec: Specification) -> str:
     """
     Get the user prompt for the imp oracle.
     """
-    return load_template("imp.user.prompt.template", **spec.dictionary)
+    return load_txt("imp.user.prompt.template", **spec.model_dump())
 
 
 def proof_user_template(stage: str) -> str:
@@ -53,10 +53,12 @@ def proof_user_template(stage: str) -> str:
 def proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
     """
     Get the user prompt for the proof oracle.
+
+    TODO: handle polarity
     """
 
     if stderr is not None:
-        return load_template(
-            proof_user_template("continuous"), stderr=stderr, **triple.dictionary
+        return load_txt(
+            proof_user_template("continuous"), stderr=stderr, **triple.model_dump()
         )
-    return load_template(proof_user_template("init"), **triple.dictionary)
+    return load_txt(proof_user_template("init"), **triple.model_dump())
