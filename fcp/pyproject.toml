@@ -11,15 +11,15 @@ dependencies = [
     "anthropic>=0.51.0",
     "jinja2>=3.1.6",
     "logfire>=3.16.0",
-    "mcp>=1.7.1",
+    "mcp>=1.9.0",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
-    "typer>=0.15.3",
+    "typer>=0.15.4",
 ]
 
 [project.scripts]
 mcp-server = "containment:mcp_server_run"
-contain-test = "containment:contain"
+contain-test = "containment:test"
 inspector = "containment:inspector"
 contain = "containment:main"
 

@@ -1,25 +1,24 @@
-from typing import Callable
+from typing import Any, Callable
+from abc import abstractmethod
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
-from containment.oracles import get_oracle_client, mk_complete
+from containment.oracles import mk_complete
+from containment.structures.mcp import MCPClientBase
 
 
-class MCPClient:
+class MCPClient(MCPClientBase):
+    """Subclasses are MCP clients connected to the server defined in `..server`"""
+
     SERVER_PARAMETERS = StdioServerParameters(
         command="uv",
-        args=["run mcp-server"],
+        args=["run", "mcp-server"],
         env=None,  # Optional environment variables
     )
 
-    async def __init__(self) -> None:
-        self.conversation = []
-        self.client = get_oracle_client()
-        await self.connect_to_server()
-
-    def mk_complete(self, system_prompt: str) -> Callable[[list[dict]], list[dict]]:
+    def _mk_complete(self, system_prompt: str) -> Callable[[list[dict]], list[dict]]:
         return mk_complete(self.client, system_prompt, cache=False)
 
-    async def connect_to_server(self):
+    async def _connect_to_server_and_run(self):
         async with stdio_client(self.SERVER_PARAMETERS) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
@@ -34,3 +33,11 @@ class MCPClient:
                 self.available_prompts = response.prompts
 
                 self.session = session
+                return await self.run()
+
+    @abstractmethod
+    async def run(self) -> Any:
+        """
+        Run the client.
+        """
+        pass

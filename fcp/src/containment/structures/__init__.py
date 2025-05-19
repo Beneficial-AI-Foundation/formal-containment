@@ -1,20 +1,9 @@
-import json
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Literal
-from pydantic import BaseModel
+from containment.structures.basic import Structure
 
 type Language = Literal["imp", "proof"]
-
-
-class Structure(BaseModel):
-    """
-    Base class for all structures.
-    """
-
-    @property
-    def jsons(self) -> str:
-        return json.dumps(self.model_dump())
 
 
 class Specification(Structure):

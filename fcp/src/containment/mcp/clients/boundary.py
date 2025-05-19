@@ -6,11 +6,7 @@ from containment.mcp.clients.completion import ImpExpert, ProofExpert
 
 
 class Boundary(MCPClient):
-    async def __init__(self, precondition: str, postcondition: str) -> None:
-        await super().__init__()
-        self.precondition = precondition
-        self.postcondition = postcondition
-
-        self.specification = Specification(
-            precondition=precondition, postcondition=postcondition
-        )
+    def __init__(self, specification: Specification) -> None:
+        super().__init__()
+        self.specification = specification
+        self.imp_expert = ImpExpert(specification)

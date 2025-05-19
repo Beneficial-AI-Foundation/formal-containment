@@ -1,5 +1,5 @@
 from containment.structures import HoareTriple, LakeResponse, CheckerBase
-from containment.prompts import load_template
+from containment.prompts import load_txt
 from containment.tools import lake_exe_check
 
 
@@ -19,7 +19,7 @@ class Checker(CheckerBase):
         Write the proof to a file in the tmpdir.
         """
         polarity = "Positive" if positive else "Negative"
-        basic = load_template(
+        basic = load_txt(
             f"{polarity}.lean.template",
             proof=proof,
             **triple.model_dump(),

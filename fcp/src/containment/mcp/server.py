@@ -15,12 +15,12 @@ mcp = FastMCP("Formal Containment Process")
 
 
 @mcp.prompt(
-    name="hoare_proof_user_prompt",
+    name="hoare_proof_user_prompt2",
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
-def get_proof_user_prompt(triple: HoareTriple, stderr: str | None) -> str:
+def get_proof_user_prompt2(triple: HoareTriple, stderr: str | None) -> str:
     """
-    Get the proof user prompt.
+    Get the proof user prompt: structured input edition
 
     Args:
         triple: A Hoare triple containing the specification and command
@@ -33,9 +33,55 @@ def get_proof_user_prompt(triple: HoareTriple, stderr: str | None) -> str:
 
 
 @mcp.prompt(
-    name="imp_user_prompt", description="Ask the oracle to fill in the hoare triple."
+    name="hoare_proof_user_prompt",
+    description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
-def get_imp_user_prompt(spec: Specification) -> str:
+def get_proof_user_prompt(
+    precondition: str, command: str, postcondition: str, stderr: str | None
+) -> str:
+    """
+    Get the proof user prompt.
+
+    Args:
+        precondition: The precondition of the Hoare Triple
+        command: The imp program of the Hoare Triple
+        postcondition: The postcondition of the Hoare Triple
+        stderr: The standard error output from the lake tool
+
+    Returns:
+        A string containing the proof user prompt
+    """
+    return proof_user_prompt(
+        HoareTriple(
+            specification=Specification(
+                precondition=precondition, postcondition=postcondition
+            ),
+            command=command,
+        ),
+        stderr,
+    )
+
+
+@mcp.prompt(
+    name="imp_user_prompt2", description="Ask the oracle to fill in the hoare triple."
+)
+def get_imp_user_prompt2(spec: Specification) -> str:
+    """
+    Get the user prompt for the imp oracle: structured input edition
+
+    Args:
+        spec: A specification containing the precondition and postcondition
+
+    Returns:
+        A string containing the imp user prompt
+    """
+    return imp_user_prompt(spec)
+
+
+@mcp.prompt(
+    "imp_user_prompt", description="Ask the oracle to fill in the hoare triple."
+)
+def get_imp_user_prompt(precondition: str, postcondition: str) -> str:
     """
     Get the user prompt for the imp oracle.
 
@@ -45,7 +91,9 @@ def get_imp_user_prompt(spec: Specification) -> str:
     Returns:
         A string containing the imp user prompt
     """
-    return imp_user_prompt(spec)
+    return imp_user_prompt(
+        Specification(precondition=precondition, postcondition=postcondition)
+    )
 
 
 @mcp.tool("typecheck", description="Run the typechecker on the given code.")
