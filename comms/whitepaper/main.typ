@@ -2,7 +2,7 @@
 #import "@preview/cetz:0.3.4"
 
 #let title = [*Formal Containment _draft_*]
-#let abstract = [We would like to put the AI in a box. We show how to create an _interface_ between the *box* and the *world* using specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.]
+#let abstract = [We would like to put the AI in a box. We show how to create an _interface_ between the box and the world out of specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.]
 #set heading(numbering: "1.")
 #set document(
   title: title,
@@ -25,10 +25,8 @@
 ]
 
 // #show: ieee.with(
-// title: [Formal Containment *draft*],
-// abstract: [
-//   We would like to put the AI in a box. We show how to create an _interface_ between the *box* and the *world* using specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.
-// ],
+// title: title,
+// abstract: abstract,
 // authors: (
 //   (
 //     name: "Quinn Dougherty",
@@ -47,14 +45,11 @@
 = Introduction
 
 Previously, classical AI safety warned against trying to put the AI in a box @LessWrong2020AIBoxing.
-#figure(
-  image("images/frontierbox.png"),
-  caption: [Made funnier by the reply being from the author of FrontierMath],
-)
-
-Yudkowsky famously convinced people of this via a roleplay game back in the extropians mailing list days @Yudkowsky2002AIBox.
-
-Recent work from AI Control and Safeguarded AI have reignited interest in this long neglected area.
+// #figure(
+//   image("images/frontierbox.png"),
+//   caption: [Made funnier by the reply being from the author of FrontierMath],
+// )
+Yudkowsky famously convinced people of this via a roleplay game back in the extropians mailing list days @Yudkowsky2002AIBox. Recent work from AI Control and Safeguarded AI have reignited interest in this long neglected area.
 
 - Like AI Control @greenblatt2024aicontrolimprovingsafety @bhatt2025ctrlzcontrollingaiagents (_Ctrl_), the current work is reasoning about getting useful work out of an untrusted (possibly misaligned) ai.
 - Like Safeguarded AI @Dalrymple2024SafeguardedAI (_SgAI_), we try to isolate the trust surface to a specification and a proof checker.
@@ -303,7 +298,7 @@ and denoted $"hoare" P c Q =$ #hoare_triple(prec: [$P$], command: [\<#imp\> $c$ 
 
 Let's walk through an FCP trace as you'd see it if you cloned our repo.
 
-First, the user passes in a precondition and a postcondition. We will continue using the example in @fig:box-picture, and pass in $x > 0$ and $x > 1$ for precondition and postcondition, respectively. Let's say for the sake of argument that the AI's first guess is `x := x - 1;`. Then, the proof agent will flail about until `MAX_ITERATIONS` is reached, since the program is incorrect, at which point it will report to the boundary its failed proof state. Then, the boundary replies "try again, I'm not executing that code in the world" and hands the program back to the AI, asking for another one. Suppose that this time, the AI finds `x := x + 1;`. This time, the proof agent converges and Lean reports an exit code of `0`. The AI sends the #imp program to the boundary and attests to it's correctness with the Lean program, which it also attaches.
+First, the user passes in a precondition and a postcondition. We will continue using the example in @fig:box-picture, passing in $x > 0$ and $x > 1$ for precondition and postcondition, respectively. Let's say for the sake of argument that the AI's first guess is `x := x - 1;`. Then, the proof agent will flail about until `MAX_ITERATIONS` is reached, since the program is incorrect, at which point it will report to the boundary its failed proof state. Then, the boundary replies "try again, I'm not executing that code in the world" and hands the program back to the AI, asking for another one. Suppose that this time, the AI finds `x := x + 1;`. This time, the proof agent converges and Lean reports an exit code of `0`. The AI sends the #imp program to the boundary and attests to it's correctness with the Lean program, which it also attaches.
 
 The Lean program would look like this (Note it must be run with `lake build` in the appropriate lake project, as it has imports)
 #figure(
@@ -364,4 +359,4 @@ Thank you Stephen Mell for discussion.
 
 Canary string: NDcwODA1MTY4MzQ0NjE4Njk4MA==
 
-#bibliography("refs.bib"),
+#bibliography("refs.bib")
