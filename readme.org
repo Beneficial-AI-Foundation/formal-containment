@@ -1,8 +1,8 @@
-#+title: Formal Containment Protocol
+* Formal Containment Protocol
 
 [[file:comms/whitepaper/images/frontierbox.png]]
 
-* Run prototype
+** Run prototype
 Nix flake devShell or nix with direnv (self explanatory), or install ~uv~ and ~elan~ manually.
 
 The precondition and postcondition you pass in must be valid Lean as it goes directly into the template.

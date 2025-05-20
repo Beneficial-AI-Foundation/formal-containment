@@ -56,7 +56,7 @@ Yudkowsky famously convinced people of this via a roleplay game back in the extr
 
 While no one is saying we can be safe with respect to an arbitrary superintelligence with boxes, there is increasing interest in using non-robust techniques to get us through some percentage of the transition and empowering our successors to bootstrap from there to something more robust.
 
-Separately, a forgotten literature on proof carrying code @necula1997proof (_PCC_) provides a background for the AI's obligation to tag code it wants to execute in the world with a "proof" (here, a sequence of Lean tactics) that the code is "correct" (up to some specification).
+Separately, a forgotten literature on proof carrying code @necula1997proof (_PCC_) provides a background for the AI's obligation to tag code it wants to execute in the world with a "proof" (here, a sequence of Lean tactics) that the code is "correct" (up to some specification). Reviving ideas from _PCC_ for AI safety is discussed in @tegmark2023provablysafesystemspath and @dalrymple2024guaranteedsafeaiframework.
 
 == Contributions
 
@@ -298,7 +298,7 @@ and denoted $"hoare" P c Q =$ #hoare_triple(prec: [$P$], command: [\<#imp\> $c$ 
 
 Let's walk through an FCP trace as you'd see it if you cloned our repo.
 
-First, the user passes in a precondition and a postcondition. We will continue using the example in @fig:box-picture, passing in $x > 0$ and $x > 1$ for precondition and postcondition, respectively. Let's say for the sake of argument that the AI's first guess is `x := x - 1;`. Then, the proof agent will flail about until `MAX_ITERATIONS` is reached, since the program is incorrect, at which point it will report to the boundary its failed proof state. Then, the boundary replies "try again, I'm not executing that code in the world" and hands the program back to the AI, asking for another one. Suppose that this time, the AI finds `x := x + 1;`. This time, the proof agent converges and Lean reports an exit code of `0`. The AI sends the #imp program to the boundary and attests to it's correctness with the Lean program, which it also attaches.
+First, the user passes in a precondition and a postcondition. We will continue using the example in @fig:box-picture, passing in $x > 0$ and $x > 1$ for precondition and postcondition, respectively. Let's say for the sake of argument that the AI's first guess is `x := x - 1;`. Then, the proof agent will flail about until `MAX_ITERATIONS` is reached, since the program is incorrect, at which point it will report to the boundary its failed proof state. Then, the boundary replies "_try again, I'm not executing that code in the world_" and hands the program back to the AI, asking for another one. Suppose that this time, the AI finds `x := x + 1;`. This time, the proof agent converges and Lean reports an exit code of `0`. The AI sends the #imp program to the boundary and attests to it's correctness with the Lean program, which it also attaches.
 
 The Lean program would look like this (Note it must be run with `lake build` in the appropriate lake project, as it has imports)
 #figure(
