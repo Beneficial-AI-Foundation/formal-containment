@@ -37,7 +37,7 @@ def get_proof_user_prompt(
         specification=Specification(
             precondition=precondition,
             postcondition=postcondition,
-            metavariables=metavariables.split(" "),
+            metavariables=metavariables,
         ),
         command=command,
     )
@@ -67,7 +67,7 @@ def get_imp_user_prompt(
         Specification(
             precondition=precondition,
             postcondition=postcondition,
-            metavariables=metavariables.split(" "),
+            metavariables=metavariables,
         ),
         failed_attempts,
     )

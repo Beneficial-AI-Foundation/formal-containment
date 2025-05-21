@@ -56,16 +56,11 @@ class ProofExpert(MCPClient):
         return basic
 
     async def _iter(self, stderr: str) -> tuple[Path, LakeResponse]:
-        metavariables = " ".join(
-            self.triple.specification.metavariables
-            if self.triple.specification.metavariables is not None
-            else []
-        )
         prompt_arguments = {
             "precondition": self.triple.specification.precondition,
             "postcondition": self.triple.specification.postcondition,
             "command": self.triple.command,
-            "metavariables": metavariables,
+            "metavariables": self.triple.specification.metavariables,
             "stderr": stderr,
         }
         user_prompt = await self.session.get_prompt(
@@ -98,8 +93,13 @@ class ProofExpert(MCPClient):
             )
         for iteration in range(self.max_iterations):
             if not iteration % 5:
+                forall = (
+                    f"FORALL {self.triple.specification.metavariables}"
+                    if self.triple.specification.metavariables
+                    else ""
+                )
                 print(
-                    f"\tAttempt to prove hoare triple {(self.triple.specification.precondition, hash(self.triple.command), self.triple.specification.postcondition)}: iteration num {iteration}/{self.max_iterations}"
+                    f"\tAttempt to prove hoare triple {(forall, self.triple.specification.precondition, hash(self.triple.command), self.triple.specification.postcondition)}: iteration num {iteration}/{self.max_iterations}"
                 )
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)

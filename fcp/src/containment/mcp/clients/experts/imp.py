@@ -43,13 +43,10 @@ class ImpExpert(MCPClient):
             if self.failed_attempts is not None
             else ""
         )
-        metavariables = " ".join(
-            self.spec.metavariables if self.spec.metavariables is not None else []
-        )
         prompt_arguments = {
             "precondition": self.spec.precondition,
             "postcondition": self.spec.postcondition,
-            "metavariables": metavariables,
+            "metavariables": self.spec.metavariables,
             "failed_attempts": failed_attempts,
         }
         user_prompt = await self.session.get_prompt(

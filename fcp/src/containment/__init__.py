@@ -129,7 +129,7 @@ def contain() -> None:
     async def protocol(
         precondition: str,
         postcondition: str,
-        metavariables: list[str] | None = None,
+        metavariables: str = "",  # space-separated lean identifiers
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
     ) -> None:
