@@ -48,7 +48,7 @@ theorem hoare_consequence : forall (P P' Q Q' : Assertion) c,
 @[simp]
 theorem hoare_if : forall P Q (b : Expr) c1 c2,
   {{ P <^> b }}c1{{Q}} →
-  {{ P <^> !b }}c2{{Q}} →
+  {{ P <^> <!>b }}c2{{Q}} →
   {{P}}(imp { if (~b) { ~c1 } else { ~c2 } }){{Q}} := by
   simp; intros _ _ _ _ _ h1 h2 _ _ h3 h4
   cases h4 with
@@ -83,7 +83,7 @@ theorem hoare_while_aux : forall b c σ σ',
 @[simp]
 theorem hoare_while : forall P (b : Expr) c,
   {{ P <^> b }}c{{P}} →
-  {{P}}(imp { while (~b) { ~c } }){{ P <^> !b }} := by
+  {{P}}(imp { while (~b) { ~c } }){{ P <^> <!>b }} := by
   simp [ValidHoareTriple]
   intros P b c h1 σ σ'' h3 h4
   have h4_orig := h4
@@ -143,10 +143,22 @@ example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
     simp [Value.int_lt] at h1
     omega
 
--- example : forall (n m : Int), {{((fun σ => σ "x" = n) <^> fun σ => σ "y" = m)}}swap{{((fun σ => σ "x" = m) <^> fun σ => σ "y" = n)}} := by
---   simp [swap]
---   intros n m
---   intros σ σ' h1 h2 h3
---   cases h3 with
---   | seq h3_1 h3_2 =>
---     sorry
+example : forall (n m : Int), {{fun σ => σ "x" = n ∧ σ "y" = m}}swap{{fun σ => σ "x" = m ∧ σ "y" = n}} := by
+  simp [swap]
+  intros n m σ σ' h1 h2 h3
+  cases h3 with
+  | seq h3_1 h3_2 =>
+    cases h3_2 with
+    | seq h3_2_1 h3_2_2 =>
+      cases h3_1 with
+      | assign h3_1_eq =>
+        cases h3_2_1 with
+        | assign h3_2_1_eq =>
+          cases h3_2_2 with
+          | assign h3_2_2_eq =>
+            simp [Env.set]
+            simp [Expr.eval] at h3_1_eq
+            simp [Expr.eval] at h3_2_1_eq
+            simp [Expr.eval] at h3_2_2_eq
+            rw [h3_2_2_eq] at h3_1_eq
+            aesop

@@ -1,20 +1,18 @@
 import Imp.Expr.Eval
 import Imp.Stmt.BigStep
-import Imp.Stmt.Basic
 
 open Imp
 
 def Assertion : Type := Env → Prop
-syntax "{{ " term:50 " }}" : term
-macro_rules
-  | `({{ $P }}) => `(($P : Assertion))
 
 @[simp]
 def ValidHoareTriple (P : Assertion) (c : Stmt) (Q : Assertion) : Prop :=
   forall (σ σ' : Env), P σ -> c / σ ↓ σ' -> Q σ'
 
+syntax "{{ " term:50 " }}" : term
 syntax "{{" term:60 "}} " term:61 " {{" term:62 "}}" : term
 macro_rules
+  | `({{ $P }}) => `(($P : Assertion))
   | `({{ $P }} $c{{ $Q }}) => `(ValidHoareTriple $P $c $Q)
 
 namespace Assertion
@@ -22,36 +20,40 @@ namespace Assertion
 @[simp]
 def implies (P Q : Assertion) : Prop :=
   forall σ, P σ → Q σ
-syntax term:90 "->>" term:91 : term
-macro_rules
-  | `($P ->> $Q) => `(implies $P $Q)
 
 @[simp]
 def iff (P Q : Assertion) : Prop :=
   forall σ, P σ ↔ Q σ
-syntax term:90 "<<->>" term:91 : term
-macro_rules
-  | `($P <<->> $Q) => `(iff $P $Q)
 
 @[simp]
 def substitution (P : Assertion) (x : String) (a : Expr) : Assertion :=
   fun σ => P (σ.setOption x (a.eval σ))
-syntax term " [ " ident " ↦ " term "]" : term
-macro_rules
-  | `($P [$x ↦ $a]) => `(substitution $P $x $a)
 
 @[simp]
 def and (P Q : Assertion) : Assertion :=
   fun σ => P σ ∧ Q σ
-syntax term:90 " <^> " term:91 : term
-macro_rules
-  | `($P <^> $Q) => `(and $P $Q)
+
+@[simp]
+def or (P Q : Assertion) : Assertion :=
+  fun σ => P σ ∨ Q σ
 
 @[simp]
 def not (P : Assertion) : Assertion :=
   fun σ => ¬ P σ
+
+syntax term:90 "->>" term:91 : term
+syntax term:90 "<<->>" term:91 : term
+syntax term " [ " ident " ↦ " term "]" : term
+syntax term:90 " <^> " term:91 : term
+syntax term:90 " <> " term:91 : term
+syntax "<!>" term:90 : term
 macro_rules
-  | `(! $P) => `(not $P)
+  | `($P ->> $Q) => `(implies $P $Q)
+  | `($P <<->> $Q) => `(iff $P $Q)
+  | `($P [$x ↦ $a]) => `(substitution $P $x $a)
+  | `($P <^> $Q) => `(and $P $Q)
+  | `($P <> $Q) => `(or $P $Q)
+  | `(<!> $P) => `(not $P)
 
 end Assertion
 
@@ -64,7 +66,7 @@ theorem Truthy.assert_true : ∀ (b : Expr), (fun σ => Truthy (b.eval σ)) <<->
 
 instance ExprToBool (σ : Env) : Coe Expr Bool where
   coe b := Truthy $ b.eval σ
-instance ExprToValue (σ : Env) : Coe Expr Prop where
+instance ExprToProp (σ : Env) : Coe Expr Prop where
   coe b := Truthy $ b.eval σ
 
 instance : Coe Prop Assertion where

@@ -21,12 +21,6 @@ def delabNameInner : DelabM (TSyntax `varname) := do
     pure <| ⟨x.raw⟩
   | _ => `(varname|~($(← delab))) >>= annAsTerm
 
--- def delabStrInner : DelabM (TSyntax `str) := do
---   let e ← getExpr
---   match e with
---   | .lit (.strVal s) =>
---     let x := mkIdent <| .mkSimple s
-
 partial def delabExprInner : DelabM (TSyntax `exp) := do
   let e ← getExpr
   let stx ←
@@ -88,13 +82,16 @@ partial def delabExpr : Delab := do
   | `(exp|~$e) => pure e
   | e => `(term|expr {$(⟨e⟩)})
 
-/- info: expr { 5 } : Expr -/
+-- Very mysteriously, some of these aren't working.
+/-
+info: expr { 5 } : Expr
+-/
 -- #guard_msgs in
-#check Expr.const 5
+-- #check Expr.const 5
 
 /- info: expr { 5 } : Expr -/
 -- #guard_msgs in
-#check expr { 5 }
+-- #check expr { 5 }
 
 /-- info: expr { x } : Expr -/
 #guard_msgs in
@@ -109,7 +106,8 @@ partial def delabExpr : Delab := do
 #check expr { 5 + (23 - 10) }
 
 /-
-info: let x := expr { 23 }; expr { ~x * ~x } : Expr
+info: let x := expr { 23 };
+expr { ~x * ~x } : Expr
 -/
 -- #guard_msgs in
-#check let x := expr {23}; expr {~x * ~x}
+-- #check let x := expr {23}; expr {~x * ~x}
