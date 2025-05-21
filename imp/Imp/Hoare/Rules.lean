@@ -143,7 +143,7 @@ example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
     simp [Value.int_lt] at h1
     omega
 
-example : forall (n m : Int), {{fun σ => σ "x" = n ∧ σ "y" = m}}swap{{fun σ => σ "x" = m ∧ σ "y" = n}} := by
+example : forall (n m : Int), {{ astn x = ~n <^> y = ~m }}swap{{ astn x = ~m <^> y = ~n }} := by
   simp [swap]
   intros n m σ σ' h1 h2 h3
   cases h3 with

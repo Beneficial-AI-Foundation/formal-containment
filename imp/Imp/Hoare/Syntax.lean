@@ -3,31 +3,18 @@ import Imp.Hoare.Basic
 
 open Lean Elab Meta Term
 
-declare_syntax_cat assertionTerm
-syntax ident : assertionTerm
-syntax num : assertionTerm
-syntax "~" term:max : assertionTerm
+declare_syntax_cat assertion_term
+syntax ident : assertion_term
+syntax num : assertion_term
+syntax "~" term:max : assertion_term
 
 declare_syntax_cat assertion
-syntax ident "=" num : assertion
-syntax num "=" ident : assertion
-syntax ident "=" ident : assertion
--- syntax term "=" ident : assertion
-syntax ident "!=" num : assertion
-syntax num "!=" ident : assertion
-syntax ident "!=" ident : assertion
-syntax ident "<" num : assertion
-syntax num "<" ident : assertion
-syntax ident "<" ident : assertion
-syntax ident ">" num : assertion
-syntax num ">" ident : assertion
-syntax ident ">" ident : assertion
-syntax ident "<=" num : assertion
-syntax num "<=" ident : assertion
-syntax ident "<=" ident : assertion
-syntax ident ">=" num : assertion
-syntax num ">=" ident : assertion
-syntax ident ">=" ident : assertion
+syntax assertion_term "=" assertion_term : assertion
+syntax assertion_term "!=" assertion_term : assertion
+syntax assertion_term "<" assertion_term : assertion
+syntax assertion_term ">" assertion_term : assertion
+syntax assertion_term "<=" assertion_term : assertion
+syntax assertion_term ">=" assertion_term : assertion
 syntax assertion " <^> " assertion : assertion
 syntax assertion " <> " assertion : assertion
 syntax "<!>" assertion : assertion
@@ -58,91 +45,110 @@ syntax assertion " <<->> " assertion : assertion
 @[simp] def strStrGt (x y : String) : Assertion := fun σ => σ x > σ y
 @[simp] def strStrLe (x y : String) : Assertion := fun σ => σ x ≤ σ y
 @[simp] def strStrGe (x y : String) : Assertion := fun σ => σ x ≥ σ y
-partial def elabAssertionLit : Syntax → MetaM Expr
+
+partial def elabAssertionLit : Syntax → TermElabM Expr
   -- Eq
   | `(assertion| $x:ident = $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValEq  #[x, n]
+    mkAppM ``strValEq  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num = $x:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValEq  #[x, n]
+    mkAppM ``valStrEq  #[mkIntLit n.getNat, mkStrLit x.getId.toString]
   | `(assertion| $x:ident = $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrEq  #[x, y]
+    mkAppM ``strStrEq  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term = $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrEq #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident = ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValEq #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term = ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValEq #[x, y]
   -- Neq
   | `(assertion| $x:ident != $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValNe  #[x, n]
+    mkAppM ``strValNe  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num != $x:ident) => do
-    let n <- pure $ mkIntLit n.getNat
-    let localDecls ← getLCtx
-    match localDecls.findFromUserName? x.getId with
-    | some decl =>
-      let x <- pure $ decl.toExpr
-      mkAppM ``valValNe #[x, n]
-    | none =>
-      let x <- pure $ mkStrLit x.getId.toString
-      mkAppM ``strValNe  #[x, n]
+    mkAppM ``valStrNe  #[mkIntLit n.getNat, mkStrLit x.getId.toString]
   | `(assertion| $x:ident != $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrNe  #[x, y]
+    mkAppM ``strStrNe  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term != $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrNe #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident != ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValNe #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term != ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValNe #[x, y]
   -- LT
   | `(assertion| $x:ident < $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValLt  #[x, n]
+    mkAppM ``strValLt  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num < $x:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValLt  #[x, n]
+    mkAppM ``valStrLt  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $x:ident < $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrLt  #[x, y]
+    mkAppM ``strStrLt  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term < $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrLt #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident < ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValLt #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term < ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValLt #[x, y]
   -- GT
   | `(assertion| $x:ident > $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValGt  #[x, n]
+    mkAppM ``strValGt  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num > $x:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValGt  #[x, n]
+    mkAppM ``valStrGt  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   |`(assertion| $x:ident > $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrGt  #[x, y]
+    mkAppM ``strStrGt  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term > $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrGt #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident > ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValGt #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term > ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValGt #[x, y]
   -- LE
   | `(assertion| $x:ident <= $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValLe  #[x, n]
+    mkAppM ``strValLe  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num <= $x:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValLe  #[x, n]
+    mkAppM ``valStrLe  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $x:ident <= $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrLe  #[x, y]
+    mkAppM ``strStrLe  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term <= $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrLe #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident <= ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValLe #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term <= ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValLe #[x, y]
   -- GE
   | `(assertion| $x:ident >= $n:num) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValGe  #[x, n]
+    mkAppM ``strValGe  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $n:num >= $x:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let n <- pure $ mkIntLit n.getNat
-    mkAppM ``strValGe  #[x, n]
+    mkAppM ``valStrGe  #[mkStrLit x.getId.toString, mkIntLit n.getNat]
   | `(assertion| $x:ident >= $y:ident) => do
-    let x <- pure $ mkStrLit x.getId.toString
-    let y <- pure $ mkStrLit y.getId.toString
-    mkAppM ``strStrGe  #[x, y]
+    mkAppM ``strStrGe  #[mkStrLit x.getId.toString, mkStrLit y.getId.toString]
+  | `(assertion| ~$t:term >= $y:ident) => do
+    let x <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``valStrGe #[x, mkStrLit y.getId.toString]
+  | `(assertion| $x:ident >= ~$t:term) => do
+    let y <- elabTermEnsuringType t (some <| .const ``Int [])
+    mkAppM ``strValGe #[mkStrLit x.getId.toString, y]
+  | `(assertion| ~$t1:term >= ~$t2:term) => do
+    let x <- elabTermEnsuringType t1 (some <| .const ``Int [])
+    let y <- elabTermEnsuringType t2 (some <| .const ``Int [])
+    mkAppM ``valValGe #[x, y]
   -- Conjunction
   | `(assertion| $a:assertion <^> $b:assertion) => do
         let a <- elabAssertionLit a
@@ -177,7 +183,7 @@ info: (strStrLe "y" "z").and (strValGt "x" 5) : Assertion
 #guard_msgs in
 #check astn y <= z <^> x > 5
 
-#check forall (n : Int), astn 4 != n ->> x < 10
-
-variable (c : Imp.Stmt)
-#check forall (n : Int), {{ astn 0 != x }}c{{ astn x < y }}
+--   #check forall (n : Int), astn x = ~n ->> x < 10
+--
+--   variable (c : Imp.Stmt)
+--   #check forall (n : Int), {{ astn ~n = x }}c{{ astn x < y }}
