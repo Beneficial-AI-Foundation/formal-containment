@@ -1,5 +1,5 @@
 Write a program C that such that the following hoare triple is provable:
-\{ {{ precondition }} \} $C \{ {{ postcondition }} \}
+{% if metavariables %}forall ({{ metavariables }} : Int), {% endif %} \{ {{ precondition }} \} $C \{ {{ postcondition }} \}
 {% if failed_attempts %}
 You previously attempted the following solutions:
 {{ failed_attempts }}

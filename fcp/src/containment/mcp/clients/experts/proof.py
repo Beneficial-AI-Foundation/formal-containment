@@ -56,11 +56,16 @@ class ProofExpert(MCPClient):
         return basic
 
     async def _iter(self, stderr: str) -> tuple[Path, LakeResponse]:
-        # prompt_arguments = {"triple": self.triple, "stderr": stderr}
+        metavariables = " ".join(
+            self.triple.specification.metavariables
+            if self.triple.specification.metavariables is not None
+            else []
+        )
         prompt_arguments = {
             "precondition": self.triple.specification.precondition,
             "postcondition": self.triple.specification.postcondition,
             "command": self.triple.command,
+            "metavariables": metavariables,
             "stderr": stderr,
         }
         user_prompt = await self.session.get_prompt(

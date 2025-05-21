@@ -10,6 +10,7 @@ type Language = Literal["imp", "proof"]
 class Specification(Structure):
     precondition: str
     postcondition: str
+    metavariables: list[str] | None = None
 
 
 class HoareTriple(Structure):

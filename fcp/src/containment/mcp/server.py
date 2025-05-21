@@ -19,7 +19,7 @@ mcp = FastMCP("Formal Containment Process")
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
 def get_proof_user_prompt(
-    precondition: str, command: str, postcondition: str, stderr: str
+    precondition: str, command: str, postcondition: str, metavariables: str, stderr: str
 ) -> str:
     """
     Get the proof user prompt.
@@ -35,7 +35,9 @@ def get_proof_user_prompt(
     """
     triple = HoareTriple(
         specification=Specification(
-            precondition=precondition, postcondition=postcondition
+            precondition=precondition,
+            postcondition=postcondition,
+            metavariables=metavariables.split(" "),
         ),
         command=command,
     )
@@ -48,7 +50,7 @@ def get_proof_user_prompt(
     "imp_user_prompt", description="Ask the oracle to fill in the hoare triple."
 )
 def get_imp_user_prompt(
-    precondition: str, postcondition: str, failed_attempts: str
+    precondition: str, postcondition: str, metavariables: str, failed_attempts: str
 ) -> str:
     """
     Get the user prompt for the imp oracle.
@@ -56,12 +58,17 @@ def get_imp_user_prompt(
     Args:
         precondition: The precondition of the specification
         postcondition: The postcondition of the specification
+        metavariables: " "-separated list of integer Lean variables to be quantified over.
         failed_attempts: Previously attempted imp programs formatted for the prompt
     Returns:
         A string containing the imp user prompt
     """
     return imp_user_prompt(
-        Specification(precondition=precondition, postcondition=postcondition),
+        Specification(
+            precondition=precondition,
+            postcondition=postcondition,
+            metavariables=metavariables.split(" "),
+        ),
         failed_attempts,
     )
 

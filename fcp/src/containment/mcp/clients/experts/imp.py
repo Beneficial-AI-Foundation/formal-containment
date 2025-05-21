@@ -43,9 +43,13 @@ class ImpExpert(MCPClient):
             if self.failed_attempts is not None
             else ""
         )
+        metavariables = " ".join(
+            self.spec.metavariables if self.spec.metavariables is not None else []
+        )
         prompt_arguments = {
             "precondition": self.spec.precondition,
             "postcondition": self.spec.postcondition,
+            "metavariables": metavariables,
             "failed_attempts": failed_attempts,
         }
         user_prompt = await self.session.get_prompt(
@@ -59,7 +63,6 @@ class ImpExpert(MCPClient):
                 }
             ]
         )
-        # completion = self.complete(user_prompt)
         program = parse_program_completion(completion, "imp")
         if program is None:
             raise ValueError("No program found. XML parse error probably")

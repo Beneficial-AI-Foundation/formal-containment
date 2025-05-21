@@ -14,7 +14,7 @@ from containment.loops import proof_loop
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
-from containment.protocol import Boundary
+from containment.protocol import run as boundary_run
 
 
 def mcp_server_run() -> None:
@@ -129,16 +129,24 @@ def contain() -> None:
     async def protocol(
         precondition: str,
         postcondition: str,
+        metavariables: list[str] | None = None,
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
     ) -> None:
         """
         Run the containment protocol at the given precondition-postcondition pair.
         """
-        boundary = Boundary(precondition, postcondition)
-        result = await boundary.run(
-            proof_loop_budget=proof_loop_budget, attempt_budget=attempt_budget
+        specification = Specification(
+            precondition=precondition,
+            postcondition=postcondition,
+            metavariables=metavariables,
         )
+        result = await boundary_run(
+            specification,
+            proof_loop_budget=proof_loop_budget,
+            attempt_budget=attempt_budget,
+        )
+
         if result:
             print(
                 f"The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
