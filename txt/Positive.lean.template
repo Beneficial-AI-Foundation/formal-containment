@@ -3,5 +3,5 @@ import Imp
 open Imp
 
 example : {% if metavariables %}forall ({{ metavariables }} : Int), {% endif %}
-{{ "{{" + specification.precondition + "}}" }}({{ command }}){{ "{{" + specification.postcondition + "}}" }} := by
+{{ "{{astn " + specification.precondition + "}}" }}({{ command }}){{ "{{astn " + specification.postcondition + "}}" }} := by
   {{ proof }}

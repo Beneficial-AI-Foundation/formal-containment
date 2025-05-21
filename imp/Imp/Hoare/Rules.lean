@@ -2,6 +2,7 @@ import Aesop
 import Imp.Expr
 import Imp.Stmt
 import Imp.Hoare.Basic
+import Imp.Hoare.Syntax
 
 open Imp Stmt
 
@@ -46,8 +47,8 @@ theorem hoare_consequence : forall (P P' Q Q' : Assertion) c,
 
 @[simp]
 theorem hoare_if : forall P Q (b : Expr) c1 c2,
-  {{ (P ∧ b) }}c1{{Q}} →
-  {{ (P ∧ !b) }}c2{{Q}} →
+  {{ P <^> b }}c1{{Q}} →
+  {{ P <^> !b }}c2{{Q}} →
   {{P}}(imp { if (~b) { ~c1 } else { ~c2 } }){{Q}} := by
   simp; intros _ _ _ _ _ h1 h2 _ _ h3 h4
   cases h4 with
@@ -81,8 +82,8 @@ theorem hoare_while_aux : forall b c σ σ',
 
 @[simp]
 theorem hoare_while : forall P (b : Expr) c,
-  {{ (P ∧ b) }}c{{P}} →
-  {{P}}(imp { while (~b) { ~c } }){{ (P ∧ !b) }} := by
+  {{ P <^> b }}c{{P}} →
+  {{P}}(imp { while (~b) { ~c } }){{ P <^> !b }} := by
   simp [ValidHoareTriple]
   intros P b c h1 σ σ'' h3 h4
   have h4_orig := h4
@@ -104,7 +105,7 @@ theorem hoare_while : forall P (b : Expr) c,
     . simp [Truthy]; intros contra
       aesop
 
-example : {{(fun σ => σ "x" < σ "y")}}swap{{(fun σ => σ "x" >= σ "y")}} := by
+example : {{astn x < y}}swap{{astn x >= y}} := by
   simp [swap]
   intros _ _ h1 h2
   cases h2 with
@@ -129,7 +130,7 @@ example : {{(fun σ => σ "x" < σ "y")}}swap{{(fun σ => σ "x" >= σ "y")}} :=
             apply Value.lt_implies_le
             assumption
 
-example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1)}} := by
+example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
   simp; intros σ σ' h1 h2
   cases h2 with
   | assign h2_eq =>
@@ -141,3 +142,11 @@ example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1
     simp [*]
     simp [Value.int_lt] at h1
     omega
+
+-- example : forall (n m : Int), {{((fun σ => σ "x" = n) <^> fun σ => σ "y" = m)}}swap{{((fun σ => σ "x" = m) <^> fun σ => σ "y" = n)}} := by
+--   simp [swap]
+--   intros n m
+--   intros σ σ' h1 h2 h3
+--   cases h3 with
+--   | seq h3_1 h3_2 =>
+--     sorry

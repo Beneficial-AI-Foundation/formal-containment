@@ -2,5 +2,6 @@ import Aesop
 import Imp
 open Imp
 
-example : {{ "{{" + specification.precondition + "}}" }}({{ command }}){{ "{{" + specification.postcondition + "}}" }} → False := by
+example : {% if metavariables %}forall ({{ metavariables }} : Int), {% endif %}
+  {{ "{{astn " + specification.precondition + "}}" }}({{ command }}){{ "{{astn " + specification.postcondition + "}}" }} → False := by
   {{ proof }}

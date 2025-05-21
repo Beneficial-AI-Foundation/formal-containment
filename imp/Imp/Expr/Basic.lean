@@ -22,3 +22,8 @@ inductive Expr where
   | un (op : Expr.UnOp) (e : Expr)
   | bin (op : Expr.BinOp) (e1 e2 : Expr)
 deriving Repr, DecidableEq
+
+instance : Coe String Expr where
+  coe := .var
+instance : Coe Int Expr where
+  coe := .const

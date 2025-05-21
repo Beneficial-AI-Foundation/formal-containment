@@ -6,7 +6,7 @@ namespace Imp
 
 inductive Value where
   | int : Int -> Value
-  deriving Repr, DecidableEq
+  deriving Repr, DecidableEq, BEq
 
 instance Value.LT : LT Value where
   lt (a b : Value) := match a, b with
@@ -18,13 +18,25 @@ instance Value.LE : LE Value where
 
 instance Value.OfNat : OfNat Value n := by
   constructor
-  exact Value.int n
+  exact .int n
 
 instance : Coe Int Value where
   coe i := Value.int i
 instance : Coe Value Int where
   coe v := match v with
     | .int i => i
+
+instance : Add Value where
+  add (a b : Value) := match a, b with
+    | .int i, .int j => Value.int (i + j)
+
+instance : Sub Value where
+  sub (a b : Value) := match a, b with
+    | .int i, .int j => Value.int (i - j)
+
+instance : Mul Value where
+  mul (a b : Value) := match a, b with
+    | .int i, .int j => Value.int (i * j)
 
 theorem Value.int_lt (a b : Value) : a < b ↔ (a : Int) < (b : Int) := by
   constructor <;> intros h <;>
@@ -33,6 +45,15 @@ theorem Value.int_lt (a b : Value) : a < b ↔ (a : Int) < (b : Int) := by
       cases b with
       | int j =>
         have h' : i < j := h
+        assumption
+
+theorem Value.int_le (a b : Value) : a ≤ b ↔ (a : Int) ≤ (b : Int) := by
+  constructor <;> intros h <;>
+    cases a with
+    | int i =>
+      cases b with
+      | int j =>
+        have h' : i ≤ j := h
         assumption
 
 theorem Value.lt_implies_le {a b : Value} : a < b → a ≤ b := by
@@ -48,6 +69,24 @@ theorem Value.lt_implies_le {a b : Value} : a < b → a ≤ b := by
 
 /-- An environment maps variables names to their values (no pointers) -/
 def Env := String → Value
+
+-- instance StringToValue (σ : Env) : Coe String Value where
+--   coe := σ
+-- instance StringToInt (σ : Env) : Coe String Int where
+--   coe s := σ s
+--
+-- instance varValAdd (σ : Env) : HAdd String Value Value where
+--   hAdd x y := σ x + y
+-- instance valVarAdd(σ : Env) : HAdd Value String Value where
+--   hAdd x y := x + σ y
+-- instance varValSub (σ : Env) : HSub String Value Value where
+--   hSub x y := σ x - y
+-- instance valVarSub (σ : Env) : HSub Value String Value where
+--   hSub x y := x - σ y
+-- instance varValMul (σ : Env) : HMul String Value Value where
+--   hMul x y := σ x * y
+-- instance valVarMul (σ : Env) : HMul Value String Value where
+--   hMul x y := x * σ y
 
 namespace Env
 

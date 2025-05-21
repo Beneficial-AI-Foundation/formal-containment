@@ -1,0 +1,3 @@
+[[sample]]
+precondition = "x = 0"
+postcondition = "x > 8"
