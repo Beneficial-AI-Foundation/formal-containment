@@ -27,6 +27,8 @@
                 typst
                 typstyle
                 nodejs_24
+                lefthook
+                pandoc
               ];
             in
             pkgs.mkShell { inherit name buildInputs; };

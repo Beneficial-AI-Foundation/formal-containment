@@ -19,7 +19,7 @@ def setup_logs() -> tuple[logging.Logger, str]:
     # Configure the logger
     logger = logging.getLogger("containment")
     logger.setLevel(logging.INFO)
-    logger.propagate = False  # Prevent propagation to root logger (stdout)
+    # logger.propagate = False  # Prevent propagation to root logger (stdout)
 
     # Configure file logging (always enabled)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M")

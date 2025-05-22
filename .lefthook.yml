@@ -1,0 +1,21 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: "Imp codebase"
+      run: |
+        lake build
+      root: "imp/"
+      glob: "imp/*.lean"
+
+    - name: "FCP: uv package"
+      run: |
+        uv run ruff check src --fix
+        uv run ruff format src
+        pyright
+      root: "fcp/"
+      glob: "fcp/src/*.py"
+
+    - name: "Communications"
+      run: |
+        typst compile main.typ
+      root: "comms/whitepaper/"
