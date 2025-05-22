@@ -2,7 +2,7 @@ from typing import Any, Callable
 from abc import abstractmethod
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
-from containment.oracles import mk_complete
+from containment.netio.oracles import mk_complete
 from containment.structures.mcp import MCPClientBase
 
 

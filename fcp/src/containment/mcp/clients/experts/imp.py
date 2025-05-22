@@ -6,7 +6,7 @@ from containment.structures import (
     Specification,
 )
 from containment.fsio.prompts import oracle_system_prompt
-from containment.oracles import parse_program_completion
+from containment.netio.oracles import parse_program_completion
 
 
 class ImpExpert(MCPClient):

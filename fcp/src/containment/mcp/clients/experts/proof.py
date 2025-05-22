@@ -9,7 +9,7 @@ from containment.structures import (
     VerificationResult,
 )
 from containment.fsio.prompts import load_txt, oracle_system_prompt
-from containment.oracles import parse_program_completion
+from containment.netio.oracles import parse_program_completion
 from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 12

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable
 import dotenv
 from containment.structures import Language
-from containment.parse_xml import parse_xml
+from containment.netio.parse_xml import parse_xml
 
 # from containment.io.logs import logs
 from litellm import completion
