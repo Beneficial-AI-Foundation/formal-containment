@@ -11,9 +11,9 @@ metavariables = "n m"
 precondition = "x = ~n"
 postcondition = """y = ~(
   let rec go := fun (n : Int) => match n with
-    | .ofNat k => match k with
+    | .ofNat m => match m with
       | .zero => 1
-      | .succ n => n.succ * go (Int.ofNat n)
+      | .succ k => k.succ * go (Int.ofNat k)
     | .negSucc _ => 0
     decreasing_by apply Nat.lt_succ_self
     go n

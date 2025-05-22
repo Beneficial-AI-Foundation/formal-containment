@@ -9,8 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "jinja2>=3.1.6",
-    "litellm>=1.70.2",
-    "logfire>=3.16.0",
+    "litellm==1.67.2",
     "mcp>=1.9.0",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
@@ -30,6 +29,10 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "logfire>=3.16.0",
+    "opentelemetry-api>=1.33.0",
+    "opentelemetry-exporter-otlp>=1.33.0",
+    "opentelemetry-sdk>=1.33.0",
     "pyright>=1.1.400",
     "pytest>=8.3.5",
     "ruff>=0.11.8",

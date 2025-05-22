@@ -8,8 +8,6 @@ from typing import Callable
 import dotenv
 from containment.structures import Language
 from containment.netio.parse_xml import parse_xml
-
-# from containment.io.logs import logs
 from litellm import completion
 
 dotenv.load_dotenv(Path.cwd() / ".." / ".env")
@@ -37,7 +35,10 @@ def mk_complete(
     # logs.info(f"Anthropic system prompt: {sysprompt}")
     def _complete(messages: list[dict]) -> dict:
         messages = [
-            {"role": "system", "content": system_prompt},
+            {
+                "role": "developer" if model.startswith("openai") else "system",
+                "content": system_prompt,
+            },
         ] + messages
         return completion(model=model, messages=messages, stream=False)  # type: ignore
 

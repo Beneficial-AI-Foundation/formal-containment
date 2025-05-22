@@ -10,8 +10,11 @@ The precondition and postcondition you pass in must be valid Lean as it goes dir
 $ cat .env
 ...
 ANTHROPIC_API_KEY=...
+OPENAI_API_KEY=...      # If using openai models
+LOGFIRE_TOKEN=... # Optional: Make a project called `formal-containment` on logfire.pydantic.dev. Falls back to plain python logging if token is absent.
 ...
 $ cd fcp
 $ uv run contain protocol "x > 0" "x > 6"
 #+END_SRC
-As of this writing, proof synthesis isn't strong enough to do much more nontrivial examples.
+
+Pass in ~--model~ with any of the ~human_name~ entries found in ~./experiments/data.toml~ (default to ~sonnet 4~)
