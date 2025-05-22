@@ -1,8 +1,8 @@
 """Proving hoare triples without MCP."""
 
 from pathlib import Path
-from containment.artifacts import write_artifact
-from containment.lake import Checker
+from containment.io.artifacts import write_artifact
+from containment.io.lake import Checker
 from containment.oracles import proof_oracle
 from containment.structures import (
     HoareTriple,
@@ -11,7 +11,7 @@ from containment.structures import (
     VerificationFailure,
     VerificationResult,
 )
-from containment.tools import temp_lakeproj_init
+from containment.io.tools import temp_lakeproj_init
 
 UP = ".."
 IMP_DIR = Path.cwd() / UP / "imp"

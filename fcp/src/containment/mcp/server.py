@@ -6,9 +6,9 @@ from containment.structures import (
     HoareTriple,
     LakeResponse,
 )
-from containment.prompts import proof_user_prompt, imp_user_prompt
-from containment.lake import Checker
-from containment.tools import temp_lakeproj_init
+from containment.io.prompts import proof_user_prompt, imp_user_prompt
+from containment.io.lake import Checker
+from containment.io.tools import temp_lakeproj_init
 
 HEX_ENCODING = "utf-8"
 mcp = FastMCP("Formal Containment Process")

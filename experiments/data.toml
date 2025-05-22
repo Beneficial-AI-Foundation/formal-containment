@@ -1,3 +1,21 @@
 [[sample]]
 precondition = "x = 0"
 postcondition = "x > 8"
+
+[[sample]]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+
+[[sample]]
+precondition = "x = ~n"
+postcondition = """y = ~(
+  let rec go := fun (n : Int) => match n with
+    | .ofNat k => match k with
+      | .zero => 1
+      | .succ n => n.succ * go (Int.ofNat n)
+    | .negSucc _ => 0
+    decreasing_by apply Nat.lt_succ_self
+    go n
+  )"""
+metavariables = "n"

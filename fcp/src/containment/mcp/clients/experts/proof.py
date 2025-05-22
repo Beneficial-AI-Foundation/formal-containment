@@ -1,6 +1,6 @@
 from pathlib import Path
 from containment.mcp.clients.basic import MCPClient
-from containment.artifacts import write_artifact
+from containment.io.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
     LakeResponse,
@@ -8,7 +8,7 @@ from containment.structures import (
     VerificationFailure,
     VerificationResult,
 )
-from containment.prompts import load_txt, oracle_system_prompt
+from containment.io.prompts import load_txt, oracle_system_prompt
 from containment.oracles import parse_program_completion
 
 MAX_CONVERSATION_LENGTH = 12

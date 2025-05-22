@@ -15,6 +15,7 @@ from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
 from containment.protocol import run as boundary_run
+from containment.io.experiment import load_specifications, run_experiments
 
 
 def mcp_server_run() -> None:
@@ -22,7 +23,11 @@ def mcp_server_run() -> None:
 
 
 def test_no_mcp() -> None:
-    """MCP-free test runs."""
+    """
+    MCP-free test runs.
+
+    Pretty defunct.
+    """
     cli = Typer()
 
     @cli.command()
@@ -156,6 +161,20 @@ def contain() -> None:
             )
         else:
             print("Failed to find code that is provably safe to run in the world.")
+        return None
+
+    @cli.command()
+    async def experiments(
+        proof_loop_budget: int = 50, attempt_budget: int = 10
+    ) -> None:
+        """
+        Run the containment protocol experiments from `data.toml`
+        """
+        specifications = load_specifications()
+        results = await run_experiments(
+            specifications, proof_loop_budget, attempt_budget
+        )
+        print(results)
         return None
 
     cli()

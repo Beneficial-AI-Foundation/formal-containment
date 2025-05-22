@@ -1,6 +1,6 @@
 from containment.structures import HoareTriple, LakeResponse, CheckerBase
-from containment.prompts import load_txt
-from containment.tools import lake_exe_check
+from containment.io.prompts import load_txt
+from containment.io.tools import lake_exe_check
 
 
 class Checker(CheckerBase):

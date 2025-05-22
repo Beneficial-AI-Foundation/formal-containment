@@ -5,7 +5,7 @@ from containment.structures import (
     HoareTriple,
     Specification,
 )
-from containment.prompts import oracle_system_prompt
+from containment.io.prompts import oracle_system_prompt
 from containment.oracles import parse_program_completion
 
 

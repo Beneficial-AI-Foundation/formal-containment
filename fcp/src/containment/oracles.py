@@ -9,7 +9,7 @@ import dotenv
 from anthropic import Anthropic
 from containment.structures import HoareTriple, Specification, Language
 from containment.parse_xml import parse_xml
-from containment.prompts import (
+from containment.io.prompts import (
     imp_user_prompt,
     oracle_system_prompt,
     proof_user_prompt,
@@ -60,6 +60,7 @@ def mk_complete(
 
 
 def parse_program_completion(program_completion: list, tag: Language) -> str | None:
+    """Call the XML parser on the completion and return the program."""
     program_tree = parse_xml(program_completion[0].text)
     program = program_tree.text if program_tree.tag == tag else None
     return program

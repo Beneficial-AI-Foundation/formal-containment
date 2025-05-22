@@ -12,6 +12,6 @@ $ cat .env
 ANTHROPIC_API_KEY=...
 ...
 $ cd fcp
-$ uv run contain "x > 0" "x > 6"
+$ uv run contain protocol "x > 0" "x > 6"
 #+END_SRC
 As of this writing, proof synthesis isn't strong enough to do much more nontrivial examples.

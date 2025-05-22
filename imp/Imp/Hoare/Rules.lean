@@ -160,5 +160,4 @@ example : forall (n m : Int), {{ astn x = ~n <^> y = ~m }}swap{{ astn x = ~m <^>
             simp [Expr.eval] at h3_1_eq
             simp [Expr.eval] at h3_2_1_eq
             simp [Expr.eval] at h3_2_2_eq
-            rw [h3_2_2_eq] at h3_1_eq
             aesop
