@@ -8,8 +8,8 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "anthropic>=0.51.0",
     "jinja2>=3.1.6",
+    "litellm>=1.70.2",
     "logfire>=3.16.0",
     "mcp>=1.9.0",
     "pydantic>=2.11.4",

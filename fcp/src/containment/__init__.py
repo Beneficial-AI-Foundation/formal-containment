@@ -1,72 +1,22 @@
 """Formal containment protocol CLI."""
 
 import subprocess
-from typer import Typer
 from containment.structures.cli_basic import AsyncTyper
 from containment.structures import (
-    HoareTriple,
     Specification,
     VerificationSuccess,
     VerificationFailure,
 )
-from containment.oracles import imp_oracle
-from containment.loops import proof_loop
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
 from containment.protocol import run as boundary_run
-from containment.io.experiment import load_specifications, run_experiments
+from containment.fsio.experiment import load_specifications, run_experiments
+from containment.fsio.logs import logs
 
 
 def mcp_server_run() -> None:
     mcp.run(transport="stdio")
-
-
-def test_no_mcp() -> None:
-    """
-    MCP-free test runs.
-
-    Pretty defunct.
-    """
-    cli = Typer()
-
-    @cli.command()
-    def synthesize_and_prove(
-        precondition: str, postcondition: str, max_iterations: int = 25
-    ) -> None:
-        """
-        Take a precondition and postcondition and ask the LLM to fill in the hoare triple and prove it, without MCP.
-        """
-        spec = Specification(precondition=precondition, postcondition=postcondition)
-        program = imp_oracle(spec)
-        if program is None:
-            raise ValueError("No program found. XML parse error probably.")
-        triple = HoareTriple(specification=spec, command=program)
-        print(f"Hoare triple: {triple}")
-        loop = proof_loop(max_iterations)
-        result = loop.run(triple, positive=True)
-        if isinstance(result, VerificationSuccess):
-            msg = f"Exit code 0 at proof={result.proof}"
-        elif isinstance(result, VerificationFailure):
-            msg = f"Exit code 1 at proof={result.proof} with error: {result.error_message}"
-        else:
-            msg = "Unknown result. Probably an XML parse error"
-        print(msg)
-        return None
-
-    @cli.command()
-    def imp_complete(precondition: str, postcondition: str) -> None:
-        """
-        Take a precondition and postcondition and ask the LLM to fill in the hoare triple with an imp program
-        """
-        spec = Specification(precondition=precondition, postcondition=postcondition)
-        program = imp_oracle(spec)
-        if program is None:
-            raise ValueError("No program found. Xml parse error probably.")
-        print(HoareTriple(specification=spec, command=program))
-        return None
-
-    cli()
 
 
 def inspector() -> None:
@@ -86,18 +36,21 @@ def test() -> None:
 
     @cli.command()
     async def synthesize_and_prove(
-        precondition: str, postcondition: str, max_iterations: int = 25
+        precondition: str,
+        postcondition: str,
+        model: str = "anthropic/claude-3-7-sonnet-20250219",
+        max_iterations: int = 25,
     ) -> None:
         """
         Take a precondition and postcondition and ask the LLM to fill in the hoare triple and prove it.
         """
         spec = Specification(precondition=precondition, postcondition=postcondition)
-        expert = await ImpExpert.connect_and_run(spec)
+        expert = await ImpExpert.connect_and_run(model, spec)
         if expert.triple is None:
             raise ValueError("No program found. XML parse error probably.")
         print(expert.triple)
         prover_pos = await ProofExpert.connect_and_run(
-            expert.triple, positive=True, max_iterations=max_iterations
+            model, expert.triple, positive=True, max_iterations=max_iterations
         )
         if prover_pos.verification_result is None:
             raise ValueError("Prove loop returned None")
@@ -111,13 +64,17 @@ def test() -> None:
         return None
 
     @cli.command()
-    async def imp_complete(precondition: str, postcondition: str) -> None:
+    async def imp_complete(
+        precondition: str,
+        postcondition: str,
+        model: str = "anthropic/claude-3-7-sonnet-20250219",
+    ) -> None:
         """
         Take a precondition and postcondition and ask the LLM to fill in the hoare triple with an imp program
         """
         spec = Specification(precondition=precondition, postcondition=postcondition)
 
-        expert = await ImpExpert.connect_and_run(spec)
+        expert = await ImpExpert.connect_and_run(model, spec)
         print(expert.triple)
         return None
 
@@ -135,6 +92,7 @@ def contain() -> None:
         precondition: str,
         postcondition: str,
         metavariables: str = "",  # space-separated lean identifiers
+        model: str = "anthropic/claude-3-7-sonnet-20250219",
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
     ) -> None:
@@ -146,21 +104,25 @@ def contain() -> None:
             postcondition=postcondition,
             metavariables=metavariables,
         )
+        logs.info(f"Running containment protocol for {specification}")
         result = await boundary_run(
+            model,
             specification,
             proof_loop_budget=proof_loop_budget,
             attempt_budget=attempt_budget,
         )
 
         if result:
-            print(
-                f"The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
-            )
-            print(
-                f"The lean code of the proof for you to audit is located in {result.audit_trail}"
-            )
+            msg = f"The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
+            logs.info(msg)
+            print(msg)
+            msg = f"The lean code of the proof for you to audit is located in {result.audit_trail}"
+            logs.info(msg)
+            print(msg)
         else:
-            print("Failed to find code that is provably safe to run in the world.")
+            msg = "Failed to find code that is provably safe to run in the world."
+            logs.info(msg)
+            print(msg)
         return None
 
     @cli.command()
@@ -170,9 +132,10 @@ def contain() -> None:
         """
         Run the containment protocol experiments from `data.toml`
         """
+        model = "anthropic/claude-3-7-sonnet-20250219"
         specifications = load_specifications()
         results = await run_experiments(
-            specifications, proof_loop_budget, attempt_budget
+            model, specifications, proof_loop_budget, attempt_budget
         )
         print(results)
         return None

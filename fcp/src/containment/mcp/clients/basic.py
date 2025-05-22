@@ -15,8 +15,10 @@ class MCPClient(MCPClientBase):
         env=None,  # Optional environment variables
     )
 
-    def _mk_complete(self, system_prompt: str) -> Callable[[list[dict]], list[dict]]:
-        return mk_complete(self.client, system_prompt, cache=False)
+    def _mk_complete(
+        self, model: str, system_prompt: str
+    ) -> Callable[[list[dict]], dict]:
+        return mk_complete(model, system_prompt)
 
     async def _connect_to_server_and_run(self) -> Any:
         async with stdio_client(self.SERVER_PARAMETERS) as (read, write):

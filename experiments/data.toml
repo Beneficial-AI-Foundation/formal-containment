@@ -19,3 +19,13 @@ postcondition = """y = ~(
     go n
   )"""
 metavariables = "n"
+
+[[model]]
+human_name = "3 7"
+provider = "anthropic"
+model_pin = "claude-3-7-sonnet-20250219"
+
+[[model]]
+human_name = "4 1"
+provider = "openai"
+model_pin = "gpt-4.1-2025-04-14"

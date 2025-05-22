@@ -18,7 +18,7 @@ The Model Context Protocol allows applications to provide context for LLMs in a 
 
 ### Adding MCP to your python project
 
-We recommend using [uv](https://docs.astral.sh/uv/) to manage your Python projects. 
+We recommend using [uv](mdc:https:/docs.astral.sh/uv) to manage your Python projects. 
 
 If you haven't created a uv-managed project yet, create one:
 
@@ -72,7 +72,7 @@ def get_greeting(name: str) -> str:
     return f"Hello, {name}!"
 ```
 
-You can install this server in [Claude Desktop](https://claude.ai/download) and interact with it right away by running:
+You can install this server in [Claude Desktop](mdc:https:/claude.ai/download) and interact with it right away by running:
 ```bash
 mcp install server.py
 ```
@@ -84,7 +84,7 @@ mcp dev server.py
 
 ## What is MCP?
 
-The [Model Context Protocol (MCP)](https://modelcontextprotocol.io) lets you build servers that expose data and functionality to LLM applications in a secure, standardized way. Think of it like a web API, but specifically designed for LLM interactions. MCP servers can:
+The [Model Context Protocol (MCP)](mdc:https:/modelcontextprotocol.io) lets you build servers that expose data and functionality to LLM applications in a secure, standardized way. Think of it like a web API, but specifically designed for LLM interactions. MCP servers can:
 
 - Expose data through **Resources** (think of these sort of like GET endpoints; they are used to load information into the LLM's context)
 - Provide functionality through **Tools** (sort of like POST endpoints; they are used to execute code or otherwise produce a side effect)
@@ -279,7 +279,7 @@ mcp = FastMCP("My App",
 )
 ```
 
-See [OAuthServerProvider](src/mcp/server/auth/provider.py) for more details.
+See [OAuthServerProvider](mdc:src/mcp/server/auth/provider.py) for more details.
 
 ## Running Your Server
 
@@ -376,8 +376,8 @@ app.mount("/math", math.mcp.streamable_http_app())
 ```
 
 For low level server with Streamable HTTP implementations, see:
-- Stateful server: [`examples/servers/simple-streamablehttp/`](examples/servers/simple-streamablehttp/)
-- Stateless server: [`examples/servers/simple-streamablehttp-stateless/`](examples/servers/simple-streamablehttp-stateless/)
+- Stateful server: [`examples/servers/simple-streamablehttp/`](mdc:examples/servers/simple-streamablehttp)
+- Stateless server: [`examples/servers/simple-streamablehttp-stateless/`](mdc:examples/servers/simple-streamablehttp-stateless)
 
 
 
@@ -390,7 +390,7 @@ The streamable HTTP transport supports:
 
 ### Mounting to an Existing ASGI Server
 
-> **Note**: SSE transport is being superseded by [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http).
+> **Note**: SSE transport is being superseded by [Streamable HTTP transport](mdc:https:/modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http).
 
 You can mount the SSE server to an existing ASGI server using the `sse_app` method. This allows you to integrate the SSE server with other ASGI applications.
 
@@ -450,7 +450,7 @@ if __name__ == "__main__":
     search_mcp.run(transport="sse", mount_path="/search")
 ```
 
-For more information on mounting applications in Starlette, see the [Starlette documentation](https://www.starlette.io/routing/#submounting-routes).
+For more information on mounting applications in Starlette, see the [Starlette documentation](mdc:https:/www.starlette.io/routing/#submounting-routes).
 
 ## Examples
 
@@ -624,7 +624,7 @@ if __name__ == "__main__":
 
 ### Writing MCP Clients
 
-The SDK provides a high-level client interface for connecting to MCP servers using various [transports](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports):
+The SDK provides a high-level client interface for connecting to MCP servers using various [transports](mdc:https:/modelcontextprotocol.io/specification/2025-03-26/basic/transports):
 
 ```python
 from mcp import ClientSession, StdioServerParameters, types
@@ -688,7 +688,7 @@ if __name__ == "__main__":
     asyncio.run(run())
 ```
 
-Clients can also connect using [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http):
+Clients can also connect using [Streamable HTTP transport](mdc:https:/modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http):
 
 ```python
 from mcp.client.streamable_http import streamablehttp_client
@@ -734,6 +734,6 @@ MCP servers declare capabilities during initialization:
 
 ## Documentation
 
-- [Model Context Protocol documentation](https://modelcontextprotocol.io)
-- [Model Context Protocol specification](https://spec.modelcontextprotocol.io)
-- [Officially supported servers](https://github.com/modelcontextprotocol/servers)
+- [Model Context Protocol documentation](mdc:https:/modelcontextprotocol.io)
+- [Model Context Protocol specification](mdc:https:/spec.modelcontextprotocol.io)
+- [Officially supported servers](mdc:https:/github.com/modelcontextprotocol/servers)

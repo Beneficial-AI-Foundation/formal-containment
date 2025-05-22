@@ -29,6 +29,11 @@ class HoareTriple(Structure):
     def __str__(self) -> str:
         return f"\\{{ {self.specification.precondition} \\}} {self.command} \\{{ {self.specification.postcondition} \\}}"
 
+    @property
+    def hidden_code(self) -> str:
+        """An alternative str method that hides the command"""
+        return f"\\{{ {self.specification.precondition} \\}} {hash(self.command)} \\{{ {self.specification.postcondition} \\}}"
+
 
 class VerificationSuccess(Structure):
     triple: HoareTriple

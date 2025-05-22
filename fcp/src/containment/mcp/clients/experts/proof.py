@@ -1,6 +1,6 @@
 from pathlib import Path
 from containment.mcp.clients.basic import MCPClient
-from containment.io.artifacts import write_artifact
+from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
     LakeResponse,
@@ -8,8 +8,9 @@ from containment.structures import (
     VerificationFailure,
     VerificationResult,
 )
-from containment.io.prompts import load_txt, oracle_system_prompt
+from containment.fsio.prompts import load_txt, oracle_system_prompt
 from containment.oracles import parse_program_completion
+from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 12
 
@@ -18,27 +19,38 @@ class ProofExpert(MCPClient):
     """Expert at writing hoare proofs over imp."""
 
     def __init__(
-        self, triple: HoareTriple, positive: bool, *, max_iterations: int = 25
+        self,
+        model: str,
+        triple: HoareTriple,
+        positive: bool,
+        *,
+        max_iterations: int = 25,
     ) -> None:
         super().__init__()
+        self.model = model
         self.triple = triple
         self.positive = positive
         self.max_iterations = max_iterations
         self.max_conversation_length = MAX_CONVERSATION_LENGTH
         self.system_prompt = oracle_system_prompt("proof")
-        self.complete = self._mk_complete(self.system_prompt)
+        self.complete = self._mk_complete(self.model, self.system_prompt)
         self.proof = None
         self.verification_result = None
         self.code_dt = []
 
     @classmethod
     async def connect_and_run(
-        cls, triple: HoareTriple, positive: bool, *, max_iterations: int = 25
+        cls,
+        model: str,
+        triple: HoareTriple,
+        positive: bool,
+        *,
+        max_iterations: int = 25,
     ) -> "ProofExpert":
         """
         Async instantiation: connect to the MCP server.
         """
-        mcp_client = cls(triple, positive, max_iterations=max_iterations)
+        mcp_client = cls(model, triple, positive, max_iterations=max_iterations)
         mcp_client.verification_result = await mcp_client._connect_to_server_and_run()
         return mcp_client
 
@@ -69,12 +81,16 @@ class ProofExpert(MCPClient):
         curr_conversation = [
             {
                 "role": "user",
-                "content": [message.content for message in user_prompt.messages],
+                "content": [
+                    message.content.model_dump() for message in user_prompt.messages
+                ],
             }
         ]
         self.conversation = self.conversation + curr_conversation
         completion = self.complete(self.conversation)
-        proof = parse_program_completion(completion, "proof")
+        proof = parse_program_completion(
+            completion["choices"][0].message.content, "proof"
+        )
         self.proof = proof
         tool_arguments = {"lean_code": self._render_code(proof)}
         tool_result = await self.session.call_tool(
@@ -98,9 +114,10 @@ class ProofExpert(MCPClient):
                     if self.triple.specification.metavariables
                     else ""
                 )
-                print(
-                    f"\tAttempt to prove hoare triple {(forall, self.triple.specification.precondition, hash(self.triple.command), self.triple.specification.postcondition)}: iteration num {iteration}/{self.max_iterations}"
-                )
+                triple = f"{forall}, {self.triple.hidden_code}"
+                msg = f"\tAttempt to prove hoare triple {triple}: iteration num {iteration}/{self.max_iterations}"
+                logs.info(msg)
+                print(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
             if lake_response.exit_code == 0:

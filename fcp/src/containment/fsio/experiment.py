@@ -20,13 +20,19 @@ def load_specifications() -> list[Specification]:
 
 
 async def run_experiments(
-    specifications: list[Specification], proof_loop_budget: int, attempt_budget: int
+    model: str,
+    specifications: list[Specification],
+    proof_loop_budget: int,
+    attempt_budget: int,
 ) -> list[VerificationResult | None]:
     """
     Run the experiments on the given specifications in parallel
+
+    TODO: cartesian product with list of models
     """
     tasks = [
         boundary_run(
+            model,
             specification,
             proof_loop_budget=proof_loop_budget,
             attempt_budget=attempt_budget,

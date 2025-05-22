@@ -6,4 +6,5 @@ __pycache__/
 dist/
 .venv/
 .env
-artifacts/
+/experiments/artifacts/
+/experiments/logs/

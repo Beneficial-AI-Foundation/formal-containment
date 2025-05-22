@@ -6,9 +6,11 @@ from containment.structures import (
     VerificationSuccess,
     VerificationResult,
 )
+from containment.fsio.logs import logs
 
 
 async def _synthesize_and_prove(
+    model: str,
     specification: Specification,
     *,
     proof_loop_budget: int = 10,
@@ -18,12 +20,12 @@ async def _synthesize_and_prove(
     Synthesize and prove a Hoare triple.
     """
     imp_expert = await ImpExpert.connect_and_run(
-        specification, failed_attempts=failed_attempts
+        model, specification, failed_attempts=failed_attempts
     )
     if imp_expert.triple is None:
         raise ValueError("Problem in imp expert synthesis.")
     proof_expert = await ProofExpert.connect_and_run(
-        imp_expert.triple, positive=True, max_iterations=proof_loop_budget
+        model, imp_expert.triple, positive=True, max_iterations=proof_loop_budget
     )
     if proof_expert.verification_result is None:
         raise ValueError("Problem in proof expert verification.")
@@ -31,6 +33,7 @@ async def _synthesize_and_prove(
 
 
 async def run(
+    model: str,
     specification: Specification,
     *,
     proof_loop_budget: int = 10,
@@ -44,11 +47,11 @@ async def run(
     """
     failed_attempts = []
     for attempt in range(attempt_budget):
-        print(
-            f"Attempt to find program provable at specification {specification}: {attempt + 1}/{attempt_budget}"
-        )
-
+        msg = f"Attempt to find program provable at specification {specification}: {attempt + 1}/{attempt_budget}"
+        logs.info(msg)
+        print(msg)
         result = await _synthesize_and_prove(
+            model,
             specification,
             proof_loop_budget=proof_loop_budget,
             failed_attempts=failed_attempts,
@@ -58,6 +61,7 @@ async def run(
                 return result
             case VerificationFailure():
                 failed_attempts.append(result.triple.command)
-        print(
-            f"Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
-        )
+        msg = f"Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
+        logs.info(msg)
+        print(msg)
+    return None
