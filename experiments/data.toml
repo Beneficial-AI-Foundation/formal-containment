@@ -21,11 +21,36 @@ postcondition = """y = ~(
 metavariables = "n"
 
 [[model]]
-human_name = "3 7"
+human_name = "snt37"
 provider = "anthropic"
 model_pin = "claude-3-7-sonnet-20250219"
 
 [[model]]
-human_name = "4 1"
+human_name = "snt4"
+provider = "anthropic"
+model_pin = "claude-sonnet-4-20250514"
+
+[[model]]
+human_name = "ops4"
+provider = "anthropic"
+model_pin = "claude-opus-4-20250514"
+
+[[model]]
+human_name = "gpt41"
 provider = "openai"
 model_pin = "gpt-4.1-2025-04-14"
+
+[[model]]
+human_name = "o4min"
+provider = "openai"
+model_pin = "o4-mini-2025-04-16"
+
+[[model]]
+human_name = "o3"
+provider = "openai"
+model_pin = "o3-2025-04-16"
+
+[[model]]
+human_name = "grk3min"
+provider = "xai"
+model_pin = "grok-3-mini"

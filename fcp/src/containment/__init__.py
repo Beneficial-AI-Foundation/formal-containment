@@ -11,7 +11,7 @@ from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
 from containment.protocol import run as boundary_run
-from containment.fsio.experiment import load_specifications, run_experiments
+from containment.fsio.experiment import run_experiments, MODEL_DICT
 from containment.fsio.logs import logs
 
 
@@ -87,40 +87,45 @@ def contain() -> None:
     """
     cli = AsyncTyper()
 
+    snt = MODEL_DICT["snt4"]
+
     @cli.command()
     async def protocol(
         precondition: str,
         postcondition: str,
         metavariables: str = "",  # space-separated lean identifiers
-        model: str = "anthropic/claude-3-7-sonnet-20250219",
+        model: str = snt.human_name,
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
     ) -> None:
         """
         Run the containment protocol at the given precondition-postcondition pair.
         """
+        model_id = MODEL_DICT[model].litellm_id
         specification = Specification(
             precondition=precondition,
             postcondition=postcondition,
             metavariables=metavariables,
         )
-        logs.info(f"Running containment protocol for {specification}")
+        msg = f"Running containment protocol at {model_id} for {specification}"
+        logs.info(msg)
+        print(msg)
         result = await boundary_run(
-            model,
+            model_id,
             specification,
             proof_loop_budget=proof_loop_budget,
             attempt_budget=attempt_budget,
         )
 
         if result:
-            msg = f"The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
+            msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
             logs.info(msg)
             print(msg)
-            msg = f"The lean code of the proof for you to audit is located in {result.audit_trail}"
+            msg = f"({model_id}, {specification}): The lean code of the proof for you to audit is located in {result.audit_trail}"
             logs.info(msg)
             print(msg)
         else:
-            msg = "Failed to find code that is provably safe to run in the world."
+            msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world."
             logs.info(msg)
             print(msg)
         return None
@@ -131,12 +136,10 @@ def contain() -> None:
     ) -> None:
         """
         Run the containment protocol experiments from `data.toml`
+
+        TODO: finish configuring logs, metadata
         """
-        model = "anthropic/claude-3-7-sonnet-20250219"
-        specifications = load_specifications()
-        results = await run_experiments(
-            model, specifications, proof_loop_budget, attempt_budget
-        )
+        results = await run_experiments(proof_loop_budget, attempt_budget)
         print(results)
         return None
 

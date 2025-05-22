@@ -79,3 +79,16 @@ class CheckerBase(Structure):
     @property
     def basic_path(self) -> Path:
         return self.cwd / "Artifacts" / "Basic.lean"
+
+
+class LLM(Structure):
+    human_name: str
+    provider: str
+    model_pin: str
+
+    @property
+    def litellm_id(self) -> str:
+        return str(Path(self.provider) / self.model_pin)
+
+    def __str__(self) -> str:
+        return self.litellm_id
