@@ -33,9 +33,9 @@ def setup_logs() -> tuple[logging.Logger, str]:
 
     # Try to configure Logfire if token is present
     if LOGFIRE_WRITE_TOKEN:
-        # import litellm
+        import litellm
 
-        # litellm.success_callback = ["logfire"] # BROKEN
+        litellm.callbacks = ["logfire"]
         logfire.configure(token=LOGFIRE_WRITE_TOKEN)
         handler = logfire.LogfireLoggingHandler()
         handler.setLevel(logging.INFO)

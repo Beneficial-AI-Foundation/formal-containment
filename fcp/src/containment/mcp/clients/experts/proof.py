@@ -12,7 +12,7 @@ from containment.fsio.prompts import load_txt, oracle_system_prompt
 from containment.netio.oracles import parse_program_completion
 from containment.fsio.logs import logs
 
-MAX_CONVERSATION_LENGTH = 12
+MAX_CONVERSATION_LENGTH = 20
 
 
 class ProofExpert(MCPClient):

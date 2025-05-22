@@ -1,7 +1,6 @@
 * Formal Containment Protocol
-
-[[file:comms/whitepaper/images/frontierbox.png]]
-
+[[file:comms/lesswrong/images/frontierbox.png]]
+We would like to put the AI in a box. We show how to create an /interface/ between the box and the world out of specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. See the draft whitepaper in ~./comms/whitepaper/main.pdf~
 ** Run prototype
 Nix flake devShell or nix with direnv (self explanatory), or install ~uv~ and ~elan~ manually.
 
@@ -17,4 +16,4 @@ $ cd fcp
 $ uv run contain protocol "x > 0" "x > 6"
 #+END_SRC
 
-Pass in ~--model~ with any of the ~human_name~ entries found in ~./experiments/data.toml~ (default to ~sonnet 4~)
+Pass in ~--model~ with any of the ~human_name~ entries found in ~./experiments/data.toml~ (default to ~sonnet-4~)

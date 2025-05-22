@@ -10,7 +10,7 @@ metavariables = "n m"
 [[sample]]
 precondition = "x = ~n"
 postcondition = """y = ~(
-  let rec go := fun (n : Int) => match n with
+  let rec go := fun (x : Int) => match x with
     | .ofNat m => match m with
       | .zero => 1
       | .succ k => k.succ * go (Int.ofNat k)
