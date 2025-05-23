@@ -60,7 +60,7 @@ Separately, a forgotten literature on proof carrying code @necula1997proof (_PCC
 
 == Contributions
 
-We present the natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up a Sonnet-3.7 agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
+We present the natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up an agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
 
 = A Formal Containment Protocol (_FCP_)
 
@@ -328,6 +328,72 @@ The Lean program would look like this (Note it must be run with `lake build` in 
 This file paired with an exit code of zero pinned to a particular Lean toolchain (version) can be signed in a GPG context for attestation of correctness.
 
 = Experiments
+
+#let experiments_spec = toml("experiments.toml")
+#let format-samples-table = {
+  let samples = experiments_spec.sample
+
+  table(
+    columns: 4,
+    stroke: 0.5pt,
+    align: (left, left, left, left),
+    inset: 8pt,
+
+    // Header row
+    table.header(
+      [*Sample*],
+      [*Precondition*],
+      [*Postcondition*],
+      [*$forall$-bound metavariables*],
+    ),
+
+    // Data rows
+    ..samples
+      .enumerate()
+      .map(((i, sample)) => (
+        str(i + 1),
+        raw(sample.precondition, lang: none),
+        if "postcondition" in sample {
+          if sample.postcondition.contains("\n") {
+            // Multi-line postcondition - use block code
+            raw(sample.postcondition, block: true, lang: none)
+          } else {
+            // Single-line postcondition - use inline code
+            raw(sample.postcondition, lang: none)
+          }
+        } else { [—] },
+        if "metavariables" in sample {
+          raw(sample.metavariables, lang: none)
+        } else { [—] },
+      ))
+      .flatten()
+  )
+}
+
+#let filter-model-pins(human-name-whitelist) = {
+  let models = experiments_spec.model
+
+  let filtered-pins = models
+    .filter(model => model.human_name in human-name-whitelist)
+    .map(model => model.model_pin)
+
+  // Format as a readable list
+  if filtered-pins.len() == 1 {
+    filtered-pins.first()
+  } else if filtered-pins.len() == 2 {
+    filtered-pins.join(" and ")
+  } else {
+    let last = filtered-pins.last()
+    let rest = filtered-pins.slice(0, -1)
+    rest.join(", ") + ", and " + last
+  }
+}
+
+We test the following specifications
+
+#format-samples-table
+
+on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle this doesn't matter).
 
 *TODO*: See https://github.com/Beneficial-AI-Foundation/formal-containment/issues/7 for what I'd like to do.
 

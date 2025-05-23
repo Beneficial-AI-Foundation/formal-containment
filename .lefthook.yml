@@ -17,5 +17,6 @@ pre-commit:
 
     - name: "Communications"
       run: |
-        typst compile main.typ
-      root: "comms/whitepaper/"
+        make
+      root: "comms/"
+      glob: "comms/{*.typ,*.org}"

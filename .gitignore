@@ -8,3 +8,4 @@ dist/
 .env
 /experiments/artifacts/
 /experiments/logs/
+/comms/**/*.docx

@@ -1,6 +1,6 @@
 #+title: Formal Containment
 
-Previously, classical AI safety warned against trying to put the AI in a box @LessWrong2020AIBoxing.
+Previously, classical AI safety warned against trying to put the AI in a box [fn:boxing: https://www.lesswrong.com/w/ai-boxing-containment].
 
 [[file:images/frontierbox.png]]
 
@@ -14,4 +14,4 @@ While no one is saying we can be safe with respect to an arbitrary superintellig
 Separately, a forgotten literature on proof carrying code @necula1997proof (/PCC/) provides a background for the AI's obligation to tag code it wants to execute in the world with a "proof" (here, a sequence of Lean tactics) that the code is "correct" (up to some specification). Reviving ideas from /PCC/ for AI safety is discussed in @tegmark2023provablysafesystemspath and @dalrymple2024guaranteedsafeaiframework.
 
 ** Contributions
-We present the natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up a Sonnet-3.7 agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
+We present the natural midpoint between /PCC/ and /Ctrl/, while for simplicity ignoring many characteristics of /SgAI/ (@sec:related). We deliver a prototype [fn:gh: https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up an agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
