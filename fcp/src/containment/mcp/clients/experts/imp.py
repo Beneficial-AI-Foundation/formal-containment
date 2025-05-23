@@ -35,7 +35,7 @@ class ImpExpert(MCPClient):
         mcp_client.triple = await mcp_client._connect_to_server_and_run()
         return mcp_client
 
-    async def _complete_triple(self) -> HoareTriple:
+    async def _complete_triple(self) -> HoareTriple | None:
         failed_attempts = (
             "\n".join(
                 f"<failed_attempt>{failed_attempt}</failed_attempt>"
@@ -67,10 +67,12 @@ class ImpExpert(MCPClient):
             completion["choices"][0].message.content, "imp"
         )
         if program is None:
-            raise ValueError("No program found. XML parse error probably")
+            msg = "No program found. XML parse error, probably"
+            print(msg)
+            return None
         return HoareTriple(specification=self.spec, command=program)
 
-    async def run(self) -> HoareTriple:
+    async def run(self) -> HoareTriple | None:
         """
         Run the functionality of client.
         """

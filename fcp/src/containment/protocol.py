@@ -28,7 +28,7 @@ async def _synthesize_and_prove(
         model, imp_expert.triple, positive=True, max_iterations=proof_loop_budget
     )
     if proof_expert.verification_result is None:
-        raise ValueError("Problem in proof expert verification.")
+        raise ValueError("Unreachable.")
     return proof_expert.verification_result
 
 

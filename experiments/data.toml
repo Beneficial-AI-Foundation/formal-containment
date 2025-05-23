@@ -1,13 +1,16 @@
 [[sample]]
+name = "gt8"
 precondition = "x = 0"
 postcondition = "x > 8"
 
 [[sample]]
+name = "swap"
 precondition = "x = ~n <^> y = ~m"
 postcondition = "x = ~m <^> y = ~n"
 metavariables = "n m"
 
 [[sample]]
+name = "facto"
 precondition = "x = ~n"
 postcondition = """y = ~(
   let rec go := fun (x : Int) => match x with

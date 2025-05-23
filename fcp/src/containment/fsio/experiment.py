@@ -1,13 +1,22 @@
 import tomllib
 from pathlib import Path
 import asyncio
-from containment.structures import Specification, VerificationResult, LLM
+from itertools import product
+from containment.structures import (
+    Specification,
+    VerificationResult,
+    VerificationSuccess,
+    VerificationFailure,
+    LLM,
+)
 from containment.protocol import run as boundary_run
+from containment.fsio.artifacts import dump_toml
+from containment.fsio.logs import logs
 
 EXPERIMENTS = Path.cwd() / ".." / "experiments"
 
 
-def load_experiment_data() -> dict[str, list]:
+def _load_experiment_data() -> dict[str, list]:
     """
     Load specifications from the experiments directory.
     """
@@ -15,11 +24,11 @@ def load_experiment_data() -> dict[str, list]:
         return tomllib.load(data)
 
 
-def load_specifications() -> list[Specification]:
+def _load_specifications() -> list[Specification]:
     """
     Load specifications from the experiments directory.
     """
-    data = load_experiment_data()
+    data = _load_experiment_data()
     if "sample" not in data:
         raise ValueError(
             "No specification samples found in the experiment data. Check key in data.toml"
@@ -27,11 +36,11 @@ def load_specifications() -> list[Specification]:
     return [Specification(**specification) for specification in data["sample"]]
 
 
-def load_models() -> list[LLM]:
+def _load_models() -> list[LLM]:
     """
     Load models from the experiments directory.
     """
-    data = load_experiment_data()
+    data = _load_experiment_data()
     if "model" not in data:
         raise ValueError("No models found in the experiment data.")
     return [LLM(**model) for model in data["model"]]
@@ -41,27 +50,60 @@ def _mk_model_dict() -> dict[str, LLM]:
     """
     Create a dictionary of models from the experiments directory.
     """
-    models = load_models()
+    models = _load_models()
     return {model.human_name: model for model in models}
 
 
 INCLUDE_MODELS = ["snt4", "gpt41"]
 
 
-def experiment_matrix(
+def _experiment_matrix(
     include_models: list[str] = INCLUDE_MODELS,
 ) -> list[tuple[Specification, LLM]]:
     """
     Load the experiment matrix from the experiments directory.
     """
-    specifications = load_specifications()
-    models = load_models()
-    return [
-        (specification, model)
-        for specification in specifications
-        for model in models
-        if model.litellm_id in include_models
-    ]
+    specifications = _load_specifications()
+    models = _load_models()
+    return list(
+        product(
+            specifications,
+            [model for model in models if model.human_name in include_models],
+        )
+    )
+
+
+def _pp_matrix(matrix: list[tuple[Specification, LLM]]) -> str:
+    """
+    Pretty print the experiment matrix.
+    """
+    return "\n".join(
+        f"{specification} -> {model.human_name}" for specification, model in matrix
+    )
+
+
+def _results_dict(results: list[VerificationResult | BaseException | None]) -> dict:
+    """
+    Create a dictionary of results from the experiment matrix.
+    """
+    result_dict = {}
+    for result in results:
+        if isinstance(result, VerificationSuccess):
+            logs.info(
+                f"Experiment succeeded for {result.triple.specification.name}: {result}"
+            )
+            result_dict[result.triple.specification.name] = result.model_dump()
+        elif isinstance(result, VerificationFailure):
+            logs.info(
+                f"Experiment failed for {result.triple.specification.name}: {result}"
+            )
+            result_dict[result.triple.specification.name] = result.model_dump()
+        elif isinstance(result, BaseException):
+            logs.error(f"Experiment threw an exception: {result}")
+        else:
+            logs.warning("Experiment returned None, or  some unknown result")
+            logs.warning(result)
+    return result_dict
 
 
 async def run_experiments(
@@ -69,9 +111,12 @@ async def run_experiments(
     attempt_budget: int,
     *,
     include_models: list[str] = INCLUDE_MODELS,
-) -> list[VerificationResult | None]:
+) -> dict:  # list[VerificationResult | BaseException | None]:
     """
-    Run the experiments on the given specifications in parallel
+    Run the experiments on the given specifications in parallel.
+
+    Writes results to `experiments/artifacts/{timestamp}/experiment_results.toml`
+    In addition to the results, the lean code is written also to `artifacts`
 
     Args:
         proof_loop_budget: The number of proof loops to run per imp attempt
@@ -83,7 +128,9 @@ async def run_experiments(
 
     TODO: finish configuring-- logs, metadata
     """
-    matrix = experiment_matrix(include_models)
+    matrix = _experiment_matrix(include_models)
+    logs.info(f"Running {len(matrix)} experiments:")
+    logs.info(_pp_matrix(matrix))
     tasks = [
         boundary_run(
             model.litellm_id,
@@ -93,7 +140,10 @@ async def run_experiments(
         )
         for specification, model in matrix
     ]
-    return await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    results_dict = _results_dict(results)
+    dump_toml(results_dict)
+    return results_dict
 
 
 MODEL_DICT = _mk_model_dict()

@@ -4,6 +4,7 @@ from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
     LakeResponse,
+    ProofLoopMetadata,
     VerificationSuccess,
     VerificationFailure,
     VerificationResult,
@@ -88,11 +89,10 @@ class ProofExpert(MCPClient):
         ]
         self.conversation = self.conversation + curr_conversation
         completion = self.complete(self.conversation)
-        proof = parse_program_completion(
+        self.proof = parse_program_completion(
             completion["choices"][0].message.content, "proof"
         )
-        self.proof = proof
-        tool_arguments = {"lean_code": self._render_code(proof)}
+        tool_arguments = {"lean_code": self._render_code(self.proof)}
         tool_result = await self.session.call_tool(
             "typecheck", arguments=tool_arguments
         )
@@ -100,29 +100,42 @@ class ProofExpert(MCPClient):
         lake_response = tool_result.content[1].text  # type: ignore
         return Path(cwd), LakeResponse.from_jsons(lake_response)
 
-    async def _prove_loop(self) -> VerificationResult | None:
+    async def _prove_loop(self) -> VerificationResult:
+        forall_str = (
+            f"FORALL {self.triple.specification.metavariables},"
+            if self.triple.specification.metavariables
+            else ""
+        )
+        triple_str = f"{forall_str} {self.triple.hidden_code}"
+
         cwd, lake_response = await self._iter("")
+        metadata = ProofLoopMetadata(model=self.model)
         if lake_response.exit_code == 0 and self.proof is not None:
             artifact_dir = write_artifact(cwd, self.triple)
+            metadata.chdir(artifact_dir)
             return VerificationSuccess(
-                triple=self.triple, proof=self.proof, audit_trail=artifact_dir
+                triple=self.triple,
+                proof=self.proof,
+                audit_trail=artifact_dir,
+                metadata=metadata,
             )
-        for iteration in range(self.max_iterations):
-            if not iteration % 5:
-                forall = (
-                    f"FORALL {self.triple.specification.metavariables}"
-                    if self.triple.specification.metavariables
-                    else ""
-                )
-                triple = f"{forall}, {self.triple.hidden_code}"
-                msg = f"\tAttempt to prove hoare triple {triple}: iteration num {iteration}/{self.max_iterations}"
+
+        for iteration in range(1, self.max_iterations + 1):
+            metadata.incr()
+            if not iteration % 3:
+                msg = f"\tAttempt to prove hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
                 print(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
+            metadata.chdir(cwd)
             if lake_response.exit_code == 0:
+                msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
+                logs.info(msg)
                 break
+
         artifact_dir = write_artifact(cwd, self.triple)
+        metadata.chdir(artifact_dir)
         if (
             lake_response.exit_code != 0
             and lake_response.stderr
@@ -133,19 +146,24 @@ class ProofExpert(MCPClient):
                 proof=self.proof,
                 error_message=lake_response.stderr,
                 audit_trail=artifact_dir,
+                metadata=metadata,
             )
         if self.proof is not None:
             return VerificationSuccess(
-                triple=self.triple, proof=self.proof, audit_trail=artifact_dir
+                triple=self.triple,
+                proof=self.proof,
+                audit_trail=artifact_dir,
+                metadata=metadata,
             )
         return VerificationFailure(
             triple=self.triple,
-            proof="",
+            proof="sorry",
             error_message="For some reason, the proof field is still None",
             audit_trail=artifact_dir,
+            metadata=metadata,
         )
 
-    async def run(self) -> VerificationResult | None:
+    async def run(self) -> VerificationResult:
         """
         Run the functionality of client.
         """

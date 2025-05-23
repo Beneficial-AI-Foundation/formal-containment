@@ -11,6 +11,7 @@ class Specification(Structure):
     precondition: str
     postcondition: str
     metavariables: str = ""  # invariant: space separated lean identifiers
+    name: str | None = None
 
 
 class HoareTriple(Structure):
@@ -35,10 +36,36 @@ class HoareTriple(Structure):
         return f"\\{{ {self.specification.precondition} \\}} {hash(self.command)} \\{{ {self.specification.postcondition} \\}}"
 
 
+class LLM(Structure):
+    human_name: str
+    provider: str
+    model_pin: str
+
+    @property
+    def litellm_id(self) -> str:
+        return str(Path(self.provider) / self.model_pin)
+
+    def __str__(self) -> str:
+        return self.litellm_id
+
+
+class ProofLoopMetadata(Structure):
+    converged_at_iteration: int = 0
+    artifacts_dir: Path | None = None
+    model: str
+
+    def incr(self) -> None:
+        self.converged_at_iteration += 1
+
+    def chdir(self, cwd: Path) -> None:
+        self.artifacts_dir = cwd
+
+
 class VerificationSuccess(Structure):
     triple: HoareTriple
     proof: str
     audit_trail: Path
+    metadata: ProofLoopMetadata
 
 
 class VerificationFailure(Structure):
@@ -46,6 +73,7 @@ class VerificationFailure(Structure):
     proof: str
     error_message: str
     audit_trail: Path
+    metadata: ProofLoopMetadata
 
 
 type VerificationResult = VerificationSuccess | VerificationFailure
@@ -79,16 +107,3 @@ class CheckerBase(Structure):
     @property
     def basic_path(self) -> Path:
         return self.cwd / "Artifacts" / "Basic.lean"
-
-
-class LLM(Structure):
-    human_name: str
-    provider: str
-    model_pin: str
-
-    @property
-    def litellm_id(self) -> str:
-        return str(Path(self.provider) / self.model_pin)
-
-    def __str__(self) -> str:
-        return self.litellm_id

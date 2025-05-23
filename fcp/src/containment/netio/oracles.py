@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable
 import dotenv
 from containment.structures import Language
-from containment.netio.parse_xml import parse_xml
+from containment.parsing.xml import parse_xml
 from litellm import completion
 
 dotenv.load_dotenv(Path.cwd() / ".." / ".env")
