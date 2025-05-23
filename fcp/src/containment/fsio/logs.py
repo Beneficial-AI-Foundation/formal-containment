@@ -52,7 +52,7 @@ class LoggerSetup:
         script_name = _script_name()
         logger = logging.getLogger(script_name)
         logger.setLevel(logging.INFO)
-        logger.propagate = False  # Prevent propagation to root logger (stdout)
+        # logger.propagate = False  # Prevent propagation to root logger (stdout)
 
         # Configure file logging (always enabled)
         timestamp = datetime.now().strftime("%Y%m%d-%H%M")

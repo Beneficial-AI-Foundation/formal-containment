@@ -45,11 +45,11 @@ async def run(
     Return imp code to the caller (representing the outside world) if the proof is successful, allowing up to `attempt_budget` attempts.
     Returns `None` if `attempt_budget` imp programs fail.
     """
+    msg_prefix = f"{model}:{specification.name}-"
     failed_attempts = []
     for attempt in range(attempt_budget):
-        msg = f"Attempt to find program provable at specification {specification}: {attempt + 1}/{attempt_budget}"
+        msg = f"{msg_prefix}: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
         logs.info(msg)
-        print(msg)
         result = await _synthesize_and_prove(
             model,
             specification,
@@ -61,7 +61,6 @@ async def run(
                 return result
             case VerificationFailure():
                 failed_attempts.append(result.triple.command)
-        msg = f"Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
+        msg = f"{msg_prefix}: Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
         logs.info(msg)
-        print(msg)
     return None

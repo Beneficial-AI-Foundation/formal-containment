@@ -107,7 +107,7 @@ class ProofExpert(MCPClient):
             else ""
         )
         triple_str = f"{forall_str} {self.triple.hidden_code}"
-
+        msg_prefix = f"\t{self.model}:{self.triple.specification.name if self.triple.specification.name is not None else self.triple.specification}-"
         cwd, lake_response = await self._iter("")
         metadata = ProofLoopMetadata(model=self.model)
         if lake_response.exit_code == 0 and self.proof is not None:
@@ -123,9 +123,8 @@ class ProofExpert(MCPClient):
         for iteration in range(1, self.max_iterations + 1):
             metadata.incr()
             if not iteration % 3:
-                msg = f"\tAttempt to prove hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
+                msg = f"{msg_prefix}: Attempt to prove hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
-                print(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
             metadata.chdir(cwd)

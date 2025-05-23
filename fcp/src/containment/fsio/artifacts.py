@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import shutil
 import tomli_w
@@ -28,4 +29,4 @@ def dump_toml(content: dict) -> None:
     Dump the content to a toml file in the artifacts directory at current timestamp
     """
     with open(target_dir / "experiment_results.toml", "wb") as f:
-        tomli_w.dump(content, f)
+        tomli_w.dump(json.loads(str(content)), f)
