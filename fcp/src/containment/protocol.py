@@ -15,7 +15,7 @@ async def _synthesize_and_prove(
     *,
     proof_loop_budget: int = 10,
     failed_attempts: list[str] | None = None,
-) -> VerificationResult:
+) -> VerificationResult | None:
     """
     Synthesize and prove a Hoare triple.
     """
@@ -23,12 +23,14 @@ async def _synthesize_and_prove(
         model, specification, failed_attempts=failed_attempts
     )
     if imp_expert.triple is None:
-        raise ValueError("Problem in imp expert synthesis.")
+        return None
     proof_expert = await ProofExpert.connect_and_run(
         model, imp_expert.triple, positive=True, max_iterations=proof_loop_budget
     )
     if proof_expert.verification_result is None:
-        raise ValueError("Unreachable.")
+        raise ValueError(
+            "Unreachable. `verification_result` is initialized to None but is always set to the right type in `.connect_and_run`"
+        )
     return proof_expert.verification_result
 
 
@@ -45,7 +47,7 @@ async def run(
     Return imp code to the caller (representing the outside world) if the proof is successful, allowing up to `attempt_budget` attempts.
     Returns `None` if `attempt_budget` imp programs fail.
     """
-    msg_prefix = f"{model}:{specification.name}-"
+    msg_prefix = f"{model}:{specification.name if specification.name is not None else 'user_spec'}-"
     failed_attempts = []
     for attempt in range(attempt_budget):
         msg = f"{msg_prefix}: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
@@ -57,10 +59,12 @@ async def run(
             failed_attempts=failed_attempts,
         )
         match result:
+            case None:
+                logs.warning(f"{msg_prefix}: Problem in `imp` synthesis.")
             case VerificationSuccess():
                 return result
             case VerificationFailure():
                 failed_attempts.append(result.triple.command)
-        msg = f"{msg_prefix}: Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
-        logs.info(msg)
+                msg = f"{msg_prefix}: Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
+                logs.info(msg)
     return None

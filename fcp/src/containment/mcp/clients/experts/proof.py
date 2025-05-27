@@ -112,7 +112,6 @@ class ProofExpert(MCPClient):
         metadata = ProofLoopMetadata(model=self.model)
         if lake_response.exit_code == 0 and self.proof is not None:
             artifact_dir = write_artifact(cwd, self.triple)
-            metadata.chdir(artifact_dir)
             return VerificationSuccess(
                 triple=self.triple,
                 proof=self.proof,
@@ -127,14 +126,12 @@ class ProofExpert(MCPClient):
                 logs.info(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
-            metadata.chdir(cwd)
             if lake_response.exit_code == 0:
                 msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
                 logs.info(msg)
                 break
 
         artifact_dir = write_artifact(cwd, self.triple)
-        metadata.chdir(artifact_dir)
         if (
             lake_response.exit_code != 0
             and lake_response.stderr
@@ -147,17 +144,17 @@ class ProofExpert(MCPClient):
                 audit_trail=artifact_dir,
                 metadata=metadata,
             )
-        if self.proof is not None:
-            return VerificationSuccess(
+        if self.proof is None:
+            return VerificationFailure(
                 triple=self.triple,
-                proof=self.proof,
+                proof="sorry",
+                error_message="For some reason, the proof field is still None",
                 audit_trail=artifact_dir,
                 metadata=metadata,
             )
-        return VerificationFailure(
+        return VerificationSuccess(
             triple=self.triple,
-            proof="sorry",
-            error_message="For some reason, the proof field is still None",
+            proof=self.proof,
             audit_trail=artifact_dir,
             metadata=metadata,
         )

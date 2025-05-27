@@ -1,7 +1,9 @@
 import tomllib
+import json
 from pathlib import Path
 import asyncio
 from itertools import product
+from collections import defaultdict
 from containment.structures import (
     Specification,
     VerificationResult,
@@ -86,24 +88,28 @@ def _results_dict(results: list[VerificationResult | BaseException | None]) -> d
     """
     Create a dictionary of results from the experiment matrix.
     """
-    result_dict = {}
+    result_dict = defaultdict(dict)
     for result in results:
         if isinstance(result, VerificationSuccess):
             logs.info(
-                f"Experiment succeeded for {result.triple.specification.name}: {result}"
+                f"Experiment succeeded for {result.triple.specification.name} by {result.metadata.model}: {result}"
             )
-            result_dict[result.triple.specification.name] = result.model_dump()
+            result_dict[result.triple.specification.name][result.metadata.model] = (
+                json.loads(result.model_dump_json())
+            )
         elif isinstance(result, VerificationFailure):
             logs.info(
-                f"Experiment failed for {result.triple.specification.name}: {result}"
+                f"Experiment failed for {result.triple.specification.name} by {result.metadata.model}: {result}"
             )
-            result_dict[result.triple.specification.name] = result.model_dump()
+            result_dict[result.triple.specification.name][result.metadata.model] = (
+                json.loads(result.model_dump_json())
+            )
         elif isinstance(result, BaseException):
             logs.error(f"Experiment threw an exception: {result}")
         else:
             logs.warning("Experiment returned None, or  some unknown result")
-            logs.warning(result)
-    return result_dict
+            logs.warning(f"Experiment result: {result}")
+    return dict(result_dict)
 
 
 async def run_experiments(

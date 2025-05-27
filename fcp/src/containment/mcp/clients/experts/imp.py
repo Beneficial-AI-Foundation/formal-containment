@@ -67,7 +67,7 @@ class ImpExpert(MCPClient):
             completion["choices"][0].message.content, "imp"
         )
         if program is None:
-            msg = "No program found. XML parse error, probably"
+            msg = f"{self.spec.name},{self.model}: No program found. XML parse error, probably"
             print(msg)
             return None
         return HoareTriple(specification=self.spec, command=program)

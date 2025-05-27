@@ -119,7 +119,7 @@ def contain() -> None:
             attempt_budget=attempt_budget,
         )
 
-        if result:
+        if result is not None:
             msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
             logs.info(msg)
             msg = f"\t The lean code of the proof for you to audit is located in {result.audit_trail}"

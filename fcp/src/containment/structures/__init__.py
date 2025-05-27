@@ -51,14 +51,10 @@ class LLM(Structure):
 
 class ProofLoopMetadata(Structure):
     converged_at_iteration: int = 0
-    artifacts_dir: Path | None = None
     model: str
 
     def incr(self) -> None:
         self.converged_at_iteration += 1
-
-    def chdir(self, cwd: Path) -> None:
-        self.artifacts_dir = cwd
 
 
 class VerificationSuccess(Structure):
