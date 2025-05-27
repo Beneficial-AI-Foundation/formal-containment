@@ -71,6 +71,7 @@ class VerificationFailure(Structure):
     audit_trail: Path
     metadata: ExpertMetadata
 
+    @property
     def failure_str(self) -> str:
         return self.triple.command
 
@@ -82,6 +83,7 @@ class ImpFailure(Structure):
     failed_attempts: list[VerificationFailure | Self] | None = None
     error_message: str | None = None
 
+    @property
     def failure_str(self) -> str:
         return self.attempted_completion
 

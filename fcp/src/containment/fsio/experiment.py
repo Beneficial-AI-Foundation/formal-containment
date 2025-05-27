@@ -14,7 +14,7 @@ from containment.structures import (
     LLM,
 )
 from containment.protocol import run as boundary_run
-from containment.fsio.artifacts import dump_toml
+from containment.fsio.artifacts import dump_toml, dump_json
 from containment.fsio.logs import logs
 
 EXPERIMENTS = Path.cwd() / ".." / "experiments"
@@ -93,7 +93,7 @@ def _results_dict(
     Create a dictionary of results from the experiment matrix.
     """
     result_dict = defaultdict(dict)
-    result_dict["failed_attempts"]["all_attempts_failed"] = []
+    result_dict["_fail"]["_fail"] = []
     for result in results:
         if isinstance(result, VerificationSuccess):
             logs.info(
@@ -110,17 +110,20 @@ def _results_dict(
                     case ImpFailure():
                         spec_name = res.specification.name
                 logs.info(
-                    f"Experiment failed for {spec_name} by {res.metadata.model}: {result}"
+                    f"Experiment failed for {spec_name} by {res.metadata.model}: {res}"
                 )
-                result_dict[spec_name][res.metadata.model] = json.loads(
-                    res.model_dump_json()
+                if res.metadata.model not in result_dict[spec_name]:
+                    result_dict[spec_name][res.metadata.model] = []
+                result_dict[spec_name][res.metadata.model].append(
+                    json.loads(res.model_dump_json())
                 )
-        elif isinstance(result, Exception):
-            result_dict["failed_attempts"]["all_attempts_failed"].append(str(result))
+
+        elif isinstance(result, BaseException):
+            result_dict["_fail"]["_fail"].append(str(result))
             logs.error(f"Experiment threw an exception: {result}")
         else:
-            result_dict["failed_attempts"]["all_attempts_failed"].append(
-                f"Unknown result-- {result}: {type(result)}"
+            result_dict["_fail"]["_fail"].append(
+                f"Unknown result:: {result}: {type(result)}"
             )
             logs.warning(f"Some unknown result: {result}")
     return dict(result_dict)
@@ -163,7 +166,6 @@ async def run_experiments(
     ]
     if sequential:
         results = []
-        # breakpoint()
         for task in tasks:
             try:
                 result = await task
@@ -174,6 +176,7 @@ async def run_experiments(
         results = await asyncio.gather(*tasks, return_exceptions=True)
     results_dict = _results_dict(results)
     dump_toml(results_dict)
+    dump_json(results_dict)
     return results_dict
 
 

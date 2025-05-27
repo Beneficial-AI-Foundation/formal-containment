@@ -2,9 +2,7 @@ from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
 from containment.structures import (
     Specification,
-    VerificationFailure,
     VerificationSuccess,
-    ImpFailure,
     VerificationResult,
     Failure,
 )
@@ -15,9 +13,9 @@ async def _synthesize_and_prove(
     model: str,
     specification: Specification,
     *,
-    proof_loop_budget: int = 10,
+    proof_loop_budget: int,
     failed_attempts: list[Failure] | None = None,
-) -> VerificationSuccess | VerificationFailure | ImpFailure:
+) -> VerificationResult:
     """
     Synthesize and prove a Hoare triple.
     """
@@ -65,13 +63,8 @@ async def run(
             failed_attempts=failed_attempts,
         )
         match result:
-            case ImpFailure():
-                logs.warning(f"{msg_prefix}: Problem in `imp` synthesis.")
-                failed_attempts.append(result)
+            case list():
+                failed_attempts.extend(result)
             case VerificationSuccess():
                 return result
-            case VerificationFailure():
-                failed_attempts.append(result)
-                msg = f"{msg_prefix}: Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
-                logs.info(msg)
     return failed_attempts

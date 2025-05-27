@@ -115,7 +115,7 @@ class ProofExpert(MCPClient):
             return VerificationSuccess(
                 triple=self.triple,
                 proof=self.proof,
-                audit_trail=artifact_dir,
+                audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
                 metadata=metadata,
             )
         failures = [
@@ -160,8 +160,8 @@ class ProofExpert(MCPClient):
                 VerificationFailure(
                     triple=self.triple,
                     proof="sorry <UNREACHABLE?>",
-                    error_message="For some reason, the proof field is still None",
-                    audit_trail=artifact_dir,
+                    error_message="For some reason, the proof field is still None (Unreachable?)",
+                    audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
                     metadata=metadata,
                 )
             )
@@ -169,7 +169,7 @@ class ProofExpert(MCPClient):
         return VerificationSuccess(
             triple=self.triple,
             proof=self.proof,
-            audit_trail=artifact_dir,
+            audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
             metadata=metadata,
         )
 

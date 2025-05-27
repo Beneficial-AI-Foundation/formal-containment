@@ -6,7 +6,7 @@ from containment.structures import (
     ExpertMetadata,
     Specification,
     ImpFailure,
-    VerificationFailure,
+    Failure,
 )
 from containment.fsio.prompts import oracle_system_prompt
 from containment.netio.oracles import parse_program_completion
@@ -17,7 +17,7 @@ class ImpExpert(MCPClient):
         self,
         model: str,
         spec: Specification,
-        failed_attempts: list[VerificationFailure | ImpFailure] | None = None,
+        failed_attempts: list[Failure] | None = None,
     ) -> None:
         super().__init__()
         self.model = model
@@ -36,7 +36,7 @@ class ImpExpert(MCPClient):
         cls,
         model: str,
         spec: Specification,
-        failed_attempts: list[VerificationFailure | ImpFailure] | None = None,
+        failed_attempts: list[Failure] | None = None,
     ) -> "ImpExpert":
         """
         Async instantiation: connect to the MCP server.
@@ -55,7 +55,7 @@ class ImpExpert(MCPClient):
     async def _complete_triple(self) -> HoareTriple | ImpFailure:
         failed_attempts = (
             "\n".join(
-                f"<failed_attempt>{failed_attempt.failure_str()}</failed_attempt>"
+                f"<failed_attempt>{failed_attempt.failure_str}</failed_attempt>"
                 for failed_attempt in self.failed_attempts
             )
             if self.failed_attempts is not None

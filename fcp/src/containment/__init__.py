@@ -6,7 +6,6 @@ from containment.structures import (
     Specification,
     VerificationSuccess,
     VerificationFailure,
-    ImpFailure,
 )
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
@@ -112,7 +111,6 @@ def contain() -> None:
         )
         msg = f"Running containment protocol at {model_id} for {specification}"
         logs.info(msg)
-        print(msg)
         result = await boundary_run(
             model_id,
             specification,
@@ -120,18 +118,17 @@ def contain() -> None:
             attempt_budget=attempt_budget,
         )
 
-        match result:
-            case ImpFailure():
-                msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world. Error: {result.error_message}"
-                logs.info(msg)
-            case VerificationSuccess() | VerificationFailure():
-                msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
-                logs.info(msg)
-                msg = f"\t The lean code of the proof for you to audit is located in {result.audit_trail}"
-                logs.info(msg)
-            case None:
-                msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world."
-                logs.info(msg)
+        if isinstance(result, list):
+            msg = f"({model_id}, {specification}): No code found that is provably safe to run in the world."
+            logs.info(msg)
+            logs.info(f"\tNum of failed attempts: {len(result)}")
+            for i, failure in enumerate(result, 1):
+                logs.info(f"\tAttempt {i} failed with error: {failure.error_message}")
+        elif isinstance(result, VerificationSuccess):
+            msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
+            logs.info(msg)
+            msg = f"\t The lean code of the proof for you to audit is located in {result.audit_trail}"
+            logs.info(msg)
         return None
 
     @cli.command()

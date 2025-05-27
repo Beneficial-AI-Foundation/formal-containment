@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import shutil
 import tomli_w
 from containment.structures import HoareTriple
@@ -29,4 +30,10 @@ def dump_toml(content: dict) -> None:
     """
     with open(target_dir / "experiment_results.toml", "wb") as results_file:
         tomli_w.dump(content, results_file)
+    return None
+
+
+def dump_json(content: dict | list) -> None:
+    with open(target_dir / "experiment_results.json", "w") as results_file:
+        json.dump(content, results_file, indent=4)
     return None
