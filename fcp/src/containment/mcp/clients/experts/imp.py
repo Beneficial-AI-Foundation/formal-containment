@@ -3,7 +3,10 @@
 from containment.mcp.clients.basic import MCPClient
 from containment.structures import (
     HoareTriple,
+    ExpertMetadata,
     Specification,
+    ImpFailure,
+    VerificationFailure,
 )
 from containment.fsio.prompts import oracle_system_prompt
 from containment.netio.oracles import parse_program_completion
@@ -11,7 +14,10 @@ from containment.netio.oracles import parse_program_completion
 
 class ImpExpert(MCPClient):
     def __init__(
-        self, model: str, spec: Specification, failed_attempts: list[str] | None = None
+        self,
+        model: str,
+        spec: Specification,
+        failed_attempts: list[VerificationFailure | ImpFailure] | None = None,
     ) -> None:
         super().__init__()
         self.model = model
@@ -23,22 +29,33 @@ class ImpExpert(MCPClient):
         self.system_prompt = oracle_system_prompt("imp")
         self.complete = self._mk_complete(self.model, self.system_prompt)
         self.triple = None
+        self.failure = None
 
     @classmethod
     async def connect_and_run(
-        cls, model: str, spec: Specification, failed_attempts: list[str] | None = None
+        cls,
+        model: str,
+        spec: Specification,
+        failed_attempts: list[VerificationFailure | ImpFailure] | None = None,
     ) -> "ImpExpert":
         """
         Async instantiation: connect to the MCP server.
+
+        Invariant: exactly one of `triple`, `failure` is None
         """
         mcp_client = cls(model, spec, failed_attempts)
-        mcp_client.triple = await mcp_client._connect_to_server_and_run()
+        result = await mcp_client._connect_to_server_and_run()
+        match result:
+            case HoareTriple():
+                mcp_client.triple = result
+            case ImpFailure():
+                mcp_client.failure = result
         return mcp_client
 
-    async def _complete_triple(self) -> HoareTriple | None:
+    async def _complete_triple(self) -> HoareTriple | ImpFailure:
         failed_attempts = (
             "\n".join(
-                f"<failed_attempt>{failed_attempt}</failed_attempt>"
+                f"<failed_attempt>{failed_attempt.failure_str()}</failed_attempt>"
                 for failed_attempt in self.failed_attempts
             )
             if self.failed_attempts is not None
@@ -63,16 +80,21 @@ class ImpExpert(MCPClient):
                 }
             ]
         )
-        program = parse_program_completion(
-            completion["choices"][0].message.content, "imp"
-        )
+        message_content = completion["choices"][0].message.content
+        program = parse_program_completion(message_content, "imp")
         if program is None:
             msg = f"{self.spec.name},{self.model}: No program found. XML parse error, probably"
             print(msg)
-            return None
+            return ImpFailure(
+                specification=self.spec,
+                attempted_completion=message_content,
+                failed_attempts=self.failed_attempts,
+                metadata=ExpertMetadata(model=self.model),
+                error_message=msg,
+            )
         return HoareTriple(specification=self.spec, command=program)
 
-    async def run(self) -> HoareTriple | None:
+    async def run(self) -> HoareTriple | ImpFailure:
         """
         Run the functionality of client.
         """

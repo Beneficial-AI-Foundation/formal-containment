@@ -4,7 +4,9 @@ from containment.structures import (
     Specification,
     VerificationFailure,
     VerificationSuccess,
+    ImpFailure,
     VerificationResult,
+    Failure,
 )
 from containment.fsio.logs import logs
 
@@ -14,8 +16,8 @@ async def _synthesize_and_prove(
     specification: Specification,
     *,
     proof_loop_budget: int = 10,
-    failed_attempts: list[str] | None = None,
-) -> VerificationResult | None:
+    failed_attempts: list[Failure] | None = None,
+) -> VerificationSuccess | VerificationFailure | ImpFailure:
     """
     Synthesize and prove a Hoare triple.
     """
@@ -23,7 +25,11 @@ async def _synthesize_and_prove(
         model, specification, failed_attempts=failed_attempts
     )
     if imp_expert.triple is None:
-        return None
+        if imp_expert.failure is None:
+            raise ValueError(
+                "Unreachable. `triple` is None but `failure` is also None, which should not happen."
+            )
+        return imp_expert.failure
     proof_expert = await ProofExpert.connect_and_run(
         model, imp_expert.triple, positive=True, max_iterations=proof_loop_budget
     )
@@ -40,7 +46,7 @@ async def run(
     *,
     proof_loop_budget: int = 10,
     attempt_budget: int = 5,
-) -> VerificationResult | None:
+) -> VerificationResult:
     """
     Run the boundary screener, the boundary's main entrypoint.
 
@@ -59,12 +65,13 @@ async def run(
             failed_attempts=failed_attempts,
         )
         match result:
-            case None:
+            case ImpFailure():
                 logs.warning(f"{msg_prefix}: Problem in `imp` synthesis.")
+                failed_attempts.append(result)
             case VerificationSuccess():
                 return result
             case VerificationFailure():
-                failed_attempts.append(result.triple.command)
+                failed_attempts.append(result)
                 msg = f"{msg_prefix}: Failed attempt {attempt + 1}/{attempt_budget} with error: {result.error_message}"
                 logs.info(msg)
-    return None
+    return failed_attempts

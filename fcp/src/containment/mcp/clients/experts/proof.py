@@ -4,7 +4,7 @@ from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
     LakeResponse,
-    ProofLoopMetadata,
+    ExpertMetadata,
     VerificationSuccess,
     VerificationFailure,
     VerificationResult,
@@ -109,7 +109,7 @@ class ProofExpert(MCPClient):
         triple_str = f"{forall_str} {self.triple.hidden_code}"
         msg_prefix = f"\t{self.model}:{self.triple.specification.name if self.triple.specification.name is not None else self.triple.specification}-"
         cwd, lake_response = await self._iter("")
-        metadata = ProofLoopMetadata(model=self.model)
+        metadata = ExpertMetadata(model=self.model)
         if lake_response.exit_code == 0 and self.proof is not None:
             artifact_dir = write_artifact(cwd, self.triple)
             return VerificationSuccess(
@@ -118,7 +118,15 @@ class ProofExpert(MCPClient):
                 audit_trail=artifact_dir,
                 metadata=metadata,
             )
-
+        failures = [
+            VerificationFailure(
+                triple=self.triple,
+                proof=self.proof if self.proof is not None else "<UNREACHABLE>",
+                error_message=lake_response.stderr,
+                audit_trail=cwd,
+                metadata=metadata,
+            )
+        ]
         for iteration in range(1, self.max_iterations + 1):
             metadata.incr()
             if not iteration % 3:
@@ -130,6 +138,15 @@ class ProofExpert(MCPClient):
                 msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
                 logs.info(msg)
                 break
+            failures.append(
+                VerificationFailure(
+                    triple=self.triple,
+                    proof=self.proof if self.proof is not None else "<UNREACHABLE>",
+                    error_message=lake_response.stderr,
+                    audit_trail=cwd,
+                    metadata=metadata,
+                )
+            )
 
         artifact_dir = write_artifact(cwd, self.triple)
         if (
@@ -137,21 +154,18 @@ class ProofExpert(MCPClient):
             and lake_response.stderr
             and self.proof is not None
         ):
-            return VerificationFailure(
-                triple=self.triple,
-                proof=self.proof,
-                error_message=lake_response.stderr,
-                audit_trail=artifact_dir,
-                metadata=metadata,
-            )
+            return failures
         if self.proof is None:
-            return VerificationFailure(
-                triple=self.triple,
-                proof="sorry",
-                error_message="For some reason, the proof field is still None",
-                audit_trail=artifact_dir,
-                metadata=metadata,
+            failures.append(
+                VerificationFailure(
+                    triple=self.triple,
+                    proof="sorry <UNREACHABLE?>",
+                    error_message="For some reason, the proof field is still None",
+                    audit_trail=artifact_dir,
+                    metadata=metadata,
+                )
             )
+            return failures
         return VerificationSuccess(
             triple=self.triple,
             proof=self.proof,

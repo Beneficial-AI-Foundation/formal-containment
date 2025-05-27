@@ -4,11 +4,13 @@ from pathlib import Path
 import asyncio
 from itertools import product
 from collections import defaultdict
+from typing import Sequence
 from containment.structures import (
     Specification,
     VerificationResult,
     VerificationSuccess,
     VerificationFailure,
+    ImpFailure,
     LLM,
 )
 from containment.protocol import run as boundary_run
@@ -84,11 +86,14 @@ def _pp_matrix(matrix: list[tuple[Specification, LLM]]) -> str:
     )
 
 
-def _results_dict(results: list[VerificationResult | BaseException | None]) -> dict:
+def _results_dict(
+    results: list[VerificationResult | BaseException],
+) -> dict:
     """
     Create a dictionary of results from the experiment matrix.
     """
     result_dict = defaultdict(dict)
+    result_dict["failed_attempts"]["all_attempts_failed"] = []
     for result in results:
         if isinstance(result, VerificationSuccess):
             logs.info(
@@ -97,18 +102,27 @@ def _results_dict(results: list[VerificationResult | BaseException | None]) -> d
             result_dict[result.triple.specification.name][result.metadata.model] = (
                 json.loads(result.model_dump_json())
             )
-        elif isinstance(result, VerificationFailure):
-            logs.info(
-                f"Experiment failed for {result.triple.specification.name} by {result.metadata.model}: {result}"
-            )
-            result_dict[result.triple.specification.name][result.metadata.model] = (
-                json.loads(result.model_dump_json())
-            )
-        elif isinstance(result, BaseException):
+        elif isinstance(result, Sequence):
+            for res in result:
+                match res:
+                    case VerificationFailure():
+                        spec_name = res.triple.specification.name
+                    case ImpFailure():
+                        spec_name = res.specification.name
+                logs.info(
+                    f"Experiment failed for {spec_name} by {res.metadata.model}: {result}"
+                )
+                result_dict[spec_name][res.metadata.model] = json.loads(
+                    res.model_dump_json()
+                )
+        elif isinstance(result, Exception):
+            result_dict["failed_attempts"]["all_attempts_failed"].append(str(result))
             logs.error(f"Experiment threw an exception: {result}")
         else:
-            logs.warning("Experiment returned None, or  some unknown result")
-            logs.warning(f"Experiment result: {result}")
+            result_dict["failed_attempts"]["all_attempts_failed"].append(
+                f"Unknown result-- {result}: {type(result)}"
+            )
+            logs.warning(f"Some unknown result: {result}")
     return dict(result_dict)
 
 
@@ -117,7 +131,8 @@ async def run_experiments(
     attempt_budget: int,
     *,
     include_models: list[str] = INCLUDE_MODELS,
-) -> dict:  # list[VerificationResult | BaseException | None]:
+    sequential: bool = True,
+) -> dict:
     """
     Run the experiments on the given specifications in parallel.
 
@@ -146,7 +161,17 @@ async def run_experiments(
         )
         for specification, model in matrix
     ]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+    if sequential:
+        results = []
+        # breakpoint()
+        for task in tasks:
+            try:
+                result = await task
+                results.append(result)
+            except Exception as exc:
+                results.append(exc)
+    else:
+        results = await asyncio.gather(*tasks, return_exceptions=True)
     results_dict = _results_dict(results)
     dump_toml(results_dict)
     return results_dict

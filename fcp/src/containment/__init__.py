@@ -6,6 +6,7 @@ from containment.structures import (
     Specification,
     VerificationSuccess,
     VerificationFailure,
+    ImpFailure,
 )
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
@@ -119,14 +120,18 @@ def contain() -> None:
             attempt_budget=attempt_budget,
         )
 
-        if result is not None:
-            msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
-            logs.info(msg)
-            msg = f"\t The lean code of the proof for you to audit is located in {result.audit_trail}"
-            logs.info(msg)
-        else:
-            msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world."
-            logs.info(msg)
+        match result:
+            case ImpFailure():
+                msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world. Error: {result.error_message}"
+                logs.info(msg)
+            case VerificationSuccess() | VerificationFailure():
+                msg = f"({model_id}, {specification}): The following imp code is safe to execute in the world: <imp>{result.triple.command}</imp>"
+                logs.info(msg)
+                msg = f"\t The lean code of the proof for you to audit is located in {result.audit_trail}"
+                logs.info(msg)
+            case None:
+                msg = f"({model_id}, {specification}): Failed to find code that is provably safe to run in the world."
+                logs.info(msg)
         return None
 
     @cli.command()
@@ -134,6 +139,7 @@ def contain() -> None:
         proof_loop_budget: int = 50,
         attempt_budget: int = 10,
         models: list[str] | None = None,
+        sequential: bool = False,
     ) -> None:
         """
         Run the containment protocol experiments from `data.toml`
@@ -141,7 +147,10 @@ def contain() -> None:
         if models is None:
             models = INCLUDE_MODELS
         results = await run_experiments(
-            proof_loop_budget, attempt_budget, include_models=models
+            proof_loop_budget,
+            attempt_budget,
+            include_models=models,
+            sequential=sequential,
         )
         print(results)
         return None

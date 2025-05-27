@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import Literal
+from typing import Literal, Self, Sequence
 from containment.structures.basic import Structure
 
 type Language = Literal["imp", "proof"]
@@ -49,7 +49,7 @@ class LLM(Structure):
         return self.litellm_id
 
 
-class ProofLoopMetadata(Structure):
+class ExpertMetadata(Structure):
     converged_at_iteration: int = 0
     model: str
 
@@ -61,7 +61,7 @@ class VerificationSuccess(Structure):
     triple: HoareTriple
     proof: str
     audit_trail: Path
-    metadata: ProofLoopMetadata
+    metadata: ExpertMetadata
 
 
 class VerificationFailure(Structure):
@@ -69,10 +69,26 @@ class VerificationFailure(Structure):
     proof: str
     error_message: str
     audit_trail: Path
-    metadata: ProofLoopMetadata
+    metadata: ExpertMetadata
+
+    def failure_str(self) -> str:
+        return self.triple.command
 
 
-type VerificationResult = VerificationSuccess | VerificationFailure
+class ImpFailure(Structure):
+    specification: Specification
+    attempted_completion: str
+    metadata: ExpertMetadata
+    failed_attempts: list[VerificationFailure | Self] | None = None
+    error_message: str | None = None
+
+    def failure_str(self) -> str:
+        return self.attempted_completion
+
+
+type Failure = VerificationFailure | ImpFailure
+type Success = VerificationSuccess
+type VerificationResult = Success | Sequence[Failure]
 
 
 class LakeResponse(Structure):
