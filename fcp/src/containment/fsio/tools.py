@@ -2,6 +2,7 @@ import tempfile
 import shutil
 import subprocess
 from pathlib import Path
+from pantograph import Server
 from containment.structures import LakeResponse
 
 CMD = ["lake", "exe", "check"]
@@ -31,3 +32,13 @@ def temp_lakeproj_init(lake_dir: Path = LAKE_DIR) -> Path:
         dirs_exist_ok=True,
     )
     return tmpdir
+
+
+def pantograph_init(cwd: Path) -> Server:
+    """
+    Initialize the Pantograph server.
+    """
+    server = Server(
+        project_path=str(cwd),
+    )
+    return server

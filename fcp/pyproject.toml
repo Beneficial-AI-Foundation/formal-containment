@@ -11,6 +11,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "litellm[proxy]==1.70.4",
     "mcp>=1.5.0",
+    "pantograph",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
     "tomli-w>=1.2.0",
@@ -36,6 +37,7 @@ dev = [
     "opentelemetry-sdk>=1.33.0",
     "pyright>=1.1.400",
     "pytest>=8.3.5",
+    "pytest-asyncio>=1.0.0",
     "ruff>=0.11.8",
 ]
 
@@ -43,3 +45,6 @@ dev = [
 testpaths = [
   "src/tests"
 ]
+
+[tool.uv.sources]
+pantograph = { git = "https://github.com/stanford-centaur/PyPantograph" }
