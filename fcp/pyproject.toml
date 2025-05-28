@@ -9,8 +9,8 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "jinja2>=3.1.6",
-    "litellm[proxy]==1.70.4",
-    "mcp>=1.5.0",
+    "litellm>=1.71.2",
+    "mcp>=1.9.1",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
     "tomli-w>=1.2.0",
