@@ -11,7 +11,8 @@ pre-commit:
       run: |
         uv run ruff check src --fix
         uv run ruff format src
-        pyright
+        uv run pyright
+        uv run pytest
       root: "fcp/"
       glob: "fcp/src/*.py"
 
