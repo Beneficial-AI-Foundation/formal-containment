@@ -1,4 +1,3 @@
-from binascii import unhexlify
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from containment.structures import (
@@ -87,66 +86,3 @@ def run_lake_exe_check(lean_code: str) -> tuple[Path, LakeResponse]:
     cwd = temp_lakeproj_init()
     checker = Checker(cwd=cwd)
     return cwd, checker.run_code(lean_code)
-
-
-@mcp.tool("unhex", description="Unhex a string")
-def unhex_string(hex_string: str) -> str:
-    """
-    Unhex a string.
-
-    Args:
-        hex_string: The hex string to unhex
-
-    Returns:
-        str: The unhexed string
-    """
-    return unhexlify(hex_string).decode(HEX_ENCODING)
-
-
-@mcp.resource(
-    "fcp://specs/{precondition_hex}/{postcondition_hex}",
-    name="specification",
-    mime_type="application/json",
-    description="The specification is a precondition postcondition pair which gets sent to the imp expert to tell it what program to find. Each part is passed in as a hex string and decoded.",
-)
-def get_specification(precondition_hex: str, postcondition_hex: str) -> Specification:
-    """
-    Get a specification based on precondition and postcondition.
-
-    Args:
-        precondition_hex: The precondition of the specification, in hex format
-        postcondition_hex: The postcondition of the specification, in hex format
-
-    Returns:
-        Specification: A Specification object containing the precondition and postcondition
-    """
-    precondition = unhexlify(precondition_hex).decode(HEX_ENCODING)
-    postcondition = unhexlify(postcondition_hex).decode(HEX_ENCODING)
-    return Specification(precondition=precondition, postcondition=postcondition)
-
-
-@mcp.resource(
-    "fcp://hoare_triples/{precondition_hex}/{command_hex}/{postcondition_hex}",
-    name="hoare_triple",
-    mime_type="application/json",
-    description="The hoare triple gets sent to the proving oracle. Each part is passed in as a hex string and decoded.",
-)
-def get_hoare_triple(
-    precondition_hex: str, command_hex: str, postcondition_hex: str
-) -> HoareTriple:
-    """
-    Get a Hoare Triple based on precondition, command, and postcondition.
-
-    Args:
-        precondition_hex: The precondition of the Hoare Triple, in hex format
-        command_hex: The imp program of the Hoare Triple, in hex format
-        postcondition_hex: The postcondition of the Hoare Triple, in hex format
-
-    Returns:
-        HoareTriple: A HoareTriple object containing the specification and command
-    """
-    precondition = unhexlify(precondition_hex).decode(HEX_ENCODING)
-    command = unhexlify(command_hex).decode(HEX_ENCODING)
-    postcondition = unhexlify(postcondition_hex).decode(HEX_ENCODING)
-    specification = get_specification(precondition, postcondition)
-    return HoareTriple(specification=specification, command=command)

@@ -7,16 +7,32 @@ pre-commit:
       root: "imp/"
       glob: "imp/*.lean"
 
-    - name: "FCP: uv package"
+    - name: "FCP: uv package - lint"
       run: |
-        uv run ruff check src --fix
-        uv run ruff format src
-        pyright
+        uv run ruff check src
+      root: "fcp/"
+      glbo: "fcp/src/*.py"
+
+    - name: "FCP: uv package - format"
+      run: |
+        uv run ruff format --check src
+      root: "fcp/"
+      glob: "fcp/src/*.py"
+
+    - name: "FCP: uv package - typecheck"
+      run: |
+        uv run pyright
+      root: "fcp/"
+      glob: "fcp/src/*.py"
+
+    - name: "FCP: uv package - test"
+      run: |
+        uv run pytest
       root: "fcp/"
       glob: "fcp/src/*.py"
 
     - name: "Communications"
       run: |
-        make
+        make -q
       root: "comms/"
       glob: "comms/{*.typ,*.org}"
