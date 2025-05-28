@@ -15,7 +15,7 @@ pre-commit:
 
     - name: "FCP: uv package - format"
       run: |
-        uv run ruff format src --check
+        uv run ruff format --check src
       root: "fcp/"
       glob: "fcp/src/*.py"
 

@@ -1,3 +1,4 @@
+import pytest
 from containment.structures import Specification, HoareTriple
 from containment.fsio.prompts import load_txt, oracle_system_prompt
 
@@ -16,7 +17,8 @@ def test_oracle_template_loading():
     assert len(imp_prompt) > 0
 
 
-def test_pos_lean_file():
+@pytest.mark.parametrize("polarity", ["Positive", "Negative"])
+def test_lean_file(polarity):
     """Test loading positive lean template file."""
     hoare_triple = HoareTriple(
         specification=Specification(
@@ -25,7 +27,7 @@ def test_pos_lean_file():
         command="test_command",
     )
     pos_sorry = load_txt(
-        "Positive.lean.template", proof="sorry", **hoare_triple.model_dump()
+        f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
     )
     assert isinstance(pos_sorry, str)
     assert len(pos_sorry) > 0
@@ -34,23 +36,3 @@ def test_pos_lean_file():
     assert hoare_triple.command in pos_sorry
     assert hoare_triple.specification.postcondition in pos_sorry
     assert "sorry" in pos_sorry
-
-
-def test_neg_lean_file():
-    """Test loading negative lean template file."""
-    hoare_triple = HoareTriple(
-        specification=Specification(
-            precondition="test_prec", postcondition="test_post"
-        ),
-        command="test_command",
-    )
-    neg_sorry = load_txt(
-        "Negative.lean.template", proof="sorry", **hoare_triple.model_dump()
-    )
-    assert isinstance(neg_sorry, str)
-    assert len(neg_sorry) > 0
-
-    assert hoare_triple.specification.precondition in neg_sorry
-    assert hoare_triple.command in neg_sorry
-    assert hoare_triple.specification.postcondition in neg_sorry
-    assert "sorry" in neg_sorry

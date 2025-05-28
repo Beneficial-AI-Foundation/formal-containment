@@ -1,5 +1,6 @@
 import pytest
 from pathlib import Path
+import tomllib
 from containment.mcp.server import (
     get_proof_user_prompt,
     get_imp_user_prompt,
@@ -28,6 +29,13 @@ def sample_specification():
 @pytest.fixture
 def sample_hoare_triple(sample_specification):
     return HoareTriple(specification=sample_specification, command=SAMPLE_COMMAND)
+
+
+@pytest.fixture
+def experiment_data():
+    with open(Path.cwd() / ".." / "experiments" / "data.toml", "rb") as experiment_data:
+        experiments = tomllib.load(experiment_data)
+    return experiments
 
 
 def test_proof_user_prompt():
@@ -77,7 +85,7 @@ def test_typecheck_tool():
 
 
 def test_pos_sorry(sample_hoare_triple):
-    """Test the pos_sorry function."""
+    """Test lake tool on positive lean template with sorry filled in."""
     pos_sorry = load_txt(
         "Positive.lean.template", proof="sorry", **sample_hoare_triple.model_dump()
     )
@@ -90,9 +98,12 @@ def test_pos_sorry(sample_hoare_triple):
     assert "<HOARE_TRIPLE_TERM_HAS_SORRY>" in response.stderr
 
 
-def test_pos_fail(sample_hoare_triple):
+@pytest.mark.parametrize("polarity", ["Positive", "Negative"])
+def test_fail(sample_hoare_triple, polarity):
     pos_fail = load_txt(
-        "Positive.lean.template", proof="<FOOSKI>", **sample_hoare_triple.model_dump()
+        f"{polarity}.lean.template",
+        proof="<NOT A PROOF>",
+        **sample_hoare_triple.model_dump(),
     )
     assert isinstance(pos_fail, str)
     cwd, response = run_lake_exe_check(pos_fail)
@@ -101,3 +112,61 @@ def test_pos_fail(sample_hoare_triple):
     assert response.exit_code == 1
     assert response.stderr
     assert not response.stdout
+
+
+@pytest.mark.parametrize("polarity", ["Positive", "Negative"])
+def test_experiments_sorry(experiment_data, polarity):
+    for sample in experiment_data["sample"]:
+        assert isinstance(sample, dict)
+        assert "precondition" in sample
+        assert "postcondition" in sample
+        hoare_triple = HoareTriple(
+            specification=Specification(
+                precondition=sample["precondition"],
+                postcondition=sample["postcondition"],
+                metavariables=(
+                    sample["metavariables"] if "metavariables" in sample else ""
+                ),
+            ),
+            command=SAMPLE_COMMAND,
+        )
+        sorry = load_txt(
+            f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
+        )
+        assert isinstance(sorry, str)
+        cwd, response = run_lake_exe_check(sorry)
+        assert isinstance(cwd, Path)
+        assert isinstance(response, LakeResponse)
+        assert response.exit_code == 0
+        assert "<HOARE_TRIPLE_TERM_HAS_SORRY>" in response.stderr
+        assert not response.stdout
+
+
+@pytest.mark.parametrize("polarity", ["Positive", "Negative"])
+def test_experiments_fail(experiment_data, polarity):
+    for sample in experiment_data["sample"]:
+        assert isinstance(sample, dict)
+        assert "precondition" in sample
+        assert "postcondition" in sample
+        hoare_triple = HoareTriple(
+            specification=Specification(
+                precondition=sample["precondition"],
+                postcondition=sample["postcondition"],
+                metavariables=(
+                    sample["metavariables"] if "metavariables" in sample else ""
+                ),
+            ),
+            command=SAMPLE_COMMAND,
+        )
+
+        fail = load_txt(
+            f"{polarity}.lean.template",
+            proof="<NOT A PROOF>",
+            **hoare_triple.model_dump(),
+        )
+        assert isinstance(fail, str)
+        cwd, response = run_lake_exe_check(fail)
+        assert isinstance(cwd, Path)
+        assert isinstance(response, LakeResponse)
+        assert response.exit_code == 1
+        assert not response.stdout
