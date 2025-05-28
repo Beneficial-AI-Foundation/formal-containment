@@ -36,5 +36,4 @@ jobs:
         working-directory: fcp
       - run: uv run pyright src
         working-directory: fcp
-      - run: uv run pytest 
-        working-directory: fcp
+      # must install elan to pytest
