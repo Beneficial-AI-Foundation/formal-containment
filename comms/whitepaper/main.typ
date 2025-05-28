@@ -307,7 +307,7 @@ The Lean program would look like this (Note it must be run with `lake build` in 
     import Imp
     open Imp
 
-    example : {{fun st => st "x" > 0}}(imp { x := x + 1; }){{fun st => st "x" > 1}} := by
+    example : {{x > 0}}(imp { x := x + 1; }){{x > 1}} := by
 
     simp
     intros σ σ' h1 h2
@@ -399,7 +399,7 @@ on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programm
 
 = Related Work <sec:related>
 
-Our work is well situated within _PCC_ @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying. TODO: say more
+Our work is well situated within _PCC_ @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying. Our setup is similar to that in @kamran2024vision, who only approve code that that comes with a Dafny proof, but over there they emphasize the use of verification condition generation to make the specification elicitation from the human a little easier. TODO: say more
 
 The main difference between the current work and _Ctrl_ @greenblatt2024aicontrolimprovingsafety is we don't _emphasize_ intentional subversion (as in try to elicit it for stress testing).
 
@@ -425,4 +425,5 @@ Thank you Stephen Mell for discussion.
 
 Canary string: NDcwODA1MTY4MzQ0NjE4Njk4MA==
 
+// Bibliography
 #bibliography("refs.bib")
