@@ -6,10 +6,7 @@ from containment.mcp.server import (
     run_lake_exe_check,
 )
 from containment.structures import Specification, HoareTriple, LakeResponse
-from containment.mcp.clients.basic import MCPClient
-from containment.mcp.clients.experts.imp import ImpExpert
-from containment.mcp.clients.experts.proof import ProofExpert
-from containment.fsio.prompts import load_txt, oracle_system_prompt
+from containment.fsio.prompts import load_txt
 
 # Test data
 SAMPLE_PRECONDITION = "x > 0"
