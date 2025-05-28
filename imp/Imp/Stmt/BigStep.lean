@@ -117,9 +117,9 @@ syntax term:60 " / " term:61 " ↓ " term:62 : term
 macro_rules
   | `($s / $σ ↓ $σ') => `(BigStep $σ $s $σ')
 
-theorem BigStep.deterministic : forall (σ σ' σ'' : Env) c, c / σ ↓  σ' → c / σ ↓ σ'' → σ'' = σ' := by
-  intro σ σ' σ'' c h1
-  sorry
+-- theorem BigStep.deterministic : forall (σ σ' σ'' : Env) c, c / σ ↓  σ' → c / σ ↓ σ'' → σ'' = σ' := by
+--   intro σ σ' σ'' c h1
+--   sorry
 
 /--
 `swap` terminates, and the resulting environment contains swapped inputs.
@@ -220,21 +220,21 @@ def run (σ : Env) (s : Stmt) : Nat → Option Env
         let σ' ← run σ s1 n
         run σ' (imp {while (~c) {~s1}}) n
 
-/--
-`run` is correct: if it returns an answer, then that final state can be reached by the big-step
-semantics. This is not total correctness - `run` could always return `none` - but it does increase
-confidence.
--/
-theorem run_some_implies_big_step : run σ s n = some σ' → BigStep σ s σ' := by
-  intro term
-  induction σ, s, n using run.induct generalizing σ' <;> unfold run at term <;> simp_all
-  case case3 σ n s1 s2 ih1 ih2 =>
-    sorry
-  sorry
-  sorry
-  sorry
-  sorry
-  sorry
+-- /--
+-- `run` is correct: if it returns an answer, then that final state can be reached by the big-step
+-- semantics. This is not total correctness - `run` could always return `none` - but it does increase
+-- confidence.
+-- -/
+-- theorem run_some_implies_big_step : run σ s n = some σ' → BigStep σ s σ' := by
+--   intro term
+--   induction σ, s, n using run.induct generalizing σ' <;> unfold run at term <;> simp_all
+--   case case3 σ n s1 s2 ih1 ih2 =>
+--     sorry
+--   sorry
+--   sorry
+--   sorry
+--   sorry
+--   sorry
 
 --   let ⟨σ'', ⟨st1, st2⟩⟩ := term
 --   constructor

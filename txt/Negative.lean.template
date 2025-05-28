@@ -2,6 +2,6 @@ import Aesop
 import Imp
 open Imp
 
-example : {% if specification.metavariables %}forall ({{ specification.metavariables }} : Int), {% endif %}
+theorem my_hoare_triple : {% if specification.metavariables %}forall ({{ specification.metavariables }} : Int), {% endif %}
   {{ "{{astn " + specification.precondition + "}}" }}({{ command }}){{ "{{astn " + specification.postcondition + "}}" }} → False := by
   {{ proof }}
