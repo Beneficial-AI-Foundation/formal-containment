@@ -3,13 +3,14 @@
 from containment.mcp.clients.basic import MCPClient
 from containment.structures import (
     HoareTriple,
+    Polarity,
     ExpertMetadata,
     Specification,
     ImpFailure,
     Failure,
 )
-from containment.fsio.prompts import oracle_system_prompt
-from containment.netio.oracles import parse_program_completion
+from containment.fsio.prompts import expert_system_prompt
+from containment.netio.completions import parse_program_completion
 
 
 class ImpExpert(MCPClient):
@@ -26,7 +27,7 @@ class ImpExpert(MCPClient):
             self.failed_attempts = []
         else:
             self.failed_attempts = failed_attempts
-        self.system_prompt = oracle_system_prompt("imp")
+        self.system_prompt = expert_system_prompt("imp")
         self.complete = self._mk_complete(self.model, self.system_prompt)
         self.triple = None
         self.failure = None
@@ -89,7 +90,7 @@ class ImpExpert(MCPClient):
                 specification=self.spec,
                 attempted_completion=message_content,
                 failed_attempts=self.failed_attempts,
-                metadata=ExpertMetadata(model=self.model),
+                metadata=ExpertMetadata(model=self.model, polarity=Polarity.POS),
                 error_message=msg,
             )
         return HoareTriple(specification=self.spec, command=program)

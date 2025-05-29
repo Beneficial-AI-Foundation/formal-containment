@@ -9,7 +9,7 @@ example : {{ "{{" + specification.precondition + "}}" }}({{ command }}){{ "{{" +
   {{ proof }}
 <lean_template>
 
-It is SUPER IMPORTANT that you include <proof></proof> XML tags in your completion!
+It is SUPER IMPORTANT that you include <proof></proof> XML tags in your completion! You will fail if you do not do this.
 
 Here are examples of compiling Lean 4
 ```lean
@@ -72,3 +72,18 @@ imp {
 
 You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`
+
+## Example response:
+"""
+I can take notes here and map out my chain of thought, if I want.
+<proof>
+simp
+intros σ σ' h1 h2
+cases h2 with
+| assign h2_eq =>
+  simp [Env.set]
+  simp [Expr.eval, Env.get] at h2_eq
+  subst h2_eq
+  apply Int.le_refl
+</proof>
+"""

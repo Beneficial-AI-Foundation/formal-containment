@@ -1,6 +1,7 @@
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from containment.structures import (
+    Polarity,
     Specification,
     HoareTriple,
     LakeResponse,
@@ -9,8 +10,7 @@ from containment.fsio.prompts import proof_user_prompt, imp_user_prompt
 from containment.fsio.lake import Checker
 from containment.fsio.tools import temp_lakeproj_init
 
-HEX_ENCODING = "utf-8"
-mcp = FastMCP("Formal Containment Process")
+mcp = FastMCP("Formal Containment Protocol")
 
 
 @mcp.prompt(
@@ -18,7 +18,12 @@ mcp = FastMCP("Formal Containment Process")
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
 def get_proof_user_prompt(
-    precondition: str, command: str, postcondition: str, metavariables: str, stderr: str
+    precondition: str,
+    command: str,
+    postcondition: str,
+    metavariables: str,
+    stderr: str,
+    polarity: str,
 ) -> str:
     """
     Get the proof user prompt.
@@ -27,7 +32,9 @@ def get_proof_user_prompt(
         precondition: The precondition of the Hoare Triple
         command: The imp program of the Hoare Triple
         postcondition: The postcondition of the Hoare Triple
+        metavariables: " "-separated list of integer Lean variables to be quantified over
         stderr: The standard error output from the lake tool
+        polarity: A `Polarity.*.value`
 
     Returns:
         A string containing the proof user prompt
@@ -40,9 +47,10 @@ def get_proof_user_prompt(
         ),
         command=command,
     )
+    positive = False if polarity == Polarity.NEG.value else True
     if not stderr:
-        return proof_user_prompt(triple)
-    return proof_user_prompt(triple, stderr)
+        return proof_user_prompt(triple, positive=positive)
+    return proof_user_prompt(triple, stderr, positive=positive)
 
 
 @mcp.prompt(
@@ -59,6 +67,7 @@ def get_imp_user_prompt(
         postcondition: The postcondition of the specification
         metavariables: " "-separated list of integer Lean variables to be quantified over.
         failed_attempts: Previously attempted imp programs formatted for the prompt
+
     Returns:
         A string containing the imp user prompt
     """
@@ -81,6 +90,7 @@ def run_lake_exe_check(lean_code: str) -> tuple[Path, LakeResponse]:
         lean_code: The Lean code to check
 
     Returns:
+        Path: The path to the temporary directory where the code was checked
         LakeResponse: The result of the lake tool
     """
     cwd = temp_lakeproj_init()

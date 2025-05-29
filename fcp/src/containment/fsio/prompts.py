@@ -10,6 +10,7 @@ def load_txt(template_name: str | Path, **kwargs) -> str:
     Load and render a prompt template from the txt directory in the monorepo root.
 
     Args:
+        template_name: Name of the template file or path relative to the template directory
         **kwargs: Variables to pass to the template
 
     Returns:
@@ -23,7 +24,7 @@ def load_txt(template_name: str | Path, **kwargs) -> str:
         return template_file.read()
 
 
-def oracle_system_prompt(language: Language) -> str:
+def expert_system_prompt(language: Language) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -35,7 +36,7 @@ def oracle_system_prompt(language: Language) -> str:
     """
     language_instructions = load_txt(f"{language}.system.prompt")
     return load_txt(
-        "oracle.system.prompt.template", language_instructions=language_instructions
+        "expert.system.prompt.template", language_instructions=language_instructions
     )
 
 
@@ -48,19 +49,15 @@ def imp_user_prompt(spec: Specification, failed_attempts: str) -> str:
     )
 
 
-def proof_user_template(stage: str) -> str:
-    return f"proof.user.{stage}.prompt.template"
-
-
-def proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
+def proof_user_prompt(
+    triple: HoareTriple, stderr: str | None = None, positive: bool = True
+) -> str:
     """
     Get the user prompt for the proof oracle.
-
-    TODO: handle polarity
     """
-
-    if stderr is not None:
-        return load_txt(
-            proof_user_template("continuous"), stderr=stderr, **triple.model_dump()
-        )
-    return load_txt(proof_user_template("init"), **triple.model_dump())
+    return load_txt(
+        "proof.user.prompt.template",
+        **triple.model_dump(),
+        stderr=stderr,
+        positive=positive,
+    )

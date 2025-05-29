@@ -1,2 +1,0 @@
-Write a proof of the following hoare triple
-{% if metavariables %}forall ({{ metavariables }} : Int), {% endif %} \{ {{ specification.precondition }} \} {{ command }} \{ {{ specification.postcondition }} \}

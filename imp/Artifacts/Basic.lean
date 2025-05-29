@@ -2,11 +2,11 @@ import Aesop
 import Imp
 open Imp
 
-theorem my_hoare_triple : {{fun st => st "x" > st "y"}}(
+theorem my_hoare_triple : {{astn x > y}}(
 imp {
   x := y;
 }
-){{fun st => st "x" <= st "y"}} := by
+){{astn x <= y}} := by
   simp
   intros σ σ' h1 h2
   cases h2 with

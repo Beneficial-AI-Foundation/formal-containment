@@ -6,6 +6,7 @@ from containment.mcp.server import (
     get_imp_user_prompt,
     run_lake_exe_check,
 )
+from containment.mcp.clients.experts.proof import SORRY_CANARY
 from containment.structures import Specification, HoareTriple, LakeResponse
 from containment.fsio.prompts import load_txt
 
@@ -46,6 +47,7 @@ def test_proof_user_prompt():
         postcondition=SAMPLE_POSTCONDITION,
         metavariables=SAMPLE_METAVARIABLES,
         stderr=SAMPLE_STDERR,
+        polarity="Negative",
     )
     assert isinstance(prompt, str)
     assert SAMPLE_PRECONDITION in prompt
@@ -95,7 +97,7 @@ def test_pos_sorry(sample_hoare_triple):
     assert isinstance(cwd, Path)
     assert isinstance(response, LakeResponse)
     assert response.exit_code == 0
-    assert "<HOARE_TRIPLE_TERM_HAS_SORRY>" in response.stderr
+    assert SORRY_CANARY in response.stderr
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
@@ -138,7 +140,7 @@ def test_experiments_sorry(experiment_data, polarity):
         assert isinstance(cwd, Path)
         assert isinstance(response, LakeResponse)
         assert response.exit_code == 0
-        assert "<HOARE_TRIPLE_TERM_HAS_SORRY>" in response.stderr
+        assert SORRY_CANARY in response.stderr
         assert not response.stdout
 
 

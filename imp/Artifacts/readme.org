@@ -1,5 +1,5 @@
 #+title: Artifacts
 
-File ~Basic.lean~ is a like a build artifact, it changes every time the program is run because it is an LLM completion.
+File ~Basic.lean~ is a stub that gets overwritten in teach tmpdir copy of the ~imp~ package.
 
-File ~Basic.lean.template~ is the template out of which ~Basic.lean~ is formed.
+Files ~{Positive,Negative}.lean.template~ is the template out of which ~Basic.lean~ is formed.
