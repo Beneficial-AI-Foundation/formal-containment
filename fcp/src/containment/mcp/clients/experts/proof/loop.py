@@ -1,5 +1,6 @@
 from pathlib import Path
 from containment.mcp.clients.basic import MCPClient
+from containment.mcp.clients.experts.proof import SORRY_CANARY
 from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
@@ -15,11 +16,10 @@ from containment.netio.completions import parse_program_completion
 from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 20
-SORRY_CANARY = "<HOARE_TRIPLE_TERM_HAS_SORRY>"
 
 
 class ProofExpert(MCPClient):
-    """Expert at writing hoare proofs over imp."""
+    """Expert at writing hoare proofs over imp, via a minimal scaffold."""
 
     def __init__(
         self,

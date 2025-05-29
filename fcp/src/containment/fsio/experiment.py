@@ -13,7 +13,7 @@ from containment.structures import (
     ImpFailure,
     LLM,
 )
-from containment.protocol import run as boundary_run
+from containment.protocol import boundary
 from containment.fsio.artifacts import dump_toml, dump_json
 from containment.fsio.logs import logs
 
@@ -158,7 +158,7 @@ async def run_experiments(
     logs.info(f"Running {len(matrix)} experiments:")
     logs.info(_pp_matrix(matrix))
     tasks = [
-        boundary_run(
+        boundary(
             model.litellm_id,
             specification,
             proof_loop_budget=proof_loop_budget,

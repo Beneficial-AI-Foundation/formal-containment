@@ -10,8 +10,8 @@ from containment.structures import (
 )
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
-from containment.mcp.clients.experts.proof import ProofExpert
-from containment.protocol import run as boundary_run
+from containment.mcp.clients.experts.proof.loop import ProofExpert as LoopProofExpert
+from containment.protocol import boundary
 from containment.fsio.experiment import run_experiments, MODEL_DICT, INCLUDE_MODELS
 from containment.fsio.logs import logs
 
@@ -51,7 +51,7 @@ def test() -> None:
         expert = await ImpExpert.connect_and_run(model, spec)
         if expert is None or expert.triple is None:
             raise ValueError("No program found. XML parse error probably.")
-        prover_pos = await ProofExpert.connect_and_run(
+        prover_pos = await LoopProofExpert.connect_and_run(
             model, expert.triple, polarity=Polarity.POS, max_iterations=max_iterations
         )
         msg = ""
@@ -112,7 +112,7 @@ def contain() -> None:
         )
         msg = f"Running containment protocol at {model_id} for {specification}"
         logs.info(msg)
-        result = await boundary_run(
+        result = await boundary(
             model_id,
             specification,
             proof_loop_budget=proof_loop_budget,
