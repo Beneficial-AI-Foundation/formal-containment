@@ -103,20 +103,22 @@ def _results_dict(
                 json.loads(result.model_dump_json())
             )
         elif isinstance(result, Sequence):
-            for res in result:
-                match res:
-                    case VerificationFailure():
-                        spec_name = res.triple.specification.name
-                    case ImpFailure():
-                        spec_name = res.specification.name
-                logs.info(
-                    f"Experiment failed for {spec_name} by {res.metadata.model}: {res}"
+            if not result:
+                result_dict["_fail"]["_fail"].append(
+                    f"Something went wrong with result: {result}"
                 )
-                if res.metadata.model not in result_dict[spec_name]:
-                    result_dict[spec_name][res.metadata.model] = []
-                result_dict[spec_name][res.metadata.model].append(
-                    json.loads(res.model_dump_json())
-                )
+                continue
+            match result[-1]:
+                case VerificationFailure():
+                    spec_name = result[-1].triple.specification.name
+                case ImpFailure():
+                    spec_name = result[-1].specification.name
+            logs.info(
+                f"Experiment failed for {spec_name} by {result[-1].metadata.model}: {result[-1]}"
+            )
+            result_dict[spec_name][result[-1].metadata.model] = json.loads(
+                result[-1].model_dump_json()
+            )
 
         elif isinstance(result, BaseException):
             result_dict["_fail"]["_fail"].append(str(result))

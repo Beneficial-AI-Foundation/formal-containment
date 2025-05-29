@@ -1,6 +1,7 @@
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from containment.structures import (
+    Polarity,
     Specification,
     HoareTriple,
     LakeResponse,
@@ -18,7 +19,12 @@ mcp = FastMCP("Formal Containment Process")
     description="Asks the oracle to prove a hoare triple. When stderr is not None, it is the output of the lake tool on a previous attempt.",
 )
 def get_proof_user_prompt(
-    precondition: str, command: str, postcondition: str, metavariables: str, stderr: str
+    precondition: str,
+    command: str,
+    postcondition: str,
+    metavariables: str,
+    stderr: str,
+    polarity: str,
 ) -> str:
     """
     Get the proof user prompt.
@@ -40,9 +46,10 @@ def get_proof_user_prompt(
         ),
         command=command,
     )
+    positive = True if polarity == Polarity.POS.value else False
     if not stderr:
-        return proof_user_prompt(triple)
-    return proof_user_prompt(triple, stderr)
+        return proof_user_prompt(triple, positive=positive)
+    return proof_user_prompt(triple, stderr, positive=positive)
 
 
 @mcp.prompt(

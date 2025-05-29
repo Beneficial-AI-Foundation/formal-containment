@@ -1,5 +1,7 @@
+{% if stderr %}
 Getting warmer, your previous attempt got the following error message:
 {{ stderr }}
+{% endif %}
 
-Write a proof of the following hoare triple
+Prove the {% if positive %}affirmation{% else %}refutation{% endif %} of the following hoare triple
 {% if metavariables %}forall ({{ metavariables }} : Int), {% endif %} \{ {{ specification.precondition }} \} {{ command }} \{ {{ specification.postcondition }} \}

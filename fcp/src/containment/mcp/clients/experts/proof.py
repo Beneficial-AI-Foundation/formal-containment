@@ -4,6 +4,7 @@ from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
     LakeResponse,
+    Polarity,
     ExpertMetadata,
     VerificationSuccess,
     VerificationFailure,
@@ -23,18 +24,18 @@ class ProofExpert(MCPClient):
         self,
         model: str,
         triple: HoareTriple,
-        positive: bool,
+        polarity: Polarity,
         *,
         max_iterations: int = 25,
     ) -> None:
         super().__init__()
         self.model = model
         self.triple = triple
-        self.positive = positive
+        self.polarity = polarity
         self.max_iterations = max_iterations
         self.max_conversation_length = MAX_CONVERSATION_LENGTH
         self.system_prompt = oracle_system_prompt("proof")
-        self.complete = self._mk_complete(self.model, self.system_prompt)
+        self.complete = self._mk_complete(model, self.system_prompt)
         self.proof = None
         self.verification_result = None
         self.code_dt = []
@@ -44,14 +45,14 @@ class ProofExpert(MCPClient):
         cls,
         model: str,
         triple: HoareTriple,
-        positive: bool,
+        polarity: Polarity,
         *,
         max_iterations: int = 25,
     ) -> "ProofExpert":
         """
         Async instantiation: connect to the MCP server.
         """
-        mcp_client = cls(model, triple, positive, max_iterations=max_iterations)
+        mcp_client = cls(model, triple, polarity, max_iterations=max_iterations)
         mcp_client.verification_result = await mcp_client._connect_to_server_and_run()
         return mcp_client
 
@@ -59,9 +60,8 @@ class ProofExpert(MCPClient):
         """
         Write the proof to a file in the tmpdir.
         """
-        polarity = "Positive" if self.positive else "Negative"
         basic = load_txt(
-            f"{polarity}.lean.template",
+            f"{self.polarity.value}.lean.template",
             proof=proof,
             **self.triple.model_dump(),
         )
@@ -75,6 +75,7 @@ class ProofExpert(MCPClient):
             "command": self.triple.command,
             "metavariables": self.triple.specification.metavariables,
             "stderr": stderr,
+            "polarity": self.polarity.value,
         }
         user_prompt = await self.session.get_prompt(
             "hoare_proof_user_prompt", arguments=prompt_arguments
@@ -109,7 +110,7 @@ class ProofExpert(MCPClient):
         triple_str = f"{forall_str} {self.triple.hidden_code}"
         msg_prefix = f"\t{self.model}:{self.triple.specification.name if self.triple.specification.name is not None else self.triple.specification}-"
         cwd, lake_response = await self._iter("")
-        metadata = ExpertMetadata(model=self.model)
+        metadata = ExpertMetadata(model=self.model, polarity=self.polarity)
         if lake_response.exit_code == 0 and self.proof is not None:
             artifact_dir = write_artifact(cwd, self.triple)
             return VerificationSuccess(
@@ -130,7 +131,7 @@ class ProofExpert(MCPClient):
         for iteration in range(1, self.max_iterations + 1):
             metadata.incr()
             if not iteration % 3:
-                msg = f"{msg_prefix}: Attempt to prove hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
+                msg = f"{msg_prefix}: Attempt to prove hoare triple {triple_str} in {self.polarity.value} position: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)

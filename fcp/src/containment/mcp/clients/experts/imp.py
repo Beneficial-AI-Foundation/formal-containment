@@ -3,6 +3,7 @@
 from containment.mcp.clients.basic import MCPClient
 from containment.structures import (
     HoareTriple,
+    Polarity,
     ExpertMetadata,
     Specification,
     ImpFailure,
@@ -89,7 +90,7 @@ class ImpExpert(MCPClient):
                 specification=self.spec,
                 attempted_completion=message_content,
                 failed_attempts=self.failed_attempts,
-                metadata=ExpertMetadata(model=self.model),
+                metadata=ExpertMetadata(model=self.model, polarity=Polarity.POS),
                 error_message=msg,
             )
         return HoareTriple(specification=self.spec, command=program)

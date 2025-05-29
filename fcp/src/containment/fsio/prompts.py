@@ -48,19 +48,15 @@ def imp_user_prompt(spec: Specification, failed_attempts: str) -> str:
     )
 
 
-def proof_user_template(stage: str) -> str:
-    return f"proof.user.{stage}.prompt.template"
-
-
-def proof_user_prompt(triple: HoareTriple, stderr: str | None = None) -> str:
+def proof_user_prompt(
+    triple: HoareTriple, stderr: str | None = None, positive: bool = True
+) -> str:
     """
     Get the user prompt for the proof oracle.
-
-    TODO: handle polarity
     """
-
-    if stderr is not None:
-        return load_txt(
-            proof_user_template("continuous"), stderr=stderr, **triple.model_dump()
-        )
-    return load_txt(proof_user_template("init"), **triple.model_dump())
+    return load_txt(
+        "proof.user.prompt.template",
+        **triple.model_dump(),
+        stderr=stderr,
+        positive=positive,
+    )

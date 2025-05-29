@@ -3,6 +3,7 @@
 import subprocess
 from containment.structures.cli_basic import AsyncTyper
 from containment.structures import (
+    Polarity,
     Specification,
     VerificationSuccess,
     VerificationFailure,
@@ -51,7 +52,7 @@ def test() -> None:
         if expert is None or expert.triple is None:
             raise ValueError("No program found. XML parse error probably.")
         prover_pos = await ProofExpert.connect_and_run(
-            model, expert.triple, positive=True, max_iterations=max_iterations
+            model, expert.triple, polarity=Polarity.POS, max_iterations=max_iterations
         )
         msg = ""
         if isinstance(prover_pos.verification_result, VerificationSuccess):

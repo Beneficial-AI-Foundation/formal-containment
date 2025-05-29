@@ -1,12 +1,37 @@
+import asyncio
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof import ProofExpert
 from containment.structures import (
+    Polarity,
     Specification,
     VerificationSuccess,
     VerificationResult,
     Failure,
 )
 from containment.fsio.logs import logs
+
+
+async def first_completed_with_cancellation(tasks):
+    try:
+        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+        # Cancel all pending tasks
+        for task in pending:
+            task.cancel()
+
+        # Wait for cancellation to complete (optional but good practice)
+        if pending:
+            await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED)
+
+        # Return the result of the first completed task
+        return done.pop().result()
+
+    except Exception:
+        # If something goes wrong, make sure to cancel all tasks
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        raise
 
 
 async def _synthesize_and_prove(
@@ -28,9 +53,29 @@ async def _synthesize_and_prove(
                 "Unreachable. `triple` is None but `failure` is also None, which should not happen."
             )
         return imp_expert.failure
-    proof_expert = await ProofExpert.connect_and_run(
-        model, imp_expert.triple, positive=True, max_iterations=proof_loop_budget
+    proof_expert_pos = ProofExpert.connect_and_run(
+        model,
+        imp_expert.triple,
+        polarity=Polarity.POS,
+        max_iterations=proof_loop_budget,
     )
+    proof_expert_neg = ProofExpert.connect_and_run(
+        model,
+        imp_expert.triple,
+        polarity=Polarity.NEG,
+        max_iterations=proof_loop_budget,
+    )
+
+    done, pending = await asyncio.wait(
+        [
+            asyncio.create_task(expert)
+            for expert in [proof_expert_pos, proof_expert_neg]
+        ],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    for task in pending:
+        task.cancel()
+    proof_expert = done.pop().result()
     if proof_expert.verification_result is None:
         raise ValueError(
             "Unreachable. `verification_result` is initialized to None but is always set to the right type in `.connect_and_run`"
@@ -66,5 +111,11 @@ async def run(
             case list():
                 failed_attempts.extend(result)
             case VerificationSuccess():
-                return result
+                if result.metadata.polarity == Polarity.POS:
+                    msg = f"{msg_prefix}: proof in the positive polarity found, code is safe!"
+                    logs.info(msg)
+                    return result
+                else:
+                    msg = f"{msg_prefix}: proof in the negative polarity found, code is unsafe!"
+                    continue
     return failed_attempts

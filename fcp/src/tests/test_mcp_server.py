@@ -46,6 +46,7 @@ def test_proof_user_prompt():
         postcondition=SAMPLE_POSTCONDITION,
         metavariables=SAMPLE_METAVARIABLES,
         stderr=SAMPLE_STDERR,
+        polarity="Negative",
     )
     assert isinstance(prompt, str)
     assert SAMPLE_PRECONDITION in prompt
