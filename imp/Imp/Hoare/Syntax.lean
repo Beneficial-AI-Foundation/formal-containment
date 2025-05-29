@@ -1,20 +1,19 @@
-import Lean
 import Imp.Hoare.Basic
 
 open Lean Elab Meta Term
 
-declare_syntax_cat assertion_term
-syntax ident : assertion_term
-syntax num : assertion_term
-syntax "~" term:max : assertion_term
+declare_syntax_cat _assertion_term
+syntax ident : _assertion_term
+syntax num : _assertion_term
+syntax "~" term:max : _assertion_term
 
 declare_syntax_cat assertion
-syntax assertion_term "=" assertion_term : assertion
-syntax assertion_term "!=" assertion_term : assertion
-syntax assertion_term "<" assertion_term : assertion
-syntax assertion_term ">" assertion_term : assertion
-syntax assertion_term "<=" assertion_term : assertion
-syntax assertion_term ">=" assertion_term : assertion
+syntax _assertion_term "=" _assertion_term : assertion
+syntax _assertion_term "!=" _assertion_term : assertion
+syntax _assertion_term "<" _assertion_term : assertion
+syntax _assertion_term ">" _assertion_term : assertion
+syntax _assertion_term "<=" _assertion_term : assertion
+syntax _assertion_term ">=" _assertion_term : assertion
 syntax assertion " <^> " assertion : assertion
 syntax assertion " <> " assertion : assertion
 syntax "<!>" assertion : assertion
@@ -183,7 +182,8 @@ info: (strStrLe "y" "z").and (strValGt "x" 5) : Assertion
 #guard_msgs in
 #check astn y <= z <^> x > 5
 
---   #check forall (n : Int), astn x = ~n ->> x < 10
---
---   variable (c : Imp.Stmt)
---   #check forall (n : Int), {{ astn ~n = x }}c{{ astn x < y }}
+/--
+info: ∀ (n : Int), (strValEq "x" n).implies (strValLt "x" 10) : Prop
+-/
+#guard_msgs in
+#check forall (n : Int), astn x = ~n ->> x < 10

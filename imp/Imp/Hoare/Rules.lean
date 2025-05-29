@@ -59,45 +59,45 @@ theorem hoare_if : forall P Q (b : Expr) c1 c2,
     apply Falsy.not_truthy
     assumption
 
-theorem hoare_while_aux1 : forall b c σ σ',
-  Truthy (b.eval σ) →
-  (imp { ~c while (~b) { ~c } }) / σ ↓ σ' →
-  (imp { while (~b) { ~c } }) / σ ↓ σ' := by
-  intros b c σ σ' h1 h2
-  cases h2 with
-  | seq h3 h4 => apply (BigStep.whileTrue h1 h3 h4)
-
-theorem hoare_while_aux : forall b c σ σ',
+theorem hoare_while_aux_left : forall b c σ σ',
   Truthy (b.eval σ) →
   (imp { while (~b) { ~c } }) / σ ↓ σ' →
   c / σ ↓ σ' := by
   intros b c σ σ'' h1 h2
   cases h2 with
-  | whileTrue _ h4 h5 =>
-    have h6 := BigStep.whileTrue h1 h4 h5
-
+  | whileTrue _ h3 h4 =>
     sorry
-    -- apply (BigStep.whileTrue h1 h4 h5)
   | whileFalse h3 => aesop
+
+theorem hoare_while_aux_right : forall b c σ σ',
+  Truthy (b.eval σ) →
+  Truthy (b.eval σ') →
+  (imp { while (~b) { ~c } }) / σ ↓ σ' →
+  False := by
+  intros b c σ σ' h1 h2 h3
+  cases h3 with
+  | whileTrue _ h4 h5 =>
+    sorry
+  | whileFalse h4 => aesop
 
 @[simp]
 theorem hoare_while : forall P (b : Expr) c,
   {{ P <^> b }}c{{P}} →
   {{P}}(imp { while (~b) { ~c } }){{ P <^> <!>b }} := by
-  simp [ValidHoareTriple]
+  simp
   intros P b c h1 σ σ'' h3 h4
   have h4_orig := h4
-  -- have c_orig := imp { while (~b) { ~c } }
   cases h4 with
   | whileTrue h5 h6 h7 =>
     constructor
     . apply h1
       assumption
       assumption
-      apply (hoare_while_aux b c σ σ'' h5)
+      apply (hoare_while_aux_left b c σ σ'' h5)
       assumption
     . intros contra
-      sorry
+      apply (hoare_while_aux_right b c σ σ'' h5 contra)
+      assumption
   | whileFalse h5 =>
     simp [Falsy] at h5
     constructor

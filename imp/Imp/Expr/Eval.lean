@@ -77,7 +77,7 @@ def Env := String → Value
 --
 -- instance varValAdd (σ : Env) : HAdd String Value Value where
 --   hAdd x y := σ x + y
--- instance valVarAdd(σ : Env) : HAdd Value String Value where
+-- instance valVarAdd (σ : Env) : HAdd Value String Value where
 --   hAdd x y := x + σ y
 -- instance varValSub (σ : Env) : HSub String Value Value where
 --   hSub x y := σ x - y
@@ -105,6 +105,10 @@ def get (x : String) (σ : Env) : Value :=
 
 /-- Initialize an environment, setting all uninitialized memory to `i` -/
 def init (i : Value) : Env := fun _ => i
+
+/-- Union of two environments -/
+def union (σ₁ σ₂ : Env) : Env :=
+  fun x => if σ₁ x == σ₂ x then σ₁ x else σ₂ x
 
 @[simp]
 theorem get_init : (Env.init v).get x = v := by rfl

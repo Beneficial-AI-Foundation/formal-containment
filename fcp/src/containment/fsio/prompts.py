@@ -10,6 +10,7 @@ def load_txt(template_name: str | Path, **kwargs) -> str:
     Load and render a prompt template from the txt directory in the monorepo root.
 
     Args:
+        template_name: Name of the template file or path relative to the template directory
         **kwargs: Variables to pass to the template
 
     Returns:

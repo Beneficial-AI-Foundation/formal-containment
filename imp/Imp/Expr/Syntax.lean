@@ -1,5 +1,6 @@
 import Lean.PrettyPrinter.Parenthesizer
 import Imp.Expr.Basic
+import Imp.Expr.Eval
 
 namespace Imp.Expr
 
@@ -72,7 +73,6 @@ syntax:max "~" term:max : exp
 /-- Embed an Imp expression into a Lean expression -/
 syntax:min "expr " "{ " exp " }" : term
 
-open Lean in
 macro_rules
   | `(expr{$x:ident}) => `(Expr.var $(quote x.getId.toString))
   | `(expr{$n:num}) => `(Expr.const $(quote n.getNat))
@@ -107,3 +107,58 @@ where
   wrapParens (stx : Syntax) : Syntax := Unhygienic.run do
     let pstx ← `(($(⟨stx⟩)))
     return pstx.raw.setInfo (SourceInfo.fromRef stx)
+
+/- Add new nonterminals to Lean's grammar, called `val` and `env` -/
+/-- Values in Imp -/
+declare_syntax_cat val
+syntax:10 num : val
+macro_rules
+  | `(val| $n:num) => `(Value.int $(quote n.getNat))
+/-- Environments in Imp -/
+declare_syntax_cat _association
+declare_syntax_cat env
+
+syntax val ";" ident "|->" val : _association
+syntax "⟨" _association "⟩" : env
+syntax env : term
+syntax env "||" env : env
+syntax "[" env "]" : term  -- coercion from env to term
+macro_rules
+  | `(_association| $i:num ; $x:ident |-> $n:num) => `(Expr.Env.set $(quote x.getId.toString) $(quote n.getNat) $ Expr.Env.init $(quote i.getNat))
+  | `(env| ⟨$a:_association⟩) => `(_association| $a)
+  -- | `(env| $σ:env || $σ':env) => `(Expr.Env.union [$σ] [$σ'])
+  -- | `([$σ:env]) => `($σ)
+
+variable (e : Expr)
+-- #eval ⟨1; x |-> 2⟩
+
+-- -- Basic environment binding: varname := exp
+-- syntax varname ":=" exp : env
+-- -- Multiple bindings separated by commas
+-- syntax sepBy(env, ",") : env
+-- -- Environment lookup syntax: σ[varname] (high precedence, function application level)
+-- syntax:1000 term "[" varname "]" : term
+-- -- Environment update syntax: σ[bindings] (high precedence, function application level)
+-- syntax:1000 term "[" env "]" : term
+-- -- Environment literals using angle brackets: ⟨base | bindings⟩ (atom level)
+-- syntax:200 "⟨" term:arg "|" env "⟩" : term
+-- -- Environment syntax within exp category - allows environments as values (atom level)
+-- syntax:200 term:max "[" varname "]" : exp
+-- -- Environment initialization: ∅[default_val]
+-- syntax:200 "∅[" exp "]" : term
+--
+-- macro_rules
+--   -- Environment lookup macro rules
+--   | `($σ[var { $x:ident }]) => `(Expr.Env.get $(quote x.getId.toString) $σ)
+--   | `($σ[var { ~$stx }]) => `(Expr.Env.get $stx $σ)
+--   -- Environment update macro rules
+--   | `($σ[var { $x:ident } := expr{ $e }]) => `(Expr.Env.set $(quote x.getId.toString) (expr{$e}) $σ)
+--   | `($σ[var { ~$stx } := expr{ $e }]) => `(Expr.Env.set $stx (expr{$e}) $σ)
+--   -- | `($σ[$binding, $rest,*]) => `($σ[$binding][$rest,*])
+--   -- Environment literal macro rules
+--   | `(⟨$base | var { $x:ident } := expr{ $e }⟩) => `((Expr.Env.init $base).set $(quote x.getId.toString) (expr{$e}))
+--   | `(⟨$base | var { ~$stx } := expr{ $e }⟩) => `((Expr.Env.init $base).set $stx (expr{$e}))
+--   -- | `(⟨$base | $binding, $rest,*⟩) => `(⟨$base | $binding⟩[$rest,*])
+--   -- Environment operations within exp syntax
+--   | `(expr{$σ[var { $x:ident }]}) => `(Expr.Env.get $(quote x.getId.toString) $σ)
+--   | `(expr{$σ[var { ~$stx }]}) => `(Expr.Env.get $stx $σ)
