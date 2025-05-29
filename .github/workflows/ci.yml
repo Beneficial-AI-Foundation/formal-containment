@@ -30,11 +30,7 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           auto-config: false
-      #    - run: |
-      #        curl https://elan.lean-lang.org/elan-init.sh -sSf -o elan-init.sh
-      #        chmod +x elan-init.sh
-      #        ./elan-init.sh -y
-      #    - run: elan toolchain install $(cat ./imp/lean-toolchain)
+          lake-package-directory: imp
       - run: uv sync
         working-directory: fcp
       - run: uv run ruff check src

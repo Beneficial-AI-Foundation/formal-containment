@@ -52,7 +52,7 @@ class HoareSearch(Agent):
         variables = state.goals[goal_id].variables
         for variable in variables:
             tactics.append(self.tactic_templates["cases"].format(h=variable))
-        if idx > len(tactics):
+        if idx >= len(tactics):
             return None
         self.goal_tactic_id_map[key][goal_id] += 1
         return tactics[idx]
@@ -61,7 +61,7 @@ class HoareSearch(Agent):
         """
         Called after search
         """
-        self.__init__()
+        self.goal_tactic_id_map.clear()
 
 
 class Expert(MCPClient):
