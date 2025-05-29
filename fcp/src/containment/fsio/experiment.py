@@ -91,6 +91,8 @@ def _results_dict(
 ) -> dict:
     """
     Create a dictionary of results from the experiment matrix.
+
+    Takes the last failure only, in the case of failures
     """
     result_dict = defaultdict(dict)
     result_dict["_fail"]["_fail"] = []
@@ -103,7 +105,7 @@ def _results_dict(
                 json.loads(result.model_dump_json())
             )
         elif isinstance(result, Sequence):
-            if not result:
+            if len(result) < 1:
                 result_dict["_fail"]["_fail"].append(
                     f"Something went wrong with result: {result}"
                 )
@@ -151,8 +153,6 @@ async def run_experiments(
 
     Returns:
         A list of VerificationResults or None for each experiment
-
-    TODO: finish configuring-- logs, metadata
     """
     matrix = _experiment_matrix(include_models)
     logs.info(f"Running {len(matrix)} experiments:")

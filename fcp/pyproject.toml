@@ -21,7 +21,6 @@ dependencies = [
 mcp-server = "containment:mcp_server_run"
 contain = "containment:contain"
 test-mcp = "containment:test"
-test-nomcp = "containment:test_no_mcp"
 inspector = "containment:inspector"
 
 [build-system]

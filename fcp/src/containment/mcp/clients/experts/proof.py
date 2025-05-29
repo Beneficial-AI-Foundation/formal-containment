@@ -10,11 +10,12 @@ from containment.structures import (
     VerificationFailure,
     VerificationResult,
 )
-from containment.fsio.prompts import load_txt, oracle_system_prompt
-from containment.netio.oracles import parse_program_completion
+from containment.fsio.prompts import load_txt, expert_system_prompt
+from containment.netio.completions import parse_program_completion
 from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 20
+SORRY_CANARY = "<HOARE_TRIPLE_TERM_HAS_SORRY>"
 
 
 class ProofExpert(MCPClient):
@@ -34,7 +35,7 @@ class ProofExpert(MCPClient):
         self.polarity = polarity
         self.max_iterations = max_iterations
         self.max_conversation_length = MAX_CONVERSATION_LENGTH
-        self.system_prompt = oracle_system_prompt("proof")
+        self.system_prompt = expert_system_prompt("proof")
         self.complete = self._mk_complete(model, self.system_prompt)
         self.proof = None
         self.verification_result = None
@@ -112,13 +113,17 @@ class ProofExpert(MCPClient):
         cwd, lake_response = await self._iter("")
         metadata = ExpertMetadata(model=self.model, polarity=self.polarity)
         if lake_response.exit_code == 0 and self.proof is not None:
-            artifact_dir = write_artifact(cwd, self.triple)
-            return VerificationSuccess(
-                triple=self.triple,
-                proof=self.proof,
-                audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
-                metadata=metadata,
-            )
+            if SORRY_CANARY not in lake_response.stderr:
+                artifact_dir = write_artifact(cwd, self.triple)
+                metadata.successful()
+                return VerificationSuccess(
+                    triple=self.triple,
+                    proof=self.proof,
+                    audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
+                    metadata=metadata,
+                )
+            msg = f"{msg_prefix}: Proof for hoare triple {triple_str} in {self.polarity.value} position has a sorry."
+            logs.info(msg)
         failures = [
             VerificationFailure(
                 triple=self.triple,
@@ -135,7 +140,10 @@ class ProofExpert(MCPClient):
                 logs.info(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
-            if lake_response.exit_code == 0:
+            if (
+                lake_response.exit_code == 0
+                and SORRY_CANARY not in lake_response.stderr
+            ):
                 msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
                 logs.info(msg)
                 break
@@ -150,23 +158,20 @@ class ProofExpert(MCPClient):
             )
 
         artifact_dir = write_artifact(cwd, self.triple)
-        if (
-            lake_response.exit_code != 0
-            and lake_response.stderr
-            and self.proof is not None
-        ):
+        if lake_response.exit_code != 0 and self.proof is not None:
             return failures
         if self.proof is None:
             failures.append(
                 VerificationFailure(
                     triple=self.triple,
                     proof="sorry <UNREACHABLE?>",
-                    error_message="For some reason, the proof field is still None (Unreachable?)",
+                    error_message=lake_response.stderr,
                     audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
                     metadata=metadata,
                 )
             )
             return failures
+        metadata.successful()
         return VerificationSuccess(
             triple=self.triple,
             proof=self.proof,

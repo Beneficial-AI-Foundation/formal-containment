@@ -23,7 +23,7 @@ def load_txt(template_name: str | Path, **kwargs) -> str:
         return template_file.read()
 
 
-def oracle_system_prompt(language: Language) -> str:
+def expert_system_prompt(language: Language) -> str:
     """
     Get the system prompt for the oracle.
 
@@ -35,7 +35,7 @@ def oracle_system_prompt(language: Language) -> str:
     """
     language_instructions = load_txt(f"{language}.system.prompt")
     return load_txt(
-        "oracle.system.prompt.template", language_instructions=language_instructions
+        "expert.system.prompt.template", language_instructions=language_instructions
     )
 
 

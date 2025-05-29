@@ -61,9 +61,13 @@ class ExpertMetadata(Structure):
     converged_at_iteration: int = 0
     model: str
     polarity: Polarity
+    success: bool = False
 
     def incr(self) -> None:
         self.converged_at_iteration += 1
+
+    def successful(self) -> None:
+        self.success = True
 
 
 class VerificationSuccess(Structure):
