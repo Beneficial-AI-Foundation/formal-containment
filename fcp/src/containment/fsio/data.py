@@ -44,4 +44,3 @@ def _mk_model_dict() -> dict[str, LLM]:
 
 
 MODEL_DICT = _mk_model_dict()
-INCLUDE_MODELS = ["snt4", "gpt41"]

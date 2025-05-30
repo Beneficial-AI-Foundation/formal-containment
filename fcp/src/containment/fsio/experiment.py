@@ -13,11 +13,11 @@ from containment.structures import (
 from containment.protocol import boundary
 from containment.fsio.artifacts import dump_toml, dump_json
 from containment.fsio.logs import logs
-from containment.fsio.data import load_models, load_specifications, INCLUDE_MODELS
+from containment.fsio.data import load_models, load_specifications
 
 
 def _experiment_matrix(
-    include_models: list[str] = INCLUDE_MODELS,
+    include_models: list[str],
 ) -> list[tuple[Specification, LLM]]:
     """
     Load the experiment matrix from the experiments directory.
@@ -90,8 +90,8 @@ async def run_experiments(
     proof_loop_budget: int,
     attempt_budget: int,
     *,
-    include_models: list[str] = INCLUDE_MODELS,
-    sequential: bool = True,
+    include_models: list[str],
+    sequential: bool = False,
 ) -> dict:
     """
     Run the experiments on the given specifications in parallel.

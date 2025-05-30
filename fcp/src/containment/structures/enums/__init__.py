@@ -1,14 +1,14 @@
 from enum import Enum
 
 
-class Polarity(Enum):
+class Polarity(str, Enum):
     """Whether to affirm or refute the hoare triple. Effects proof template."""
 
     POS = "Positive"
     NEG = "Negative"
 
 
-class ProofMethod(Enum):
+class ProofMethod(str, Enum):
     """The method used to prove the hoare triple."""
 
     LOOP = "loop"

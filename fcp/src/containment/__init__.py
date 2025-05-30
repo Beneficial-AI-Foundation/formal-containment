@@ -15,11 +15,11 @@ from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof.loop import ProofExpert as LoopProofExpert
 from containment.protocol import boundary
 from containment.fsio.experiment import run_experiments
-from containment.fsio.data import INCLUDE_MODELS
+from containment.fsio.data import MODEL_DICT
 from containment.fsio.logs import logs
 
-sonnet = getattr(ModelName, "snt4")
-haiku = getattr(ModelName, "hku35")
+sonnet = MODEL_DICT["snt4"]
+haiku = MODEL_DICT["hku35"]
 
 
 def mcp_server_run() -> None:
@@ -45,7 +45,7 @@ def test() -> None:
     async def synthesize_and_prove(
         precondition: str,
         postcondition: str,
-        model: ModelName = sonnet,
+        model: ModelName = getattr(ModelName, "snt4"),
         max_iterations: int = 25,
     ) -> None:
         """
@@ -56,7 +56,7 @@ def test() -> None:
         if expert is None or expert.triple is None:
             raise ValueError("No program found. XML parse error probably.")
         prover_pos = await LoopProofExpert.connect_and_run(
-            model.value,
+            model,
             expert.triple,
             polarity=Polarity.POS,
             max_iterations=max_iterations,
@@ -77,7 +77,7 @@ def test() -> None:
     async def imp_complete(
         precondition: str,
         postcondition: str,
-        model: ModelName = sonnet,
+        model: ModelName = getattr(ModelName, "snt4"),
     ) -> None:
         """
         Take a precondition and postcondition and ask the LLM to fill in the hoare triple with an imp program
@@ -97,12 +97,14 @@ def contain() -> None:
     """
     cli = AsyncTyper()
 
+    INCLUDE_MODELS = [getattr(ModelName, "snt4"), getattr(ModelName, "gpt41")]
+
     @cli.command()
     async def protocol(
         precondition: str,
         postcondition: str,
         metavariables: str = "",  # space-separated lean identifiers
-        model: ModelName = sonnet,
+        model: ModelName = getattr(ModelName, "snt4"),
         proof_method: ProofMethod = ProofMethod.LOOP,
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
@@ -110,7 +112,7 @@ def contain() -> None:
         """
         Run the containment protocol at the given precondition-postcondition pair.
         """
-        model_id = model.value
+        model_id = MODEL_DICT[model.value].litellm_id
         specification = Specification(
             precondition=precondition,
             postcondition=postcondition,
@@ -150,11 +152,13 @@ def contain() -> None:
         Run the containment protocol experiments from `data.toml`
         """
         if models is None:
-            models = [getattr(ModelName, human_name) for human_name in INCLUDE_MODELS]
+            model_ids = [name.value for name in INCLUDE_MODELS]
+        else:
+            model_ids = [name.value for name in models]
         results = await run_experiments(
             proof_loop_budget,
             attempt_budget,
-            include_models=[model.value for model in models],
+            include_models=model_ids,
             sequential=sequential,
         )
         print(results)
