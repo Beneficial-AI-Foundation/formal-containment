@@ -9,6 +9,7 @@ from containment.structures import (
     ImpFailure,
     Failure,
 )
+from containment.fsio.logs import logs
 from containment.fsio.prompts import expert_system_prompt
 from containment.netio.completions import parse_program_completion
 
@@ -85,7 +86,7 @@ class ImpExpert(MCPClient):
         program = parse_program_completion(message_content, "imp")
         if program is None:
             msg = f"{self.spec.name},{self.model}: No program found. XML parse error, probably"
-            print(msg)
+            logs.info(msg)
             return ImpFailure(
                 specification=self.spec,
                 attempted_completion=message_content,

@@ -57,14 +57,21 @@ class Polarity(Enum):
     NEG = "Negative"
 
 
+class ProofMethod(Enum):
+    """The method used to prove the hoare triple."""
+
+    LOOP = "loop"
+    TREE_SEARCH_BASIC = "tree_search_basic"
+
+
 class ExpertMetadata(Structure):
-    converged_at_iteration: int = 0
+    iteration: int = 0
     model: str
     polarity: Polarity
     success: bool = False
 
     def incr(self) -> None:
-        self.converged_at_iteration += 1
+        self.iteration += 1
 
     def successful(self) -> None:
         self.success = True

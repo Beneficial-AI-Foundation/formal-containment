@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof.loop import ProofExpert as LoopProofExpert
 from containment.structures import (
@@ -6,20 +7,24 @@ from containment.structures import (
     Specification,
     VerificationSuccess,
     VerificationResult,
+    VerificationFailure,
+    ImpFailure,
     Failure,
+    ProofMethod,
+    HoareTriple,
+    ExpertMetadata,
 )
 from containment.fsio.logs import logs
 
 
-async def _synthesize_and_prove(
+async def _synthesize_shot(
     model: str,
     specification: Specification,
     *,
-    proof_loop_budget: int,
     failed_attempts: list[Failure] | None = None,
-) -> VerificationResult:
+) -> HoareTriple | ImpFailure:
     """
-    Synthesize and prove a Hoare triple.
+    Synthesize a Hoare triple from the specification.
     """
     imp_expert = await ImpExpert.connect_and_run(
         model, specification, failed_attempts=failed_attempts
@@ -30,15 +35,64 @@ async def _synthesize_and_prove(
                 "Unreachable. `triple` is None but `failure` is also None, which should not happen."
             )
         return imp_expert.failure
+    return imp_expert.triple
+
+
+async def _synthesize(
+    model: str,
+    specification: Specification,
+    *,
+    failed_attempts: list[Failure] | None = None,
+    imp_attempts: int = 5,
+) -> HoareTriple:
+    """
+    Synthesize a hoare triple from the specification, allowing multiple attempts.
+    """
+    msg_prefix = f"{model}:{specification.name if specification.name is not None else 'user_spec'}:"
+    result = None
+    for attempt in range(imp_attempts):
+        logs.info(
+            f"{msg_prefix}: Attempt to synthesize hoare triple: {attempt + 1}/{imp_attempts}"
+        )
+        result = await _synthesize_shot(
+            model, specification, failed_attempts=failed_attempts
+        )
+        match result:
+            case HoareTriple():
+                return result
+            case ImpFailure():
+                logs.warning(
+                    f"{msg_prefix} Attempt {attempt + 1} failed: {result.failure_str}"
+                )
+                if failed_attempts is not None:
+                    failed_attempts.append(result)
+    msg = f"{msg_prefix}: Failed to synthesize hoare triple after {imp_attempts} attempts."
+    if result is not None:
+        msg += f" Last failure: {result.failure_str}"
+    logs.error(msg)
+    raise ValueError(msg)
+
+
+async def _synthesize_and_prove_loop(
+    model: str,
+    specification: Specification,
+    *,
+    proof_loop_budget: int,
+    failed_attempts: list[Failure] | None = None,
+) -> VerificationResult:
+    """
+    Synthesize and prove a Hoare triple.
+    """
+    triple = await _synthesize(model, specification, failed_attempts=failed_attempts)
     proof_expert_pos = LoopProofExpert.connect_and_run(
         model,
-        imp_expert.triple,
+        triple,
         polarity=Polarity.POS,
         max_iterations=proof_loop_budget,
     )
     proof_expert_neg = LoopProofExpert.connect_and_run(
         model,
-        imp_expert.triple,
+        triple,
         polarity=Polarity.NEG,
         max_iterations=proof_loop_budget,
     )
@@ -60,7 +114,29 @@ async def _synthesize_and_prove(
     return proof_expert.verification_result
 
 
-async def boundary(
+async def _synthesize_and_prove_search(
+    model: str,
+    specification: Specification,
+    *,
+    proof_loop_budget: int = 10,
+    failed_attempts: list[Failure] | None = None,
+) -> VerificationResult:
+    """
+    Synthesize and prove a Hoare triple, returning the result.
+    """
+    triple = await _synthesize(model, specification, failed_attempts=failed_attempts)
+    return [
+        VerificationFailure(
+            triple=triple,
+            proof="TODO: not implemented",
+            error_message="TODO: not implemented",
+            audit_trail=Path.cwd(),  # TODO: implement audit trail
+            metadata=ExpertMetadata(model=model, polarity=Polarity.POS),
+        )
+    ]
+
+
+async def boundary_loop(
     model: str,
     specification: Specification,
     *,
@@ -68,7 +144,7 @@ async def boundary(
     attempt_budget: int = 5,
 ) -> VerificationResult:
     """
-    Run the boundary screener, the boundary's main entrypoint.
+    Run the boundary screener, the boundary's main entrypoint, with a loop scaffold for proof search.
 
     Return imp code to the caller (representing the outside world) if the proof is successful, allowing up to `attempt_budget` attempts.
     Returns `None` if `attempt_budget` imp programs fail.
@@ -78,7 +154,7 @@ async def boundary(
     for attempt in range(attempt_budget):
         msg = f"{msg_prefix}: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
         logs.info(msg)
-        result = await _synthesize_and_prove(
+        result = await _synthesize_and_prove_loop(
             model,
             specification,
             proof_loop_budget=proof_loop_budget,
@@ -96,3 +172,29 @@ async def boundary(
                     msg = f"{msg_prefix}: proof in the negative polarity found, code is unsafe!"
                     continue
     return failed_attempts
+
+
+async def boundary(
+    model: str,
+    specification: Specification,
+    *,
+    attempt_budget: int = 5,
+    proof_method: ProofMethod = ProofMethod.LOOP,
+    proof_loop_budget: int = 10,
+) -> VerificationResult:
+    """
+    Run the boundary screener, the boundary's main entrypoint.
+
+    Return imp code to the caller (representing the outside world) if the proof is successful, allowing up to `attempt_budget` attempts.
+    Returns `None` if `attempt_budget` imp programs fail.
+    """
+    match proof_method:
+        case ProofMethod.LOOP:
+            return await boundary_loop(
+                model,
+                specification,
+                proof_loop_budget=proof_loop_budget,
+                attempt_budget=attempt_budget,
+            )
+        case ProofMethod.TREE_SEARCH_BASIC:
+            raise NotImplementedError("TODO")

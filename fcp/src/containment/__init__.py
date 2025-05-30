@@ -7,6 +7,7 @@ from containment.structures import (
     Specification,
     VerificationSuccess,
     VerificationFailure,
+    ProofMethod,
 )
 from containment.mcp.server import mcp
 from containment.mcp.clients.experts.imp import ImpExpert
@@ -90,14 +91,13 @@ def contain() -> None:
     """
     cli = AsyncTyper()
 
-    snt = MODEL_DICT["snt4"]
-
     @cli.command()
     async def protocol(
         precondition: str,
         postcondition: str,
         metavariables: str = "",  # space-separated lean identifiers
-        model: str = snt.human_name,
+        model: str = sonnet.human_name,
+        proof_method: ProofMethod = ProofMethod.LOOP,
         proof_loop_budget: int = 10,
         attempt_budget: int = 5,
     ) -> None:
@@ -115,6 +115,7 @@ def contain() -> None:
         result = await boundary(
             model_id,
             specification,
+            proof_method=proof_method,
             proof_loop_budget=proof_loop_budget,
             attempt_budget=attempt_budget,
         )

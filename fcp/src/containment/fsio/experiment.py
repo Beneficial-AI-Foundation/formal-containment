@@ -1,5 +1,4 @@
 import tomllib
-import json
 from pathlib import Path
 import asyncio
 from itertools import product
@@ -102,7 +101,7 @@ def _results_dict(
                 f"Experiment succeeded for {result.triple.specification.name} by {result.metadata.model}: {result}"
             )
             result_dict[result.triple.specification.name][result.metadata.model] = (
-                json.loads(result.model_dump_json())
+                result.dictionary
             )
         elif isinstance(result, Sequence):
             if len(result) < 1:
@@ -118,9 +117,7 @@ def _results_dict(
             logs.info(
                 f"Experiment failed for {spec_name} by {result[-1].metadata.model}: {result[-1]}"
             )
-            result_dict[spec_name][result[-1].metadata.model] = json.loads(
-                result[-1].model_dump_json()
-            )
+            result_dict[spec_name][result[-1].metadata.model] = result[-1].dictionary
 
         elif isinstance(result, BaseException):
             result_dict["_fail"]["_fail"].append(str(result))
