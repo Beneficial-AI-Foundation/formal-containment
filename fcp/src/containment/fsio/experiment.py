@@ -1,5 +1,3 @@
-import tomllib
-from pathlib import Path
 import asyncio
 from itertools import product
 from collections import defaultdict
@@ -15,49 +13,7 @@ from containment.structures import (
 from containment.protocol import boundary
 from containment.fsio.artifacts import dump_toml, dump_json
 from containment.fsio.logs import logs
-
-EXPERIMENTS = Path.cwd() / ".." / "experiments"
-
-
-def _load_experiment_data() -> dict[str, list]:
-    """
-    Load specifications from the experiments directory.
-    """
-    with open(EXPERIMENTS / "data.toml", "rb") as data:
-        return tomllib.load(data)
-
-
-def _load_specifications() -> list[Specification]:
-    """
-    Load specifications from the experiments directory.
-    """
-    data = _load_experiment_data()
-    if "sample" not in data:
-        raise ValueError(
-            "No specification samples found in the experiment data. Check key in data.toml"
-        )
-    return [Specification(**specification) for specification in data["sample"]]
-
-
-def _load_models() -> list[LLM]:
-    """
-    Load models from the experiments directory.
-    """
-    data = _load_experiment_data()
-    if "model" not in data:
-        raise ValueError("No models found in the experiment data.")
-    return [LLM(**model) for model in data["model"]]
-
-
-def _mk_model_dict() -> dict[str, LLM]:
-    """
-    Create a dictionary of models from the experiments directory.
-    """
-    models = _load_models()
-    return {model.human_name: model for model in models}
-
-
-INCLUDE_MODELS = ["snt4", "gpt41"]
+from containment.fsio.data import load_models, load_specifications, INCLUDE_MODELS
 
 
 def _experiment_matrix(
@@ -66,8 +22,8 @@ def _experiment_matrix(
     """
     Load the experiment matrix from the experiments directory.
     """
-    specifications = _load_specifications()
-    models = _load_models()
+    specifications = load_specifications()
+    models = load_models()
     return list(
         product(
             specifications,
@@ -177,6 +133,3 @@ async def run_experiments(
     dump_toml(results_dict)
     dump_json(results_dict)
     return results_dict
-
-
-MODEL_DICT = _mk_model_dict()

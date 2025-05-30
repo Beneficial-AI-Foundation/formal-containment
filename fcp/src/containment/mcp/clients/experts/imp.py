@@ -11,7 +11,7 @@ from containment.structures import (
 )
 from containment.fsio.logs import logs
 from containment.fsio.prompts import expert_system_prompt
-from containment.netio.completions import parse_program_completion
+from containment.parsing.regex import parse_program_completion
 
 
 class ImpExpert(MCPClient):

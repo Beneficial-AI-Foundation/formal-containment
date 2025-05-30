@@ -2,6 +2,7 @@ import asyncio
 from pathlib import Path
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof.loop import ProofExpert as LoopProofExpert
+from containment.structures.enums import ProofMethod
 from containment.structures import (
     Polarity,
     Specification,
@@ -10,7 +11,6 @@ from containment.structures import (
     VerificationFailure,
     ImpFailure,
     Failure,
-    ProofMethod,
     HoareTriple,
     ExpertMetadata,
 )

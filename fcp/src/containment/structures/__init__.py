@@ -1,9 +1,9 @@
-from enum import Enum
 import json
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Literal, Self, Sequence
 from containment.structures.basic import Structure
+from containment.structures.enums import Polarity
 
 type Language = Literal["imp", "proof"]
 
@@ -48,20 +48,6 @@ class LLM(Structure):
 
     def __str__(self) -> str:
         return self.litellm_id
-
-
-class Polarity(Enum):
-    """Whether to affirm or refute the hoare triple. Effects proof template."""
-
-    POS = "Positive"
-    NEG = "Negative"
-
-
-class ProofMethod(Enum):
-    """The method used to prove the hoare triple."""
-
-    LOOP = "loop"
-    TREE_SEARCH_BASIC = "tree_search_basic"
 
 
 class ExpertMetadata(Structure):

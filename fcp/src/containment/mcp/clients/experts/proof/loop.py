@@ -12,7 +12,7 @@ from containment.structures import (
     VerificationResult,
 )
 from containment.fsio.prompts import load_txt, expert_system_prompt
-from containment.netio.completions import parse_program_completion
+from containment.parsing.regex import parse_program_completion
 from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 20
@@ -122,7 +122,7 @@ class ProofExpert(MCPClient):
                     audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
                     metadata=metadata,
                 )
-            msg = f"{msg_prefix}: Proof for hoare triple {triple_str} in {self.polarity.value} position has a sorry."
+            msg = f"{msg_prefix}: Proof for {self.polarity.value} hoare triple {triple_str} has a sorry."
             logs.info(msg)
         failures = [
             VerificationFailure(
@@ -136,7 +136,7 @@ class ProofExpert(MCPClient):
         for iteration in range(1, self.max_iterations + 1):
             metadata.incr()
             if not iteration % 3:
-                msg = f"{msg_prefix}: Attempt to prove hoare triple {triple_str} in {self.polarity.value} position: iteration num {iteration}/{self.max_iterations}"
+                msg = f"{msg_prefix}: Attempt to prove {self.polarity.value} hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)
