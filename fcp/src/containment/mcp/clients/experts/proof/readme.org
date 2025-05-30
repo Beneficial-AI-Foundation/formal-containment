@@ -1,0 +1,5 @@
+#+title: Proof experts
+
+** ~loop.py~ features a naive scaffold or language model agent.
+It simply feeds the error message from the prior attempt back into the model.
+** ~search.py~ is a simple search agent in Pantograph.
