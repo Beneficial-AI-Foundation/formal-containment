@@ -3,9 +3,12 @@
 .lake/
 .ruff_cache/
 __pycache__/
+.pytest_cache/
+.mypy_cache/
 dist/
 .venv/
 .env
 /experiments/artifacts/
 /experiments/logs/
 /comms/**/*.docx
+result
