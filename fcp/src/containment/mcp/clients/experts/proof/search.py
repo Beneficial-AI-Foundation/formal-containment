@@ -211,21 +211,20 @@ class Expert(MCPClient):
                         success=True,
                     ),
                 )
-            else:
-                failures.append(
-                    VerificationFailure(
-                        triple=self.triple,
-                        proof=proof,
-                        error_message="Proof search failed",
-                        audit_trail=Path.cwd(),
-                        metadata=ExpertMetadata(
-                            model=self.model,
-                            polarity=self.polarity,
-                            iteration=0,
-                            success=False,
-                        ),
-                    )
+            failures.append(
+                VerificationFailure(
+                    triple=self.triple,
+                    proof=proof,
+                    error_message="Proof search failed",
+                    audit_trail=Path.cwd(),
+                    metadata=ExpertMetadata(
+                        model=self.model,
+                        polarity=self.polarity,
+                        iteration=0,
+                        success=False,
+                    ),
                 )
+            )
         return failures
 
     async def run(self) -> VerificationResult:
