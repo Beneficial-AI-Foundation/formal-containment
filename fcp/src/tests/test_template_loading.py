@@ -27,7 +27,7 @@ def test_lean_file(polarity):
         command="test_command",
     )
     pos_sorry = load_txt(
-        f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
+        f"loop/{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
     )
     assert isinstance(pos_sorry, str)
     assert len(pos_sorry) > 0

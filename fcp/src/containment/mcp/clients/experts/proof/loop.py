@@ -62,7 +62,7 @@ class ProofExpert(MCPClient):
         Write the proof to a file in the tmpdir.
         """
         basic = load_txt(
-            f"{self.polarity.value}.lean.template",
+            f"loop/{self.polarity.value}.lean.template",
             proof=proof,
             **self.triple.model_dump(),
         )

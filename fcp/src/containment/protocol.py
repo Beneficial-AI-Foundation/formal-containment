@@ -1,18 +1,18 @@
 import asyncio
-from pathlib import Path
 from containment.mcp.clients.experts.imp import ImpExpert
 from containment.mcp.clients.experts.proof.loop import ProofExpert as LoopProofExpert
+from containment.mcp.clients.experts.proof.search import (
+    Expert as SearchProofExpert,
+)
 from containment.structures.enums import ProofMethod
 from containment.structures import (
     Polarity,
     Specification,
     VerificationSuccess,
     VerificationResult,
-    VerificationFailure,
     ImpFailure,
     Failure,
     HoareTriple,
-    ExpertMetadata,
 )
 from containment.fsio.logs import logs
 
@@ -118,22 +118,48 @@ async def _synthesize_and_prove_search(
     model: str,
     specification: Specification,
     *,
-    proof_loop_budget: int = 10,
     failed_attempts: list[Failure] | None = None,
+    max_steps: int = 100,
+    max_trials_per_goal: int = 5,
+    verbose: bool = True,
 ) -> VerificationResult:
     """
     Synthesize and prove a Hoare triple, returning the result.
     """
     triple = await _synthesize(model, specification, failed_attempts=failed_attempts)
-    return [
-        VerificationFailure(
-            triple=triple,
-            proof="TODO: not implemented",
-            error_message="TODO: not implemented",
-            audit_trail=Path.cwd(),  # TODO: implement audit trail
-            metadata=ExpertMetadata(model=model, polarity=Polarity.POS),
+    proof_expert_pos = SearchProofExpert.connect_and_run(
+        model,
+        triple,
+        Polarity.POS,
+        max_steps=max_steps,
+        max_trials_per_goal=max_trials_per_goal,
+        pantog_verbose=verbose,
+    )
+    proof_expert_neg = SearchProofExpert.connect_and_run(
+        model,
+        triple,
+        Polarity.NEG,
+        max_steps=max_steps,
+        max_trials_per_goal=max_trials_per_goal,
+        pantog_verbose=verbose,
+    )
+
+    done, pending = await asyncio.wait(
+        [
+            asyncio.create_task(expert)
+            for expert in [proof_expert_pos, proof_expert_neg]
+        ],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    for task in pending:
+        task.cancel()
+
+    proof_expert = done.pop().result()
+    if proof_expert.verification_result is None:
+        raise ValueError(
+            "Unreachable. `verification_result` is initialized to None but is always set to the right type in `.connect_and_run`"
         )
-    ]
+    return proof_expert.verification_result
 
 
 async def boundary_loop(
@@ -147,12 +173,11 @@ async def boundary_loop(
     Run the boundary screener, the boundary's main entrypoint, with a loop scaffold for proof search.
 
     Return imp code to the caller (representing the outside world) if the proof is successful, allowing up to `attempt_budget` attempts.
-    Returns `None` if `attempt_budget` imp programs fail.
     """
     msg_prefix = f"{model}:{specification.name if specification.name is not None else 'user_spec'}-"
     failed_attempts = []
     for attempt in range(attempt_budget):
-        msg = f"{msg_prefix}: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
+        msg = f"{msg_prefix} LOOP PROTOCOL: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
         logs.info(msg)
         result = await _synthesize_and_prove_loop(
             model,
@@ -174,6 +199,47 @@ async def boundary_loop(
     return failed_attempts
 
 
+async def boundary_search(
+    model: str,
+    specification: Specification,
+    *,
+    attempt_budget: int = 5,
+    max_steps: int = 100,
+    max_trials_per_goal: int = 5,
+    verbose: bool = True,
+) -> VerificationResult:
+    """
+    Run the boundary screener, the boundary's main entrypoint, with a search scaffold for proof search.
+
+    Return imp code to the caller (representing the outside world) if the proof is successful.
+    """
+    msg_prefix = f"{model}:{specification.name if specification.name is not None else 'user_spec'}-"
+    failed_attempts = []
+    for attempt in range(attempt_budget):
+        msg = f"{msg_prefix} SEARCH PROTOCOL: Attempt to find program provable at specification {specification.name}: {attempt + 1}/{attempt_budget}"
+        logs.info(msg)
+        result = await _synthesize_and_prove_search(
+            model,
+            specification,
+            max_steps=max_steps,
+            max_trials_per_goal=max_trials_per_goal,
+            verbose=verbose,
+        )
+        match result:
+            case list():
+                failed_attempts.extend(result)
+            case VerificationSuccess():
+                if result.metadata.polarity == Polarity.POS:
+                    msg = f"{msg_prefix}: proof in the positive polarity found, code is safe!"
+                    logs.info(msg)
+                    return result
+                else:
+                    failed_attempts.append(result)
+                    msg = f"{msg_prefix}: proof in the negative polarity found, code is unsafe!"
+                    continue
+    return failed_attempts
+
+
 async def boundary(
     model: str,
     specification: Specification,
@@ -181,6 +247,8 @@ async def boundary(
     attempt_budget: int = 5,
     proof_method: ProofMethod = ProofMethod.LOOP,
     proof_loop_budget: int = 10,
+    proof_search_max_steps: int = 100,
+    proof_search_max_trials_per_goal: int = 5,
 ) -> VerificationResult:
     """
     Run the boundary screener, the boundary's main entrypoint.
@@ -197,4 +265,11 @@ async def boundary(
                 attempt_budget=attempt_budget,
             )
         case ProofMethod.TREE_SEARCH_BASIC:
-            raise NotImplementedError("TODO")
+            return await boundary_search(
+                model,
+                specification,
+                attempt_budget=attempt_budget,
+                max_steps=proof_search_max_steps,
+                max_trials_per_goal=proof_search_max_trials_per_goal,
+                verbose=True,
+            )

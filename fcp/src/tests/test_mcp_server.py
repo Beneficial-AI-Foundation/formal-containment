@@ -69,7 +69,9 @@ def test_typecheck_tool():
 def test_pos_sorry(sample_hoare_triple: HoareTriple):
     """Test lake tool on positive lean template with sorry filled in."""
     pos_sorry = load_txt(
-        "Positive.lean.template", proof="sorry", **sample_hoare_triple.model_dump()
+        "loop/Positive.lean.template",
+        proof="sorry",
+        **sample_hoare_triple.model_dump(),
     )
     assert isinstance(pos_sorry, str)
     assert "sorry" in pos_sorry
@@ -83,7 +85,7 @@ def test_pos_sorry(sample_hoare_triple: HoareTriple):
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
 def test_fail(sample_hoare_triple, polarity):
     pos_fail = load_txt(
-        f"{polarity}.lean.template",
+        f"loop/{polarity}.lean.template",
         proof="<NOT A PROOF>",
         **sample_hoare_triple.model_dump(),
     )
@@ -113,7 +115,7 @@ def test_experiments_sorry(experiment_data: dict, sample_command: str, polarity:
             command=sample_command,
         )
         sorry = load_txt(
-            f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
+            f"loop/{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
         )
         assert isinstance(sorry, str)
         cwd, response = run_lake_exe_check(sorry)
@@ -142,7 +144,7 @@ def test_experiments_fail(experiment_data: dict, sample_command: str, polarity: 
         )
 
         fail = load_txt(
-            f"{polarity}.lean.template",
+            f"loop/{polarity}.lean.template",
             proof="<NOT A PROOF>",
             **hoare_triple.model_dump(),
         )

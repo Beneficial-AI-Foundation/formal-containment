@@ -105,9 +105,11 @@ def contain() -> None:
         postcondition: str,
         metavariables: str = "",  # space-separated lean identifiers
         model: ModelName = getattr(ModelName, "snt4"),
+        attempt_budget: int = 5,
         proof_method: ProofMethod = ProofMethod.LOOP,
         proof_loop_budget: int = 10,
-        attempt_budget: int = 5,
+        proof_search_max_steps: int = 100,
+        proof_search_max_trials_per_goal: int = 10,
     ) -> None:
         """
         Run the containment protocol at the given precondition-postcondition pair.
@@ -126,6 +128,8 @@ def contain() -> None:
             proof_method=proof_method,
             proof_loop_budget=proof_loop_budget,
             attempt_budget=attempt_budget,
+            proof_search_max_steps=proof_search_max_steps,
+            proof_search_max_trials_per_goal=proof_search_max_trials_per_goal,
         )
 
         if isinstance(result, list):

@@ -1,0 +1,7 @@
+import Aesop
+import Imp
+open Imp
+
+theorem my_hoare_triple : {% if specification.metavariables %}forall ({{ specification.metavariables }} : Int), {% endif %}
+  {{ "{{astn " + specification.precondition + "}}" }}({{ command }}){{ "{{astn " + specification.postcondition + "}}" }} := by
+  {% if proof %} {{ proof }} {% else %} sorry {% endif %}
