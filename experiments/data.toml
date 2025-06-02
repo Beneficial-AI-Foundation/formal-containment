@@ -24,9 +24,9 @@ postcondition = """y = ~(
 metavariables = "n"
 
 [[model]]
-human_name = "snt37"
+human_name = "hku35"
 provider = "anthropic"
-model_pin = "claude-3-7-sonnet-20250219"
+model_pin = "claude-3-5-haiku-20241022"
 
 [[model]]
 human_name = "snt4"

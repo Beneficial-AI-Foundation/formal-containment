@@ -9,7 +9,7 @@ def test_oracle_template_loading():
     assert isinstance(template, str)
     assert len(template) > 0
 
-    proof_prompt = expert_system_prompt("proof")
+    proof_prompt = expert_system_prompt("loop/proof")
     imp_prompt = expert_system_prompt("imp")
     assert isinstance(proof_prompt, str)
     assert isinstance(imp_prompt, str)
@@ -27,7 +27,7 @@ def test_lean_file(polarity):
         command="test_command",
     )
     pos_sorry = load_txt(
-        f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
+        f"loop/{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
     )
     assert isinstance(pos_sorry, str)
     assert len(pos_sorry) > 0

@@ -1,6 +1,5 @@
 import pytest
 from pathlib import Path
-import tomllib
 from containment.mcp.server import (
     get_proof_user_prompt,
     get_imp_user_prompt,
@@ -10,62 +9,43 @@ from containment.mcp.clients.experts.proof import SORRY_CANARY
 from containment.structures import Specification, HoareTriple, LakeResponse
 from containment.fsio.prompts import load_txt
 
-# Test data
-SAMPLE_PRECONDITION = "x > 0"
-SAMPLE_COMMAND = "imp { x := x + 1; }"
-SAMPLE_POSTCONDITION = "x > 1"
-SAMPLE_METAVARIABLES = ""
-SAMPLE_STDERR = ""
 
-
-@pytest.fixture
-def sample_specification():
-    return Specification(
-        precondition=SAMPLE_PRECONDITION,
-        postcondition=SAMPLE_POSTCONDITION,
-        metavariables=SAMPLE_METAVARIABLES,
-    )
-
-
-@pytest.fixture
-def sample_hoare_triple(sample_specification):
-    return HoareTriple(specification=sample_specification, command=SAMPLE_COMMAND)
-
-
-@pytest.fixture
-def experiment_data():
-    with open(Path.cwd() / ".." / "experiments" / "data.toml", "rb") as experiment_data:
-        experiments = tomllib.load(experiment_data)
-    return experiments
-
-
-def test_proof_user_prompt():
+# TODO: use less fixtures... these strings can just be inlined.
+def test_proof_user_prompt(
+    sample_precondition: str,
+    sample_command: str,
+    sample_postcondition: str,
+    sample_metavariables: str,
+    sample_stderr: str,
+):
     """Test the hoare proof user prompt generation."""
     prompt = get_proof_user_prompt(
-        precondition=SAMPLE_PRECONDITION,
-        command=SAMPLE_COMMAND,
-        postcondition=SAMPLE_POSTCONDITION,
-        metavariables=SAMPLE_METAVARIABLES,
-        stderr=SAMPLE_STDERR,
+        precondition=sample_precondition,
+        command=sample_command,
+        postcondition=sample_postcondition,
+        metavariables=sample_metavariables,
+        stderr=sample_stderr,
         polarity="Negative",
     )
     assert isinstance(prompt, str)
-    assert SAMPLE_PRECONDITION in prompt
-    assert SAMPLE_COMMAND in prompt
-    assert SAMPLE_POSTCONDITION in prompt
+    assert sample_precondition in prompt
+    assert sample_command in prompt
+    assert sample_postcondition in prompt
 
 
-def test_imp_user_prompt():
+def test_imp_user_prompt(
+    sample_precondition: str, sample_postcondition: str, sample_metavariables: str
+):
     """Test the imp user prompt generation."""
     prompt = get_imp_user_prompt(
-        precondition=SAMPLE_PRECONDITION,
-        postcondition=SAMPLE_POSTCONDITION,
-        metavariables=SAMPLE_METAVARIABLES,
+        precondition=sample_precondition,
+        postcondition=sample_postcondition,
+        metavariables=sample_metavariables,
         failed_attempts="",
     )
     assert isinstance(prompt, str)
-    assert SAMPLE_PRECONDITION in prompt
-    assert SAMPLE_POSTCONDITION in prompt
+    assert sample_precondition in prompt
+    assert sample_postcondition in prompt
 
 
 def test_typecheck_tool():
@@ -86,10 +66,12 @@ def test_typecheck_tool():
     assert response.stderr
 
 
-def test_pos_sorry(sample_hoare_triple):
+def test_pos_sorry(sample_hoare_triple: HoareTriple):
     """Test lake tool on positive lean template with sorry filled in."""
     pos_sorry = load_txt(
-        "Positive.lean.template", proof="sorry", **sample_hoare_triple.model_dump()
+        "loop/Positive.lean.template",
+        proof="sorry",
+        **sample_hoare_triple.model_dump(),
     )
     assert isinstance(pos_sorry, str)
     assert "sorry" in pos_sorry
@@ -103,7 +85,7 @@ def test_pos_sorry(sample_hoare_triple):
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
 def test_fail(sample_hoare_triple, polarity):
     pos_fail = load_txt(
-        f"{polarity}.lean.template",
+        f"loop/{polarity}.lean.template",
         proof="<NOT A PROOF>",
         **sample_hoare_triple.model_dump(),
     )
@@ -117,7 +99,7 @@ def test_fail(sample_hoare_triple, polarity):
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
-def test_experiments_sorry(experiment_data, polarity):
+def test_experiments_sorry(experiment_data: dict, sample_command: str, polarity: str):
     for sample in experiment_data["sample"]:
         assert isinstance(sample, dict)
         assert "precondition" in sample
@@ -130,10 +112,10 @@ def test_experiments_sorry(experiment_data, polarity):
                     sample["metavariables"] if "metavariables" in sample else ""
                 ),
             ),
-            command=SAMPLE_COMMAND,
+            command=sample_command,
         )
         sorry = load_txt(
-            f"{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
+            f"loop/{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
         )
         assert isinstance(sorry, str)
         cwd, response = run_lake_exe_check(sorry)
@@ -145,7 +127,7 @@ def test_experiments_sorry(experiment_data, polarity):
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
-def test_experiments_fail(experiment_data, polarity):
+def test_experiments_fail(experiment_data: dict, sample_command: str, polarity: str):
     for sample in experiment_data["sample"]:
         assert isinstance(sample, dict)
         assert "precondition" in sample
@@ -158,11 +140,11 @@ def test_experiments_fail(experiment_data, polarity):
                     sample["metavariables"] if "metavariables" in sample else ""
                 ),
             ),
-            command=SAMPLE_COMMAND,
+            command=sample_command,
         )
 
         fail = load_txt(
-            f"{polarity}.lean.template",
+            f"loop/{polarity}.lean.template",
             proof="<NOT A PROOF>",
             **hoare_triple.model_dump(),
         )

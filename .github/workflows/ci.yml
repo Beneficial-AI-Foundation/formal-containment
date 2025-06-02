@@ -19,8 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: typst-community/setup-typst@v4
-      - name: Whitepaper compile
-        run: typst compile main.typ main.pdf
+      - run: typst compile main.typ
         working-directory: comms/whitepaper
 
   protocol-uv:
@@ -28,6 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          lake-package-directory: imp
       - run: uv sync
         working-directory: fcp
       - run: uv run ruff check src
@@ -36,4 +39,5 @@ jobs:
         working-directory: fcp
       - run: uv run pyright src
         working-directory: fcp
-      # must install elan to pytest
+      - run: uv run pytest --ignore src/tests/networked/*.py
+        working-directory: fcp

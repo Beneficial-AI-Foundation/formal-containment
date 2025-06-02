@@ -1,15 +1,21 @@
-import tempfile
+import atexit
 import shutil
 import subprocess
-import atexit
+import tempfile
 from pathlib import Path
+from pantograph import Server
 from containment.structures import LakeResponse
 
 CMD = ["lake", "exe", "check"]
 UP = ".."
 LAKE_DIR = Path.cwd() / UP / "imp"
+LEAN_PATH = subprocess.run(
+    ["lake", "env", "printenv", "LEAN_PATH"],
+    text=True,
+    capture_output=True,
+    cwd=LAKE_DIR,
+).stdout.strip()
 
-# Keep track of temporary directories to clean up
 _temp_dirs = set()
 
 
@@ -49,3 +55,13 @@ def temp_lakeproj_init(lake_dir: Path = LAKE_DIR) -> Path:
         dirs_exist_ok=True,
     )
     return tmpdir
+
+
+async def pantograph_init(cwd: Path) -> Server:
+    """
+    Initialize the Pantograph server.
+    """
+    server = await Server.create(
+        lean_path=LEAN_PATH, project_path=str(cwd), imports=["Aesop", "Imp"]
+    )
+    return server

@@ -1,5 +1,6 @@
 from pathlib import Path
 from containment.mcp.clients.basic import MCPClient
+from containment.mcp.clients.experts.proof import SORRY_CANARY
 from containment.fsio.artifacts import write_artifact
 from containment.structures import (
     HoareTriple,
@@ -11,15 +12,14 @@ from containment.structures import (
     VerificationResult,
 )
 from containment.fsio.prompts import load_txt, expert_system_prompt
-from containment.netio.completions import parse_program_completion
+from containment.parsing.regex import parse_program_completion
 from containment.fsio.logs import logs
 
 MAX_CONVERSATION_LENGTH = 20
-SORRY_CANARY = "<HOARE_TRIPLE_TERM_HAS_SORRY>"
 
 
 class ProofExpert(MCPClient):
-    """Expert at writing hoare proofs over imp."""
+    """Expert at writing hoare proofs over imp, via a minimal scaffold."""
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class ProofExpert(MCPClient):
         self.polarity = polarity
         self.max_iterations = max_iterations
         self.max_conversation_length = MAX_CONVERSATION_LENGTH
-        self.system_prompt = expert_system_prompt("proof")
+        self.system_prompt = expert_system_prompt("loop/proof")
         self.complete = self._mk_complete(model, self.system_prompt)
         self.proof = None
         self.verification_result = None
@@ -62,7 +62,7 @@ class ProofExpert(MCPClient):
         Write the proof to a file in the tmpdir.
         """
         basic = load_txt(
-            f"{self.polarity.value}.lean.template",
+            f"loop/{self.polarity.value}.lean.template",
             proof=proof,
             **self.triple.model_dump(),
         )
@@ -122,7 +122,7 @@ class ProofExpert(MCPClient):
                     audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
                     metadata=metadata,
                 )
-            msg = f"{msg_prefix}: Proof for hoare triple {triple_str} in {self.polarity.value} position has a sorry."
+            msg = f"{msg_prefix}: Proof for {self.polarity.value} hoare triple {triple_str} has a sorry."
             logs.info(msg)
         failures = [
             VerificationFailure(
@@ -136,7 +136,7 @@ class ProofExpert(MCPClient):
         for iteration in range(1, self.max_iterations + 1):
             metadata.incr()
             if not iteration % 3:
-                msg = f"{msg_prefix}: Attempt to prove hoare triple {triple_str} in {self.polarity.value} position: iteration num {iteration}/{self.max_iterations}"
+                msg = f"{msg_prefix}: Attempt to prove {self.polarity.value} hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
             self.conversation = self.conversation[-self.max_conversation_length :]
             cwd, lake_response = await self._iter(lake_response.stderr)

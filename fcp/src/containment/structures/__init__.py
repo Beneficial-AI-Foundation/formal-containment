@@ -1,11 +1,11 @@
-from enum import Enum
 import json
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import Literal, Self, Sequence
 from containment.structures.basic import Structure
+from containment.structures.enums import Polarity
 
-type Language = Literal["imp", "proof"]
+type Language = Literal["imp", "loop/proof", "proof"]
 
 
 class Specification(Structure):
@@ -50,21 +50,14 @@ class LLM(Structure):
         return self.litellm_id
 
 
-class Polarity(Enum):
-    """Whether to affirm or refute the hoare triple. Effects proof template."""
-
-    POS = "Positive"
-    NEG = "Negative"
-
-
 class ExpertMetadata(Structure):
-    converged_at_iteration: int = 0
+    iteration: int = 0
     model: str
     polarity: Polarity
     success: bool = False
 
     def incr(self) -> None:
-        self.converged_at_iteration += 1
+        self.iteration += 1
 
     def successful(self) -> None:
         self.success = True

@@ -56,7 +56,7 @@ def proof_user_prompt(
     Get the user prompt for the proof oracle.
     """
     return load_txt(
-        "proof.user.prompt.template",
+        "loop/proof.user.prompt.template",
         **triple.model_dump(),
         stderr=stderr,
         positive=positive,
