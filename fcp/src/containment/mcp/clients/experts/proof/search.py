@@ -192,8 +192,8 @@ class Expert(MCPClient):
                 unit.goal_state.state_id
             ]
             tactics = [
-                self.search_agent.tactics_base[state_id]
-                for state_id in state_ids_dict.values()
+                self.search_agent.tactics_base[state_ids_dict[goal_id]]
+                for goal_id in sorted(state_ids_dict.keys())
             ]
             proof = "\n".join(tactics)
             lean_file_next = re.sub(r"sorry", proof, self.lean_file_sorry, count=1)
