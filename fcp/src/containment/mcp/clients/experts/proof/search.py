@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from itertools import chain
 from pathlib import Path
@@ -187,20 +188,22 @@ class Expert(MCPClient):
                 max_trials_per_goal=self.max_trials_per_goal,
                 verbose=self.pantog_verbose,
             )
-            tactics = self.search_agent.tactics_base[
-                self.search_agent.goal_tactic_id_map[unit.goal_state.state_id][0]
+            state_ids_dict = self.search_agent.goal_tactic_id_map[
+                unit.goal_state.state_id
             ]
-            lean_file_next = self.lean_file_sorry.replace(
-                "sorry",
-                f"{tactics}",
-            )
+            tactics = [
+                self.search_agent.tactics_base[state_id]
+                for state_id in state_ids_dict.values()
+            ]
+            proof = "\n".join(tactics)
+            lean_file_next = re.sub(r"sorry", proof, self.lean_file_sorry, count=1)
             self.code_dt.append(lean_file_next)
-            artifact_dir = write_artifact(self.cwd, self.code_dt[0])
+            artifact_dir = write_artifact(self.cwd, self.triple)
             if search_result.success:
                 return VerificationSuccess(
                     triple=self.triple,
                     audit_trail=artifact_dir / f"{hash(self.triple)}.lean",
-                    proof=tactics,
+                    proof=proof,
                     metadata=ExpertMetadata(
                         model=self.model,
                         polarity=self.polarity,
@@ -212,7 +215,7 @@ class Expert(MCPClient):
                 failures.append(
                     VerificationFailure(
                         triple=self.triple,
-                        proof=tactics,
+                        proof=proof,
                         error_message="Proof search failed",
                         audit_trail=Path.cwd(),
                         metadata=ExpertMetadata(
