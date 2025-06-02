@@ -5,7 +5,7 @@ from typing import Literal, Self, Sequence
 from containment.structures.basic import Structure
 from containment.structures.enums import Polarity
 
-type Language = Literal["imp", "proof"]
+type Language = Literal["imp", "loop/proof", "proof"]
 
 
 class Specification(Structure):

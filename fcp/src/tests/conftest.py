@@ -48,12 +48,14 @@ def sample_specification(
 
 
 @pytest.fixture
-def sample_hoare_triple(sample_specification: Specification, sample_command: str):
+def sample_hoare_triple(
+    sample_specification: Specification, sample_command: str
+) -> HoareTriple:
     return HoareTriple(specification=sample_specification, command=sample_command)
 
 
 @pytest.fixture
-def experiment_data():
+def experiment_data() -> dict:
     with open(Path.cwd() / ".." / "experiments" / "data.toml", "rb") as experiment_data:
         experiments = tomllib.load(experiment_data)
     return experiments

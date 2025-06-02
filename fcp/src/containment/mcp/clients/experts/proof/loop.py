@@ -35,7 +35,7 @@ class ProofExpert(MCPClient):
         self.polarity = polarity
         self.max_iterations = max_iterations
         self.max_conversation_length = MAX_CONVERSATION_LENGTH
-        self.system_prompt = expert_system_prompt("proof")
+        self.system_prompt = expert_system_prompt("loop/proof")
         self.complete = self._mk_complete(model, self.system_prompt)
         self.proof = None
         self.verification_result = None

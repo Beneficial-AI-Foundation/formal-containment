@@ -9,7 +9,7 @@ def test_oracle_template_loading():
     assert isinstance(template, str)
     assert len(template) > 0
 
-    proof_prompt = expert_system_prompt("proof")
+    proof_prompt = expert_system_prompt("loop/proof")
     imp_prompt = expert_system_prompt("imp")
     assert isinstance(proof_prompt, str)
     assert isinstance(imp_prompt, str)
