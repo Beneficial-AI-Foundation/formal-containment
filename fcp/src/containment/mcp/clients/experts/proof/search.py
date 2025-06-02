@@ -141,7 +141,7 @@ class Expert(MCPClient):
 
     async def _proof_search(self) -> VerificationResult:
         """
-        Perform the proof search using the HoareSearch agent.
+        Perform the proof search using the DumbHoareSearch agent.
         """
         failures = []
         if self.pantograph_server is None:
@@ -163,13 +163,12 @@ class Expert(MCPClient):
         logs.info(f"{self.model}: Lean file with sorry: {self.lean_file_sorry}")
         units = await self.pantograph_server.load_sorry_async(self.lean_file_sorry)
         logs.info(f"{self.model}: pantograph loaded the following sorry units: {units}")
-        tactics = "sorry"
         for unit in units:
             if unit.goal_state is None:
                 failures.append(
                     VerificationFailure(
                         triple=self.triple,
-                        proof="",
+                        proof="sorry",
                         error_message="||".join(unit.messages),
                         audit_trail=Path.cwd(),
                         metadata=ExpertMetadata(
