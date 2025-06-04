@@ -1,8 +1,8 @@
 #+title: Formal Containment
 
-Previously, classical AI safety warned against trying to put the AI in a box [fn:boxing: https://www.lesswrong.com/w/ai-boxing-containment].
+Previously, classical AI safety warned against trying to put the AI in a [[https://www.lesswrong.com/w/ai-boxing-containment][box]].
 
-[[file:images/frontierbox.png]]
+[[file:images/somehow-boxing-returned.jpg]]
 
 Yudkowsky famously convinced people of this via a roleplay game back in the extropians mailing list days @Yudkowsky2002AIBox. Recent work from AI Control and Safeguarded AI have reignited interest in this long neglected area.
 

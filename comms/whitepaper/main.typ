@@ -330,6 +330,8 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("experiments.toml")
+#let experiment_results = toml("results.toml")
+
 #let format-samples-table = {
   let samples = experiments_spec.sample
 
@@ -351,7 +353,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
     ..samples
       .enumerate()
       .map(((i, sample)) => (
-        str(i + 1),
+        sample.name,
         raw(sample.precondition, lang: none),
         if "postcondition" in sample {
           if sample.postcondition.contains("\n") {
@@ -389,11 +391,48 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
   }
 }
 
+#let display_experiment_results = {
+  let experiments = experiment_results
+  let experiment_names = experiments.keys().filter(k => k != "_fail")
+  
+  table(
+    columns: 4,
+    stroke: 0.5pt,
+    align: (left, left, left, left),
+    inset: 8pt,
+    
+    // Header row
+    table.header(
+      [*Experiment*],
+      [*Model*],
+      [*Status*],
+      [*Iteration*],
+    ),
+    
+    // Data rows
+    ..experiment_names.map(name => {
+      let experiment = experiments.at(name)
+      experiment.keys().map(model => {
+        let result = experiment.at(model)
+        let metadata = result.metadata
+        (
+          name,
+          model,
+          if metadata.success { "✓" } else { "✗" },
+          str(metadata.iteration),
+        )
+      })
+    }).flatten()
+  )
+}
+
 We test the following specifications
 
 #format-samples-table
 
 on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle this doesn't matter).
+
+#display_experiment_results
 
 *TODO*: See https://github.com/Beneficial-AI-Foundation/formal-containment/issues/7 for what I'd like to do.
 
@@ -423,7 +462,7 @@ In @greenblatt2024aicontrolimprovingsafety, Greenblatt et al elicit subversive c
 
 Thank you Stephen Mell for discussion.
 
-Canary string: NDcwODA1MTY4MzQ0NjE4Njk4MA==
+Canary string: NDcwODA1Njg4MzQ0NjE4Njk4MA==
 
 // Bibliography
 #bibliography("refs.bib")
