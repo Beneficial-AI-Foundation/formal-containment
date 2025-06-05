@@ -24,26 +24,46 @@ theorem hoare_seq : forall P Q R c1 c2,
 @[simp]
 theorem hoare_assign : forall P x a, {{P[x ↦ a]}}(imp { ~x := ~a; }){{P}} := by
   simp [Env.setOption]
-  aesop
+  intros _ _ _ _ _ h1 h2
+  cases h2 with
+  | assign h2_eq =>
+    rw [h2_eq] at h1
+    simp at h1
+    assumption
 
 @[simp]
 theorem hoare_consequence_pre : forall (P P' Q : Assertion) c,
   {{P'}}c{{Q}} →
   P ->> P' →
-  {{P}}c{{Q}} := by aesop
+  {{P}}c{{Q}} := by
+  simp
+  intros _ _ _ _ h1 h2 _ _ h3 h4
+  apply (h1 _ _ (h2 _ h3))
+  assumption
 
 @[simp]
 theorem hoare_consequence_post : forall (P Q Q' : Assertion) c,
   {{P}}c{{Q'}} →
   Q' ->> Q →
-  {{P}}c{{Q}} := by aesop
+  {{P}}c{{Q}} := by
+  simp
+  intros _ _ _ _ h1 h2 _ _ h3 h4
+  apply h2
+  apply (h1 _ _ h3)
+  assumption
 
 @[simp]
 theorem hoare_consequence : forall (P P' Q Q' : Assertion) c,
   {{P'}}c{{Q'}} →
   (P ->> P') →
   (Q' ->> Q) →
-  {{P}}c{{Q}} := by aesop
+  {{P}}c{{Q}} := by
+  simp
+  intros _ _ _ _ _ h1 h2 h3 _ _ h4 h5
+  apply h3
+  specialize (h2 _ h4)
+  apply (h1 _ _ h2)
+  assumption
 
 @[simp]
 theorem hoare_if : forall P Q (b : Expr) c1 c2,
