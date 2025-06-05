@@ -29,7 +29,6 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - uses: leanprover/lean-action@v1
         with:
-          auto-config: false
           lake-package-directory: imp
       - run: uv sync
         working-directory: fcp
