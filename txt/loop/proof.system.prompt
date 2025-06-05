@@ -73,6 +73,8 @@ imp {
 You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`
 
+Remember to try `aesop`, an automation tactic.
+
 ## Example response:
 """
 I can take notes here and map out my chain of thought, if I want.

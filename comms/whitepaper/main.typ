@@ -15,7 +15,6 @@
 ])
 #align(center)[
   Quinn Dougherty \
-  Beneficial AI Foundation \
   #link("quinn@beneficialaifoundation.org")
 ]
 #align(center)[
@@ -30,8 +29,6 @@
 // authors: (
 //   (
 //     name: "Quinn Dougherty",
-//     department: [Research Engineer],
-//     organization: [Beneficial AI Foundation],
 //     email: "quinn@beneficialaifoundation.org",
 //   ),
 // ),
@@ -330,7 +327,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("experiments.toml")
-#let experiment_results = toml("results.toml")
+#let experiment_results = toml("results_20250530-1551.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample
@@ -394,35 +391,34 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 #let display_experiment_results = {
   let experiments = experiment_results
   let experiment_names = experiments.keys().filter(k => k != "_fail")
-  
+
   table(
     columns: 4,
     stroke: 0.5pt,
     align: (left, left, left, left),
     inset: 8pt,
-    
+
     // Header row
-    table.header(
-      [*Experiment*],
-      [*Model*],
-      [*Status*],
-      [*Iteration*],
-    ),
-    
+    table.header([*Experiment*], [*Model*], [*Status*], [*Iteration*]),
+
     // Data rows
-    ..experiment_names.map(name => {
-      let experiment = experiments.at(name)
-      experiment.keys().map(model => {
-        let result = experiment.at(model)
-        let metadata = result.metadata
-        (
-          name,
-          model,
-          if metadata.success { "✓" } else { "✗" },
-          str(metadata.iteration),
-        )
+    ..experiment_names
+      .map(name => {
+        let experiment = experiments.at(name)
+        experiment
+          .keys()
+          .map(model => {
+            let result = experiment.at(model)
+            let metadata = result.metadata
+            (
+              name,
+              model,
+              if metadata.success { "✓" } else { "✗" },
+              str(metadata.iteration),
+            )
+          })
       })
-    }).flatten()
+      .flatten()
   )
 }
 
