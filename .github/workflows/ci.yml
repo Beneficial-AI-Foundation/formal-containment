@@ -13,6 +13,12 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           lake-package-directory: imp
+      - name: Upload .lake directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp-lake
+          path: imp/.lake
+          if-no-files-found: error
 
   comms-typst:
     runs-on: ubuntu-latest
@@ -23,13 +29,16 @@ jobs:
         working-directory: comms/whitepaper
 
   protocol-uv:
+    needs: imp-lake
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - uses: leanprover/lean-action@v1
+      - name: Download .lake directory
+        uses: actions/download-artifact@v4
         with:
-          lake-package-directory: imp
+          name: imp-lake
+          path: imp/.lake
       - run: uv sync
         working-directory: fcp
       - run: uv run ruff check src
