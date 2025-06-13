@@ -39,16 +39,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - uses: leanprover/lean-action@v1
-        with:
-          lake-package-directory: ./imp
-          auto-config: false
       - name: Download .lake directory
         uses: actions/download-artifact@v4
         with:
           name: imp-lake
           path: imp/.lake
-          include-hidden-files: true
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: ./imp
+          auto-config: false
       - run: uv sync
         working-directory: ./fcp
       - run: uv run ruff check src
