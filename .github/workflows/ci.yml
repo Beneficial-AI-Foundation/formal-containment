@@ -26,8 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: typst-community/setup-typst@v4
-      - run: typst compile main.typ
+      - name: Whitepaper compile
+        run: typst compile main.typ
         working-directory: comms/whitepaper
+      - name: Toronto talk compile
+        run: typst compile template.typ
+        working-directory: comms/talks/toronto
 
   protocol-uv:
     needs: imp-lake
@@ -35,6 +39,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
       - name: Download .lake directory
         uses: actions/download-artifact@v4
         with:
