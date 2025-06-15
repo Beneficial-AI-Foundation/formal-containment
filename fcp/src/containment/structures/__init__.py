@@ -116,9 +116,28 @@ class LakeResponse(Structure):
         )
 
     @classmethod
-    def from_jsons(cls, result: str) -> "LakeResponse":
-        """The MCP server json RPC will return a str that json decodes into the arguments for LakeResponse"""
-        return cls(**json.loads(result))
+    def from_jsons_clean(cls, result: str) -> "LakeResponse":
+        """The MCP server json RPC will return a str that json decodes into the arguments for LakeResponse. Removes lines containing "Built" or "Running"."""
+        return cls(**json.loads(result)).clean()
+
+    def clean(self) -> Self:
+        """Clean the stdout and stderr by removing "Built", "Running", "Building", "Replayed"."""
+
+        def clean_line(line: str) -> str:
+            return (
+                line
+                if "Built" not in line
+                and "Running" not in line
+                and "Building" not in line
+                and "Replayed" not in line
+                and "LEAN_PATH" not in line
+                and not line.startswith("warning")
+                else ""
+            )
+
+        self.stdout = "\n".join(clean_line(line) for line in self.stdout.splitlines())
+        self.stderr = "\n".join(clean_line(line) for line in self.stderr.splitlines())
+        return self
 
 
 class CheckerBase(Structure):

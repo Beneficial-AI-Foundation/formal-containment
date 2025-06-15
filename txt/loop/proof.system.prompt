@@ -17,7 +17,7 @@ import Aesop
 import Imp
 open Imp
 
-example : {{(fun σ => σ "x" < σ "y")}}swap{{(fun σ => σ "x" >= σ "y")}} := by
+example : {{astn x < y}}swap{{astn x >= y}} := by
   simp [swap]
   intros _ _ h1 h2
   cases h2 with
@@ -42,7 +42,7 @@ example : {{(fun σ => σ "x" < σ "y")}}swap{{(fun σ => σ "x" >= σ "y")}} :=
             apply Value.lt_implies_le
             assumption
 
-example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1)}} := by
+example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
   simp; intros σ σ' h1 h2
   cases h2 with
   | assign h2_eq =>
@@ -55,11 +55,11 @@ example : {{(fun σ => σ "x" > 0)}}(imp { x := x + 1; }){{(fun σ => σ "x" > 1
     simp [Value.int_lt] at h1
     omega
 
-example : {{fun st => st "x" > st "y"}}(
+example : {{astn x > y}}(
 imp {
   x := y;
 }
-){{fun st => st "x" <= st "y"}} := by
+){{astn x <= y}} := by
   simp
   intros σ σ' h1 h2
   cases h2 with
@@ -70,10 +70,12 @@ imp {
     apply Int.le_refl
 ```
 
+You should never need the character `⊢`
+
 You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`
 
-Remember to try `aesop`, an automation tactic.
+Remember to try `aesop`, an automation tactic. It never one-shots a proof on it's own, but sometimes if you think a sequence of steps are valid you can try ending that sequence with `aesop` instead of the problematic tactic.
 
 ## Example response:
 """

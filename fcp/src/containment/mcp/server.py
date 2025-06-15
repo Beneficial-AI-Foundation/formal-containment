@@ -81,8 +81,8 @@ def get_imp_user_prompt(
     )
 
 
-@mcp.tool("typecheck", description="Run the typechecker on the given code.")
-def run_lake_exe_check(lean_code: str) -> tuple[Path, LakeResponse]:
+@mcp.tool("typecheck-freshdir", description="Run the typechecker on the given code.")
+def run_lake_exe_check_freshdir(lean_code: str) -> tuple[Path, LakeResponse]:
     """
     Run the lake exe check command at the given code in a temporary directory.
 
@@ -96,3 +96,20 @@ def run_lake_exe_check(lean_code: str) -> tuple[Path, LakeResponse]:
     cwd = temp_lakeproj_init()
     checker = Checker(cwd=cwd)
     return cwd, checker.run_code(lean_code)
+
+
+@mcp.tool(
+    "typecheck", description="Run the typechecker on the given code in the given dir."
+)
+def run_lake_exe_check(lean_code: str, cwd: str) -> LakeResponse:
+    """
+    Run the lake exe check command at the given code in the specified directory.
+
+    Args:
+        lean_code: The Lean code to check
+        cwd: The current working directory where the code is located
+    Returns:
+        LakeResponse: The result of the lake tool
+    """
+    checker = Checker(cwd=Path(cwd))
+    return checker.run_code(lean_code)

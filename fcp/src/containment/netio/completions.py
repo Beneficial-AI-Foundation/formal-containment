@@ -20,10 +20,9 @@ def mk_complete(
     system_prompt: str,
 ) -> Callable[[list[dict]], dict]:
     """
-    Creates a lambda for sending messages to anthropic, whomst returns a completion.
+    Creates a lambda for sending messages to litellm, whomst returns a completion.
     """
 
-    # logs.info(f"Anthropic system prompt: {sysprompt}")
     def _complete(messages: list[dict]) -> dict:
         messages = [
             {

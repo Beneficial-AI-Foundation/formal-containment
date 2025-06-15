@@ -1,7 +1,9 @@
 {% if stderr %}
-Getting warmer, your previous attempt got the following error message:
+Your previous attempt got the following error message:
 {{ stderr }}
 {% endif %}
+
+You should never need the `⊢` character in your proof.
 
 Prove the {% if positive %}affirmation{% else %}refutation{% endif %} of the following hoare triple
 {% if metavariables %}forall ({{ metavariables }} : Int), {% endif %} \{ {{ specification.precondition }} \} {{ command }} \{ {{ specification.postcondition }} \}

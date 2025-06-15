@@ -52,7 +52,7 @@ async def _synthesize(
     result = None
     for attempt in range(imp_attempts):
         logs.info(
-            f"{msg_prefix}: Attempt to synthesize hoare triple: {attempt + 1}/{imp_attempts}"
+            f"{msg_prefix} Imp Synthesis: Attempt to synthesize hoare triple: {attempt + 1}/{imp_attempts}"
         )
         result = await _synthesize_shot(
             model, specification, failed_attempts=failed_attempts
@@ -62,7 +62,7 @@ async def _synthesize(
                 return result
             case ImpFailure():
                 logs.warning(
-                    f"{msg_prefix} Attempt {attempt + 1} failed: {result.failure_str}"
+                    f"{msg_prefix} IMP SYNTHESIS: Attempt {attempt + 1} failed: {result.failure_str}"
                 )
                 if failed_attempts is not None:
                     failed_attempts.append(result)

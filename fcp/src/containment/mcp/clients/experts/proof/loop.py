@@ -1,4 +1,5 @@
 from pathlib import Path
+from containment.fsio.tools import temp_lakeproj_init
 from containment.mcp.clients.basic import MCPClient
 from containment.mcp.clients.experts.proof import SORRY_CANARY
 from containment.fsio.artifacts import write_artifact
@@ -15,7 +16,24 @@ from containment.fsio.prompts import load_txt, expert_system_prompt
 from containment.parsing.regex import parse_program_completion
 from containment.fsio.logs import logs
 
-MAX_CONVERSATION_LENGTH = 20
+MAX_CONVERSATION_LENGTH = 32
+
+
+def filter_conversation_length(
+    conversation: list[dict], max_conversation_length: int = MAX_CONVERSATION_LENGTH
+) -> list[dict]:
+    """
+    Filter the conversation to the last MAX_CONVERSATION_LENGTH messages, maintaining the 0th message.
+    """
+    if not conversation:
+        return []
+    system_message = conversation[0]
+    tail = conversation[1:]
+    if not tail:
+        return [system_message]
+    if len(tail) >= max_conversation_length:
+        tail = tail[-max_conversation_length:]
+    return [system_message] + tail
 
 
 class ProofExpert(MCPClient):
@@ -69,7 +87,7 @@ class ProofExpert(MCPClient):
         self.code_dt.append(basic)
         return basic
 
-    async def _iter(self, stderr: str) -> tuple[Path, LakeResponse]:
+    async def _iter(self, stderr: str, cwd: Path) -> LakeResponse:
         prompt_arguments = {
             "precondition": self.triple.specification.precondition,
             "postcondition": self.triple.specification.postcondition,
@@ -91,16 +109,16 @@ class ProofExpert(MCPClient):
         ]
         self.conversation = self.conversation + curr_conversation
         completion = self.complete(self.conversation)
-        self.proof = parse_program_completion(
-            completion["choices"][0].message.content, "proof"
-        )
-        tool_arguments = {"lean_code": self._render_code(self.proof)}
+        proof_content = completion["choices"][0].message.content
+        self.conversation.append({"role": "assistant", "content": proof_content})
+        self.proof = parse_program_completion(proof_content, "proof")
+        tool_arguments = {"lean_code": self._render_code(self.proof), "cwd": str(cwd)}
         tool_result = await self.session.call_tool(
             "typecheck", arguments=tool_arguments
         )
-        cwd = tool_result.content[0].text.strip('"')  # type: ignore
-        lake_response = tool_result.content[1].text  # type: ignore
-        return Path(cwd), LakeResponse.from_jsons(lake_response)
+        # cwd = tool_result.content[0].text.strip('"')  # type: ignore
+        lake_response_str = tool_result.content[0].text  # type: ignore
+        return LakeResponse.from_jsons_clean(lake_response_str)
 
     async def _prove_loop(self) -> VerificationResult:
         forall_str = (
@@ -110,7 +128,8 @@ class ProofExpert(MCPClient):
         )
         triple_str = f"{forall_str} {self.triple.hidden_code}"
         msg_prefix = f"\t{self.model}:{self.triple.specification.name if self.triple.specification.name is not None else self.triple.specification}-"
-        cwd, lake_response = await self._iter("")
+        cwd = temp_lakeproj_init()
+        lake_response = await self._iter("", cwd)
         metadata = ExpertMetadata(model=self.model, polarity=self.polarity)
         if lake_response.exit_code == 0 and self.proof is not None:
             if SORRY_CANARY not in lake_response.stderr:
@@ -138,8 +157,8 @@ class ProofExpert(MCPClient):
             if not iteration % 3:
                 msg = f"{msg_prefix}: Attempt to prove {self.polarity.value} hoare triple {triple_str}: iteration num {iteration}/{self.max_iterations}"
                 logs.info(msg)
-            self.conversation = self.conversation[-self.max_conversation_length :]
-            cwd, lake_response = await self._iter(lake_response.stderr)
+            self.conversation = filter_conversation_length(self.conversation)
+            lake_response = await self._iter(lake_response.stderr, cwd=cwd)
             if (
                 lake_response.exit_code == 0
                 and SORRY_CANARY not in lake_response.stderr

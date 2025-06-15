@@ -2,6 +2,7 @@ import pytest
 from pathlib import Path
 import tomllib
 from containment.structures import Specification, HoareTriple
+from containment.fsio.tools import temp_lakeproj_init
 
 # Test data
 SAMPLE_PRECONDITION = "x > 0"
@@ -59,3 +60,9 @@ def experiment_data() -> dict:
     with open(Path.cwd() / ".." / "experiments" / "data.toml", "rb") as experiment_data:
         experiments = tomllib.load(experiment_data)
     return experiments
+
+
+@pytest.fixture
+def temp_lakeproj() -> Path:
+    """Fixture to initialize a temporary lake project."""
+    return temp_lakeproj_init()

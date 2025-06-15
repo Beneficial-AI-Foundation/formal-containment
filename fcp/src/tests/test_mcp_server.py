@@ -34,7 +34,9 @@ def test_proof_user_prompt(
 
 
 def test_imp_user_prompt(
-    sample_precondition: str, sample_postcondition: str, sample_metavariables: str
+    sample_precondition: str,
+    sample_postcondition: str,
+    sample_metavariables: str,
 ):
     """Test the imp user prompt generation."""
     prompt = get_imp_user_prompt(
@@ -48,14 +50,13 @@ def test_imp_user_prompt(
     assert sample_postcondition in prompt
 
 
-def test_typecheck_tool():
+def test_typecheck_tool(temp_lakeproj: Path):
     """Test the typecheck tool functionality."""
     lean_code = """
     def main' : IO Unit := do
       IO.println "Hello, World!"
     """
-    cwd, response = run_lake_exe_check(lean_code)
-    assert isinstance(cwd, Path)
+    response = run_lake_exe_check(lean_code, temp_lakeproj)
     assert isinstance(response, LakeResponse)
     assert hasattr(response, "exit_code")
     assert hasattr(response, "stdout")
@@ -66,7 +67,7 @@ def test_typecheck_tool():
     assert response.stderr
 
 
-def test_pos_sorry(sample_hoare_triple: HoareTriple):
+def test_pos_sorry(sample_hoare_triple: HoareTriple, temp_lakeproj: Path):
     """Test lake tool on positive lean template with sorry filled in."""
     pos_sorry = load_txt(
         "loop/Positive.lean.template",
@@ -75,23 +76,21 @@ def test_pos_sorry(sample_hoare_triple: HoareTriple):
     )
     assert isinstance(pos_sorry, str)
     assert "sorry" in pos_sorry
-    cwd, response = run_lake_exe_check(pos_sorry)
-    assert isinstance(cwd, Path)
+    response = run_lake_exe_check(pos_sorry, temp_lakeproj)
     assert isinstance(response, LakeResponse)
     assert response.exit_code == 0
     assert SORRY_CANARY in response.stderr
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
-def test_fail(sample_hoare_triple, polarity):
+def test_fail(sample_hoare_triple: HoareTriple, polarity: str, temp_lakeproj: Path):
     pos_fail = load_txt(
         f"loop/{polarity}.lean.template",
         proof="<NOT A PROOF>",
         **sample_hoare_triple.model_dump(),
     )
     assert isinstance(pos_fail, str)
-    cwd, response = run_lake_exe_check(pos_fail)
-    assert isinstance(cwd, Path)
+    response = run_lake_exe_check(pos_fail, temp_lakeproj)
     assert isinstance(response, LakeResponse)
     assert response.exit_code == 1
     assert response.stderr
@@ -99,7 +98,9 @@ def test_fail(sample_hoare_triple, polarity):
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
-def test_experiments_sorry(experiment_data: dict, sample_command: str, polarity: str):
+def test_experiments_sorry(
+    experiment_data: dict, sample_command: str, polarity: str, temp_lakeproj: Path
+):
     for sample in experiment_data["sample"]:
         assert isinstance(sample, dict)
         assert "precondition" in sample
@@ -118,8 +119,7 @@ def test_experiments_sorry(experiment_data: dict, sample_command: str, polarity:
             f"loop/{polarity}.lean.template", proof="sorry", **hoare_triple.model_dump()
         )
         assert isinstance(sorry, str)
-        cwd, response = run_lake_exe_check(sorry)
-        assert isinstance(cwd, Path)
+        response = run_lake_exe_check(sorry, temp_lakeproj)
         assert isinstance(response, LakeResponse)
         assert response.exit_code == 0
         assert SORRY_CANARY in response.stderr
@@ -127,7 +127,9 @@ def test_experiments_sorry(experiment_data: dict, sample_command: str, polarity:
 
 
 @pytest.mark.parametrize("polarity", ["Positive", "Negative"])
-def test_experiments_fail(experiment_data: dict, sample_command: str, polarity: str):
+def test_experiments_fail(
+    experiment_data: dict, sample_command: str, polarity: str, temp_lakeproj: Path
+):
     for sample in experiment_data["sample"]:
         assert isinstance(sample, dict)
         assert "precondition" in sample
@@ -149,8 +151,7 @@ def test_experiments_fail(experiment_data: dict, sample_command: str, polarity: 
             **hoare_triple.model_dump(),
         )
         assert isinstance(fail, str)
-        cwd, response = run_lake_exe_check(fail)
-        assert isinstance(cwd, Path)
+        response = run_lake_exe_check(fail, temp_lakeproj)
         assert isinstance(response, LakeResponse)
         assert response.exit_code == 1
         assert not response.stdout
