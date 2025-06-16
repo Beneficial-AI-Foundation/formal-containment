@@ -1,0 +1,18 @@
+#+title: Odyssey submission
+
+* [[https://www.iliadconference.com][Iliad Conference 2]]
+#+BEGIN_QUOTE
+ODYSSEY is a 5-day, multi-track conference bringing together researchers in theoretical AI alignment.
+
+August 25-29, 2025 in Berkeley, California
+#+END_QUOTE
+** [[https://openreview.net/group?id=iliadconference.com/ODYSSEY/2025/Conference#tab-your-consoles][Proceedings]]
+#+BEGIN_QUOTE
+Welcome to the OpenReview page for Proceedings of ILIAD 2: ODYSSEY. More info about the submission and review process is available on our webpage.
+
+If you would like to submit a manuscript, click "Add: ODYSSEY 2025 Conference Submission" below.
+
+If you would like to nominate yourself or another researcher to review for the Proceedings, please email the editors. You may request to review a particular manuscript from the list of submissions below.
+
+Submission Deadline: Jun 26 2025 11:59AM UTC-0
+#+END_QUOTE

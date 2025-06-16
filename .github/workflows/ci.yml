@@ -26,12 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: typst-community/setup-typst@v4
-      - name: Whitepaper compile
+      - name: Odyssey submission compile
         run: typst compile main.typ
-        working-directory: ./comms/whitepaper
+        working-directory: ./comms/odyssey
       - name: Toronto talk compile
         run: typst compile template.typ
-        working-directory: ./comms/talks/toronto
+        working-directory: ./comms/trajectory_labs
 
   protocol-uv:
     needs: imp-lake

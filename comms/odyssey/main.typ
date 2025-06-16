@@ -304,7 +304,7 @@ The Lean program would look like this (Note it must be run with `lake build` in 
     import Imp
     open Imp
 
-    example : {{x > 0}}(imp { x := x + 1; }){{x > 1}} := by
+    example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
 
     simp
     intros σ σ' h1 h2
@@ -326,8 +326,8 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 
 = Experiments
 
-#let experiments_spec = toml("experiments.toml")
-#let experiment_results = toml("results_20250530-1551.toml")
+#let experiments_spec = toml("assets/experiments.toml")
+#let experiment_results = toml("assets/results_20250530-1551.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample
@@ -430,13 +430,11 @@ on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programm
 
 #display_experiment_results
 
-*TODO*: See https://github.com/Beneficial-AI-Foundation/formal-containment/issues/7 for what I'd like to do.
-
 = Related Work <sec:related>
 
 Our work is well situated within _PCC_ @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying. Our setup is similar to that in @kamran2024pc3, who only approve code that that comes with a Dafny proof, but over there they emphasize the use of verification condition generation to make the specification elicitation from the human a little easier. TODO: say more
 
-The main difference between the current work and _Ctrl_ @greenblatt2024aicontrolimprovingsafety is we don't _emphasize_ intentional subversion (as in try to elicit it for stress testing).
+The main difference between the current work and _Ctrl_ @greenblatt2024aicontrolimprovingsafety is we don't _emphasize_ intentional subversion (as in try to elicit it for stress testing). We're keen to do this soon.
 
 The main difference between the current work and _SgAI_ @Dalrymple2024SafeguardedAI we pay no mind to probabilistic semantics, expected value bounds, or dynamical systems.
 

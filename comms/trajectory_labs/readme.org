@@ -1,0 +1,15 @@
+#+title: Trajectory Labs, Toronto | Thursday, June 26
+
+* [[https://lu.ma/d16abkbh][AI Safety Thursdays - Formal Containment: Proof-Carrying Code and AI Safety]]
+#+BEGIN_QUOTE
+AI Safety attention has increasingly shifted toward “defense in depth”: a layered strategy of safeguards.
+
+​In this context, today's event will have Quinn Dougherty leading us on an exploration of forgotten literature on proof-carrying code to leverage it in a prototype AI containment procedure, enabling a narrow form of enforceable safety.
+
+​We'll look at preliminary experimental results, discuss strategic outlook, and cover when proof-carrying code and guaranteed-safe AI more broadly make sense.
+
+​​​Event Schedule
+- 6:00 to 6:45 - Networking and refreshments
+- 6:45 to 8:00 - Main Presentation
+- 8:00 to 9:00 - Breakout Discussions
+#+END_QUOTE

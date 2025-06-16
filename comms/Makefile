@@ -5,13 +5,13 @@
 # @version 0.1
 
 # Default target
-all: whitepaper lesswrong toronto-talk
+all: odyssey lesswrong trajectory_labs
 
 # Compile typst document in whitepaper directory
-whitepaper: whitepaper/main.pdf
+odyssey: odyssey/main.pdf
 
-whitepaper/main.pdf: whitepaper/main.typ whitepaper/refs.bib
-	pushd ./whitepaper && typst compile main.typ main.pdf && popd
+odyssey/main.pdf: odyssey/main.typ odyssey/refs.bib
+	pushd ./odyssey && typst compile main.typ main.pdf && popd
 
 # Convert org file to docx in lesswrong directory
 lesswrong: lesswrong/post.docx
@@ -19,16 +19,16 @@ lesswrong: lesswrong/post.docx
 lesswrong/post.docx: lesswrong/post.org
 	pushd ./lesswrong && pandoc post.org -o post.docx && popd
 
-toronto-talk: talks/toronto/template.pdf
+trajectory_labs: trajectory_labs/template.pdf
 
-talks/toronto/template.pdf: talks/toronto/template.typ
-	pushd ./talks/toronto && typst compile template.typ template.pdf && popd
+trajectory_labs/template.pdf: trajectory_labs/template.typ
+	pushd ./trajectory_labs && typst compile template.typ template.pdf && popd
 
 # Clean generated files
 clean:
-	rm -f whitepaper/main.pdf lesswrong/post.docx talks/toronto/template.pdf
+	rm -f odyssey/main.pdf lesswrong/post.docx trajectory_labs/template.pdf
 
 # Phony targets
-.PHONY: all whitepaper lesswrong clean
+.PHONY: all odyssey lesswrong trajectory_labs clean
 
 # end
