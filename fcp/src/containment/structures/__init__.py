@@ -5,7 +5,7 @@ from typing import Literal, Self, Sequence
 from containment.structures.basic import Structure
 from containment.structures.enums import Polarity
 
-type Language = Literal["imp", "loop/proof", "proof"]
+type Language = Literal["imp", "loop/proof", "proof"]  # TODO: clean up
 
 
 class Specification(Structure):
@@ -18,6 +18,10 @@ class Specification(Structure):
 class HoareTriple(Structure):
     specification: Specification
     command: str
+    tokens_spent_on_command: int = 0
+
+    def add_tokens_spent_on_command(self, tokens: int) -> None:
+        self.tokens_spent_on_command += tokens
 
     def __hash__(self) -> int:
         return hash(
@@ -51,16 +55,23 @@ class LLM(Structure):
 
 
 class ExpertMetadata(Structure):
-    iteration: int = 0
     model: str
     polarity: Polarity
+    iteration: int = 0
     success: bool = False
+    tokens_spent: int = 0
 
     def incr(self) -> None:
         self.iteration += 1
 
     def successful(self) -> None:
         self.success = True
+
+    def add_tokens_spent(self, tokens: int) -> None:
+        self.tokens_spent += tokens
+
+    def set_tokens_spent(self, tokens: int) -> None:
+        self.tokens_spent = tokens
 
 
 class VerificationSuccess(Structure):

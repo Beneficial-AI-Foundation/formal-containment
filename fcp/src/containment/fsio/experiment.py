@@ -49,19 +49,19 @@ def _results_dict(
 
     Takes the last failure only, in the case of failures
     """
-    result_dict = defaultdict(dict)
-    result_dict["_fail"]["_fail"] = []
+    result_dict = defaultdict(lambda: defaultdict(dict))
+    result_dict["_fail"]["_fail"]["_fail"] = []
     for result in results:
         if isinstance(result, VerificationSuccess):
             logs.info(
                 f"Experiment succeeded for {result.triple.specification.name} by {result.metadata.model}: {result}"
             )
-            result_dict[result.triple.specification.name][result.metadata.model] = (
-                result.dictionary
-            )
+            result_dict[result.triple.specification.name][result.metadata.model][
+                result.metadata.polarity.value
+            ] = result.dictionary
         elif isinstance(result, Sequence):
             if len(result) < 1:
-                result_dict["_fail"]["_fail"].append(
+                result_dict["_fail"]["_fail"]["_fail"].append(
                     f"Something went wrong with result: {result}"
                 )
                 continue
@@ -73,13 +73,15 @@ def _results_dict(
             logs.info(
                 f"Experiment failed for {spec_name} by {result[-1].metadata.model}: {result[-1]}"
             )
-            result_dict[spec_name][result[-1].metadata.model] = result[-1].dictionary
+            result_dict[spec_name][result[-1].metadata.model][
+                result[-1].metadata.polarity.name
+            ] = result[-1].dictionary
 
         elif isinstance(result, BaseException):
-            result_dict["_fail"]["_fail"].append(str(result))
+            result_dict["_fail"]["_fail"]["_fail"].append(str(result))
             logs.error(f"Experiment threw an exception: {result}")
         else:
-            result_dict["_fail"]["_fail"].append(
+            result_dict["_fail"]["_fail"]["_fail"].append(
                 f"Unknown result:: {result}: {type(result)}"
             )
             logs.warning(f"Some unknown result: {result}")

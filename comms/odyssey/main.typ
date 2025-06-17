@@ -327,7 +327,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("assets/experiments.toml")
-#let experiment_results = toml("assets/results_20250616-1747.toml")
+#let experiment_results = toml("assets/results_20250617-1438.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample
@@ -393,13 +393,19 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
   let experiment_names = experiments.keys().filter(k => k != "_fail")
 
   table(
-    columns: 4,
+    columns: 5,
     stroke: 0.5pt,
-    align: (left, left, left, left),
+    align: (left, left, left, left, left),
     inset: 8pt,
 
     // Header row
-    table.header([*Experiment*], [*Model*], [*Status*], [*Iteration*]),
+    table.header(
+      [*Experiment*],
+      [*Model*],
+      [*Status*],
+      [*Iterations*],
+      [*Verification Burden*],
+    ),
 
     // Data rows
     ..experiment_names
@@ -417,15 +423,23 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
               neg_result.metadata
             }
             let status = if pos_result != none {
-              if metadata.success { "✓" } else { "diverged" }
+              if metadata.success { [✅] } else { [⌛] }
             } else {
-              if metadata.success { "✗" } else { "diverged" }
+              if metadata.success { [❌] } else { [⌛] }
+            }
+            let command_tokens = if pos_result != none {
+              pos_result.triple.tokens_spent_on_command
+            } else { neg_result.triple.tokens_spent_on_command }
+            let total_tokens = metadata.tokens_spent
+            let ratio = if status == [⌛] { [—] } else {
+              [str(total_tokens / command_tokens)]
             }
             (
               name,
               model,
               status,
               str(metadata.iteration),
+              ratio,
             )
           })
       })
@@ -439,7 +453,14 @@ We test the following specifications
 
 on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle they need not be).
 
+== Architecture
+
+
+== Results
+
 #display_experiment_results
+
+The *verification burden* $k$ says that if it cost $x$ tokens to complete the program, then it cost $k x$ tokens to prove it correct.
 
 = Related Work <sec:related>
 

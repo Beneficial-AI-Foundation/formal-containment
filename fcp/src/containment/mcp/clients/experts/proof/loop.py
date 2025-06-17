@@ -58,6 +58,7 @@ class ProofExpert(MCPClient):
         self.proof = None
         self.verification_result = None
         self.code_dt = []
+        self.tokens_spent = 0
 
     @classmethod
     async def connect_and_run(
@@ -110,13 +111,13 @@ class ProofExpert(MCPClient):
         self.conversation = self.conversation + curr_conversation
         completion = self.complete(self.conversation)
         proof_content = completion["choices"][0].message.content
+        self.tokens_spent += completion["usage"]["total_tokens"]
         self.conversation.append({"role": "assistant", "content": proof_content})
         self.proof = parse_program_completion(proof_content, "proof")
         tool_arguments = {"lean_code": self._render_code(self.proof), "cwd": str(cwd)}
         tool_result = await self.session.call_tool(
             "typecheck", arguments=tool_arguments
         )
-        # cwd = tool_result.content[0].text.strip('"')  # type: ignore
         lake_response_str = tool_result.content[0].text  # type: ignore
         return LakeResponse.from_jsons_clean(lake_response_str)
 
@@ -131,6 +132,7 @@ class ProofExpert(MCPClient):
         cwd = temp_lakeproj_init()
         lake_response = await self._iter("", cwd)
         metadata = ExpertMetadata(model=self.model, polarity=self.polarity)
+        metadata.set_tokens_spent(self.tokens_spent)
         if lake_response.exit_code == 0 and self.proof is not None:
             if SORRY_CANARY not in lake_response.stderr:
                 artifact_dir = write_artifact(cwd, self.triple)
@@ -166,6 +168,7 @@ class ProofExpert(MCPClient):
                 msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
                 logs.info(msg)
                 break
+            metadata.set_tokens_spent(self.tokens_spent)
             failures.append(
                 VerificationFailure(
                     triple=self.triple,

@@ -1,0 +1,68 @@
+[_fail._fail]
+_fail = []
+
+[gt8."anthropic/claude-3-5-haiku-20241022".POS]
+proof = "apply hoare_while\napply hoare_consequence_pre\n· apply hoare_seq\n  · apply hoare_assign\n  · apply hoare_skip\n· intros σ h\n  simp [Expr.eval]\n  omega\n· intros σ h\n  simp [Expr.eval]\n  omega"
+error_message = "\n\n\n\n\n\nerror: ././././Artifacts/Basic.lean:7:10: unexpected token '<='; expected ')'\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpfzg_sqa8"
+
+[gt8."anthropic/claude-3-5-haiku-20241022".POS.triple]
+command = "imp {\n  while (x <= 8) {\n    x := x + 1;\n  }\n}"
+tokens_spent_on_command = 1114
+
+[gt8."anthropic/claude-3-5-haiku-20241022".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."anthropic/claude-3-5-haiku-20241022".POS.metadata]
+model = "anthropic/claude-3-5-haiku-20241022"
+polarity = "Positive"
+iteration = 1
+success = false
+tokens_spent = 3745
+
+[swap."anthropic/claude-3-5-haiku-20241022".POS]
+proof = "intros n m\napply hoare_seq\napply hoare_seq\n· apply hoare_assign\n· apply hoare_assign\n· apply hoare_assign\n· simp [swap]\n  intros σ σ' h1 h2\n  cases h2 with\n  | seq h2_1 h2_2 =>\n    cases h2_2 with\n    | seq h2_2_1 h2_2_2 =>\n      cases h2_1 with\n      | assign h2_1_eq =>\n        cases h2_2_1 with\n        | assign h2_2_1_eq =>\n          cases h2_2_2 with\n          | assign h2_2_2_eq =>\n            simp [Env.set]\n            simp [Expr.eval] at h2_1_eq\n            simp [Expr.eval] at h2_2_1_eq\n            simp [Expr.eval] at h2_2_2_eq\n            subst h2_2_2_eq\n            rw [h2_1_eq, h2_2_1_eq]\n            apply And.intro\n            · rfl\n            · rfl"
+error_message = "\n\n\n\n\n\nerror: ././././Artifacts/Basic.lean:10:32: unsolved goals\nn m : Int\n⊢ ValidHoareTriple ((strValEq \"x\" n).and (strValEq \"y\" m))\n    (imp {\n      temp := x;\n      x := y;\n      y := temp;\n    })\n    ((strValEq \"x\" m).and (strValEq \"y\" n))\nerror: ././././Artifacts/Basic.lean:12:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpg6c8ff5p"
+
+[swap."anthropic/claude-3-5-haiku-20241022".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 1155
+
+[swap."anthropic/claude-3-5-haiku-20241022".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."anthropic/claude-3-5-haiku-20241022".POS.metadata]
+model = "anthropic/claude-3-5-haiku-20241022"
+polarity = "Positive"
+iteration = 1
+success = false
+tokens_spent = 4410
+
+[facto."anthropic/claude-3-5-haiku-20241022".POS]
+proof = "intro n\napply hoare_seq\n· apply hoare_assign\n\napply hoare_if\n· apply hoare_consequence_pre\n  apply hoare_while\n  \n  apply hoare_seq\n  . apply hoare_assign\n  . apply hoare_assign\n  \n  intros σ h\n  have h1 : σ.get \"x\" = ~n := h\n  constructor\n  . simp [Expr.eval]\n    rw [h1]\n    apply Int.ofNat_nonneg\n  \n  . simp [Expr.eval]\n    intros σ' h2 h3\n    cases h3 with\n    | seq h3_1 h3_2 =>\n      cases h3_1 with \n      | assign h_y => \n        cases h3_2 with\n        | assign h_x =>\n          simp [Expr.eval] at h_y h_x\n          subst h_y h_x\n          simp [Env.set, Env.get]\n          constructor\n          · rfl\n          · omega\n\n· apply hoare_assign\n\nintros σ h\nhave h1 : σ.get \"x\" = ~n := h\nsimp [Expr.eval]\nby_cases h2 : n ≥ 0\n· constructor\n  . rfl\n  . apply Int.le_refl\n\n· have h3 : σ.get \"x\" < 0 := by \n    rw [h1]\n    exact Int.ofNat_nonneg n |> Int.not_le.mp h2\n  constructor\n  . rfl\n  . apply Int.le_refl\n\nintros σ σ' h1 h2\ncases h2 with\n| assign h_y =>\n  simp [Expr.eval] at h_y\n  subst h_y\n  simp [Env.set, Env.get]\n  rfl"
+error_message = "\n\n\n\n\n\nerror: ././././Artifacts/Basic.lean:24:9: unsolved goals\nn : Int\n⊢ ValidHoareTriple (strValEq \"x\" n)\n    (imp {\n      y := 1;\n      if (0 < x) {\n        while (0 < x) {\n          y := y * x;\n          x := x - 1;\n        }\n      } else {\n        y := 0;\n      }\n    })\n    (strValEq \"y\" ((fun go => go n) ?m.31))\nerror: ././././Artifacts/Basic.lean:26:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpybx7q81q"
+
+[facto."anthropic/claude-3-5-haiku-20241022".POS.triple]
+command = "imp {\n  y := 1;\n  if (x > 0) {\n    while (x > 0) {\n      y := y * x;\n      x := x - 1;\n    }\n  } else {\n    y := 0;\n  }\n}"
+tokens_spent_on_command = 1320
+
+[facto."anthropic/claude-3-5-haiku-20241022".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."anthropic/claude-3-5-haiku-20241022".POS.metadata]
+model = "anthropic/claude-3-5-haiku-20241022"
+polarity = "Positive"
+iteration = 1
+success = false
+tokens_spent = 5584

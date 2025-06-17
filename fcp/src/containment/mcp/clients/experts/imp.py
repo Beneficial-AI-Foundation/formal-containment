@@ -94,7 +94,9 @@ class ImpExpert(MCPClient):
                 metadata=ExpertMetadata(model=self.model, polarity=Polarity.POS),
                 error_message=msg,
             )
-        return HoareTriple(specification=self.spec, command=program)
+        triple = HoareTriple(specification=self.spec, command=program)
+        triple.add_tokens_spent_on_command(completion["usage"]["total_tokens"])
+        return triple
 
     async def run(self) -> HoareTriple | ImpFailure:
         """

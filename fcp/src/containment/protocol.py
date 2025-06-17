@@ -79,6 +79,7 @@ async def _synthesize_and_prove_loop(
     *,
     proof_loop_budget: int,
     failed_attempts: list[Failure] | None = None,
+    multipolarity: bool = True,
 ) -> VerificationResult:
     """
     Synthesize and prove a Hoare triple.
@@ -90,23 +91,31 @@ async def _synthesize_and_prove_loop(
         polarity=Polarity.POS,
         max_iterations=proof_loop_budget,
     )
-    proof_expert_neg = LoopProofExpert.connect_and_run(
-        model,
-        triple,
-        polarity=Polarity.NEG,
-        max_iterations=proof_loop_budget,
-    )
+    if multipolarity:
+        proof_expert_neg = LoopProofExpert.connect_and_run(
+            model,
+            triple,
+            polarity=Polarity.NEG,
+            max_iterations=proof_loop_budget,
+        )
 
-    done, pending = await asyncio.wait(
-        [
-            asyncio.create_task(expert)
-            for expert in [proof_expert_pos, proof_expert_neg]
-        ],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
-    for task in pending:
-        task.cancel()
-    proof_expert = done.pop().result()
+        done, pending = await asyncio.wait(
+            [
+                asyncio.create_task(expert)
+                for expert in [proof_expert_pos, proof_expert_neg]
+            ],
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        for task in pending:
+            task.cancel()
+        proof_expert = done.pop().result()
+        if proof_expert.verification_result is None:
+            raise ValueError(
+                "Unreachable. `verification_result` is initialized to None but is always set to the right type in `.connect_and_run`"
+            )
+        return proof_expert.verification_result
+
+    proof_expert = await proof_expert_pos
     if proof_expert.verification_result is None:
         raise ValueError(
             "Unreachable. `verification_result` is initialized to None but is always set to the right type in `.connect_and_run`"
@@ -184,6 +193,7 @@ async def boundary_loop(
             specification,
             proof_loop_budget=proof_loop_budget,
             failed_attempts=failed_attempts,
+            multipolarity=False,
         )
         match result:
             case list():

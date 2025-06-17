@@ -20,6 +20,7 @@
             lefthook
             pandoc
             pantograph.packages.${pkgs.system}.executable
+            util-linux  # ionice
           ];
         in pkgs.mkShell { inherit name buildInputs; };
       };
