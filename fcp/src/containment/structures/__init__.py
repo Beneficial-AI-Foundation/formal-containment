@@ -132,22 +132,30 @@ class LakeResponse(Structure):
         return cls(**json.loads(result)).clean()
 
     def clean(self) -> Self:
-        """Clean the stdout and stderr by removing "Built", "Running", "Building", "Replayed"."""
+        """Clean the stdout and stderr by removing specific noisy lines."""
 
-        def clean_line(line: str) -> str:
-            return (
-                line
-                if "Built" not in line
-                and "Running" not in line
-                and "Building" not in line
-                and "Replayed" not in line
-                and "LEAN_PATH" not in line
-                and not line.startswith("warning")
-                else ""
-            )
+        def clean_line(line: str) -> str | None:
+            if (
+                "Built" in line
+                or "Running" in line
+                or "Building" in line
+                or "Replayed" in line
+                or "LEAN_PATH" in line
+                or line.startswith("warning")
+            ):
+                return None
+            return line
 
-        self.stdout = "\n".join(clean_line(line) for line in self.stdout.splitlines())
-        self.stderr = "\n".join(clean_line(line) for line in self.stderr.splitlines())
+        self.stdout = "\n".join(
+            line
+            for line in (clean_line(line) for line in self.stdout.splitlines())
+            if line is not None
+        )
+        self.stderr = "\n".join(
+            line
+            for line in (clean_line(line) for line in self.stderr.splitlines())
+            if line is not None
+        )
         return self
 
 

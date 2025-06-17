@@ -70,7 +70,7 @@ imp {
     apply Int.le_refl
 ```
 
-You should never need the character `⊢`
+YOU SHOULD NEVER NEED THE CHARACTER `⊢`. DO NOT USE IT.
 
 You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`

@@ -451,16 +451,17 @@ We test the following specifications
 
 #format-samples-table
 
-on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle they need not be).
+on #filter-model-pins(("snt4", "gpt41", "ops4", "o3")). For each run the #imp programmer and the prover are the same model (though in principle they need not be).
 
 == Architecture
 
+We use a simple loop scaffold. The robot in @fig:box-picture is effectively one short loop that writes #imp code (almost never using more than one try) and another longer loop that writes Lean proofs.
 
 == Results
 
 #display_experiment_results
 
-The *verification burden* $k$ says that if it cost $x$ tokens to complete the program, then it cost $k x$ tokens to prove it correct.
+The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). This is hardly evidence that the program is incorrect, because our proof performance is so poor.
 
 = Related Work <sec:related>
 
