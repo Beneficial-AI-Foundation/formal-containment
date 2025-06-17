@@ -327,7 +327,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("assets/experiments.toml")
-#let experiment_results = toml("assets/results_20250530-1551.toml")
+#let experiment_results = toml("assets/results_20250616-1747.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample
@@ -407,13 +407,24 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
         let experiment = experiments.at(name)
         experiment
           .keys()
+          .filter(k => k != "_fail")
           .map(model => {
             let result = experiment.at(model)
-            let metadata = result.metadata
+            // Get either POS or NEG result
+            let pos_result = if "POS" in result { result.POS } else { none }
+            let neg_result = if "NEG" in result { result.NEG } else { none }
+            let metadata = if pos_result != none { pos_result.metadata } else {
+              neg_result.metadata
+            }
+            let status = if pos_result != none {
+              if metadata.success { "✓" } else { "diverged" }
+            } else {
+              if metadata.success { "✗" } else { "diverged" }
+            }
             (
               name,
               model,
-              if metadata.success { "✓" } else { "✗" },
+              status,
               str(metadata.iteration),
             )
           })
@@ -426,7 +437,7 @@ We test the following specifications
 
 #format-samples-table
 
-on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle this doesn't matter).
+on #filter-model-pins(("snt4", "gpt41", "ops4")). For each run the #imp programmer and the prover are the same model (though in principle they need not be).
 
 #display_experiment_results
 
