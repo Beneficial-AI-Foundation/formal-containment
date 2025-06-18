@@ -327,7 +327,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("assets/experiments.toml")
-#let experiment_results = toml("assets/results_20250617-1438.toml")
+#let experiment_results = toml("assets/results_20250617-1655.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample

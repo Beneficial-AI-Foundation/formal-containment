@@ -1,0 +1,225 @@
+[_fail._fail]
+_fail = [
+    "unhandled errors in a TaskGroup (1 sub-exception)",
+    "unhandled errors in a TaskGroup (1 sub-exception)",
+]
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS]
+proof = "simp\nintros σ σ' h1 h2\ncases h2 with\n| assign h2_eq =>\n  simp [Env.set]\n  rfl"
+error_message = "error: ././././Artifacts/Basic.lean:6:51: unsolved goals\n⊢ ∀ (σ σ' : Env),\n    σ \"x\" = Value.int 0 →\n      Stmt.BigStep σ\n          (imp {\n            x := 9;\n          })\n          σ' →\n        Value.int 8 < σ' \"x\"\nerror: ././././Artifacts/Basic.lean:8:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpo_6v068k"
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp { x := 9; }"
+tokens_spent_on_command = 1357
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 69824
+
+[gt8."openai/gpt-4.1-2025-04-14".POS]
+proof = "simp\nintros σ σ' h₁ h₂\ncases h₂ with\n| assign h =>\n  have hₓ : σ' \"x\" = Value.int 9 := by\n    simp [Env.set, Expr.eval] at h\n    exact h\n  rw [hₓ]\n  decide"
+error_message = "error: ././././Artifacts/Basic.lean:6:51: unsolved goals\n⊢ ∀ (σ σ' : Env),\n    σ \"x\" = Value.int 0 →\n      Stmt.BigStep σ\n          (imp {\n            x := 9;\n          })\n          σ' →\n        Value.int 8 < σ' \"x\"\nerror: ././././Artifacts/Basic.lean:8:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmp6i9b86p_"
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp { x := 9; }"
+tokens_spent_on_command = 1155
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 53247
+
+[gt8."openai/o3-2025-04-16".POS]
+proof = "simp\nintro σ\nintro σ'\nintro _\nintro hExec\ncases hExec with\n| assign =>\n  simp [Env.set, Env.get, Expr.eval, Value.int_lt] at *"
+error_message = "error: ././././Artifacts/Basic.lean:6:52: unsolved goals\n⊢ ∀ (σ σ' : Env),\n    σ \"x\" = Value.int 0 →\n      Stmt.BigStep σ\n          (imp {\n            x := 10;\n          })\n          σ' →\n        Value.int 8 < σ' \"x\"\nerror: ././././Artifacts/Basic.lean:8:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpjw6ettig"
+
+[gt8."openai/o3-2025-04-16".POS.triple]
+command = "imp { x := 10; }"
+tokens_spent_on_command = 1795
+
+[gt8."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 110989
+
+[swap."anthropic/claude-sonnet-4-20250514".POS]
+proof = "aesop\n<;> cases a_2 with\n| seq σ_mid h_first h_rest =>\n  cases h_rest with\n  | seq σ_mid2 h_second h_third =>\n    cases h_first with\n    | assign h_eq1 =>\n      cases h_second with  \n      | assign h_eq2 =>\n        cases h_third with\n        | assign h_eq3 =>\n          simp [Env.set, Expr.eval, Env.get] at h_eq1 h_eq2 h_eq3\n          simp [Env.set]\n          first | rw [h_eq2, a_1] | rw [h_eq3, h_eq1, a]"
+error_message = "error: ././././Artifacts/Basic.lean:13:0: too many variable names provided at alternative 'seq', #3 provided, but #2 expected\nerror: ././././Artifacts/Basic.lean:14:8: unknown identifier 'h_rest'\nerror: ././././Artifacts/Basic.lean:14:2: tactic 'cases' failed, major premise type is not an inductive type\n  ?m.8300\n\nExplanation: the 'cases' tactic is for constructor-based reasoning as well as for applying custom cases principles with a 'using' clause or a registered '@[cases_eliminator]' theorem. The above type neither is an inductive type nor has a registered theorem.\ncase left.seq\nn m : Int\nσ σ' : Env\na : σ \"x\" = Value.int n\na_1 : σ \"y\" = Value.int m\nσ'✝ : Env\nσ_mid :\n  Stmt.BigStep σ\n    (imp {\n      temp := x;\n    })\n    σ'✝\nh_first :\n  Stmt.BigStep σ'✝\n    (imp {\n      x := y;\n      y := temp;\n    })\n    σ'\nx✝ : ?m.8300\n⊢ σ' \"x\" = Value.int m\nerror: ././././Artifacts/Basic.lean:13:0: too many variable names provided at alternative 'seq', #3 provided, but #2 expected\nerror: ././././Artifacts/Basic.lean:14:8: unknown identifier 'h_rest'\nerror: ././././Artifacts/Basic.lean:14:2: tactic 'cases' failed, major premise type is not an inductive type\n  ?m.8668\n\nExplanation: the 'cases' tactic is for constructor-based reasoning as well as for applying custom cases principles with a 'using' clause or a registered '@[cases_eliminator]' theorem. The above type neither is an inductive type nor has a registered theorem.\ncase right.seq\nn m : Int\nσ σ' : Env\na : σ \"x\" = Value.int n\na_1 : σ \"y\" = Value.int m\nσ'✝ : Env\nσ_mid :\n  Stmt.BigStep σ\n    (imp {\n      temp := x;\n    })\n    σ'✝\nh_first :\n  Stmt.BigStep σ'✝\n    (imp {\n      x := y;\n      y := temp;\n    })\n    σ'\nx✝ : ?m.8668\n⊢ σ' \"y\" = Value.int n\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpyb0rjpuw"
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 1688
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 99688
+
+[swap."anthropic/claude-opus-4-20250514".POS]
+proof = "intros n m σ σ' h_pre h_bigstep\nunfold strValEq at h_pre ⊢\nobtain ⟨h_x, h_y⟩ := h_pre\nsimp only [imp] at h_bigstep\nrcases h_bigstep with ⟨_, σ₁, _, _, ⟨rfl⟩, ⟨_, σ₂, _, _, ⟨rfl⟩, ⟨rfl⟩⟩⟩\nsimp only [Expr.eval, Env.get, Env.set]\nconstructor\n· simp only [if_neg, if_pos]\n  exact h_y\n  · rfl\n  · simp\n  · simp\n· simp only [if_pos rfl, if_neg, if_pos]\n  exact h_x\n  · rfl\n  · simp\n  · simp"
+error_message = "error: ././././Artifacts/Basic.lean:10:32: unsolved goals\nn m : Int\nσ σ' : Env\nh_pre : (strValEq \"x\" n).and (strValEq \"y\" m) σ\nh_bigstep :\n  Stmt.BigStep σ\n    (imp {\n      temp := x;\n      x := y;\n      y := temp;\n    })\n    σ'\n⊢ (strValEq \"x\" m).and (strValEq \"y\" n) σ'\nerror: ././././Artifacts/Basic.lean:12:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpefbl1xd9"
+
+[swap."anthropic/claude-opus-4-20250514".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 1738
+
+[swap."anthropic/claude-opus-4-20250514".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."anthropic/claude-opus-4-20250514".POS.metadata]
+model = "anthropic/claude-opus-4-20250514"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 115133
+
+[swap."openai/gpt-4.1-2025-04-14".POS]
+proof = "simp\nintros n m σ σ' hx hy hstep\nrcases hstep with ⟨σ1, h1, ⟨σ2, h2, h3⟩⟩\ncases h1 with | assign h_temp =>\ncases h2 with | assign h_x =>\ncases h3 with | assign h_y =>\nsimp [Env.set] at *\nsimp [Expr.eval, Env.get] at *\nsubst h_y\nsubst h_x\nsubst h_temp\nsimp [Env.get, String.decEq]\nsplit_ifs <;> try {rfl} <;> try {contradiction}"
+error_message = "error: ././././Artifacts/Basic.lean:10:32: unsolved goals\n⊢ ∀ (n m : Int) (σ σ' : Env),\n    σ \"x\" = Value.int n →\n      σ \"y\" = Value.int m →\n        Stmt.BigStep σ\n            (imp {\n              temp := x;\n              x := y;\n              y := temp;\n            })\n            σ' →\n          σ' \"x\" = Value.int m ∧ σ' \"y\" = Value.int n\nerror: ././././Artifacts/Basic.lean:12:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpfkmskta3"
+
+[swap."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 1341
+
+[swap."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 74946
+
+[swap."openai/o3-2025-04-16".POS]
+proof = "simp\nintros n m σ σ' hx hy hstep\n-- decompose the big-step derivation of the sequential program\ncases hstep with\n| seq h₁ h₂₃ =>\n  cases h₂₃ with\n  | seq h₂ h₃ =>\n    -- first assignment : x := x + y\n    cases h₁ with\n    | assign h₁_eq =>\n      simp [Expr.eval, Env.get, hx, hy] at h₁_eq\n      cases h₁_eq\n      -- second assignment : y := x - y\n      cases h₂ with\n      | assign h₂_eq =>\n        simp [Expr.eval, Env.get] at h₂_eq\n        cases h₂_eq\n        -- third assignment  : x := x - y\n        cases h₃ with\n        | assign h₃_eq =>\n          simp [Expr.eval, Env.get] at h₃_eq\n          cases h₃_eq\n          -- establish the post-condition\n          simp [Env.set, Env.get, Expr.eval, hx, hy,\n                Int.add_comm, Int.add_sub_cancel]"
+error_message = "error: ././././Artifacts/Basic.lean:10:32: unsolved goals\n⊢ ∀ (n m : Int) (σ σ' : Env),\n    σ \"x\" = Value.int n →\n      σ \"y\" = Value.int m →\n        Stmt.BigStep σ\n            (imp {\n              x := x + y;\n              y := x - y;\n              x := x - y;\n            })\n            σ' →\n          σ' \"x\" = Value.int m ∧ σ' \"y\" = Value.int n\nerror: ././././Artifacts/Basic.lean:12:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpktjt5pwg"
+
+[swap."openai/o3-2025-04-16".POS.triple]
+command = "imp {\n  x := x + y;\n  y := x - y;\n  x := x - y;\n}"
+tokens_spent_on_command = 1939
+
+[swap."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 212581
+
+[facto."anthropic/claude-sonnet-4-20250514".POS]
+proof = ""
+error_message = "error: ././././Artifacts/Basic.lean:7:7: unexpected token '>='; expected ')'\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpf5w9ogxn"
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp {\n  if (x >= 0) {\n    y := 1;\n    while (x > 0) {\n      y := y * x;\n      x := x - 1;\n    }\n  } else {\n    y := 0;\n  }\n}"
+tokens_spent_on_command = 2142
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 84096
+
+[facto."openai/gpt-4.1-2025-04-14".POS]
+proof = "simp\nintros σ σ' hx hrun\n\n-- Define the factorial function as in the post\nlet rec go (x : Int) : Int :=\n  match x with\n  | .ofNat m => match m with\n    | .zero    => 1\n    | .succ k  => (k.succ : Int) * go (Int.ofNat k)\n  | .negSucc _ => 0\n\ncases hrun with\n| ifCond _ hT hF =>\n  have xeq : σ \"x\" = Value.int n := hx\n  by_cases hlt : n < 0\n  case pos =>\n    rw [if_pos] at hT\n    · cases hT with\n      | assign hy =>\n        simp [Env.set] at hy\n        subst hy\n        simp [Env.get]\n        cases n with\n        | ofNat k => exfalso; exact (Nat.cast_nonneg k).not_lt hlt\n        | negSucc _ => rfl\n    · rw [xeq]; simp; exact hlt\n  case neg =>\n    rw [if_neg] at hF\n    · cases hF with\n      | seq hy hW =>\n        cases hy with\n        | assign hy_eq =>\n          simp [Env.set] at hy_eq\n          subst hy_eq\n          -- n ≥ 0, so n = Int.ofNat k for some k\n          have : 0 ≤ n := by linarith\n          obtain ⟨k, rfl⟩ := Int.eq_ofNat_of_zero_le this\n          revert σ'\n          induction k with\n          | zero =>\n            intro σ' hW\n            cases hW\n            case nil => simp [Env.get, go]\n          | succ k ih =>\n            intro σ' hW\n            cases hW\n            case cons _ wbody wtail =>\n              cases wbody with\n              | seq hy_mul hx_dec =>\n                cases hy_mul with\n                | assign hy_mul_eq =>\n                  cases hx_dec with\n                  | assign hx_dec_eq =>\n                    simp [Env.set] at hy_mul_eq hx_dec_eq\n                    subst hy_mul_eq; subst hx_dec_eq\n                    specialize ih σ' wtail\n                    simp [Env.get] at ih ⊢\n                    simp [go]\n                    rw [ih]\n                    rfl\n    · rw [xeq]; simp; exact hlt"
+error_message = "error: ././././Artifacts/Basic.lean:24:9: unsolved goals\n⊢ ∀ (n : Int) (σ σ' : Env),\n    σ \"x\" = Value.int n →\n      Stmt.BigStep σ\n          (imp {\n            if (x < 0) {\n              y := 0;\n            } else {\n              y := 1;\n              while (0 < x) {\n                y := y * x;\n                x := x - 1;\n              }\n            }\n          })\n          σ' →\n        σ' \"y\" = Value.int (?m.31 n)\nerror: ././././Artifacts/Basic.lean:26:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmples9ciaq"
+
+[facto."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp {\n  if (x < 0) {\n    y := 0;\n  } else {\n    y := 1;\n    while (x > 0) {\n      y := y * x;\n      x := x - 1;\n    }\n  }\n}"
+tokens_spent_on_command = 2087
+
+[facto."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 166197
+
+[facto."openai/o3-2025-04-16".POS]
+proof = "sorry <UNREACHABLE?>"
+error_message = "info: ././././Check.lean:22:0: \"<HOARE_TRIPLE_TERM_HAS_SORRY>\""
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250617-1655/-513181699000798168.lean"
+
+[facto."openai/o3-2025-04-16".POS.triple]
+command = "imp {\n  t := x;\n  if (t < 0) {\n    y := 0;\n  } else {\n    y := 1;\n    while (t > 0) {\n      y := y * t;\n      t := t - 1;\n    }\n  }\n}"
+tokens_spent_on_command = 3324
+
+[facto."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 16
+success = false
+tokens_spent = 156983
