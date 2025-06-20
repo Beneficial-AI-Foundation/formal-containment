@@ -185,7 +185,7 @@
 })
 
 #let format-samples-table(experiment_spec) = {
-  let samples = experiments_spec.sample
+  let samples = experiment_spec.sample
 
   table(
     columns: 4,
@@ -413,3 +413,106 @@
     )
   })
 }
+
+#let example_trace = cetz.canvas(length: 1.2cm, {
+  import cetz.draw: *
+
+  // Colors
+  let user_color = rgb("#f5d0c5")
+  let ai_color = rgb("#d0d0d0")
+  let boundary_color = rgb("#888eb7")
+  let success_color = rgb("#90EE90")
+  let fail_color = rgb("#ffcccb")
+  let proof_color = rgb("#e8f4f8")
+
+  // Step 1: User input
+  group(name: "step1", {
+    content((2.5, 8.5), text(weight: "bold", size: 10pt)[
+      1. User provides specification
+    ])
+    rect((1, 7.8), (6, 8.3), fill: user_color, stroke: black + 0.8pt)
+    content((3.5, 8.05), text(
+      size: 9pt,
+    )[Precondition: $x > 0$, Postcondition: $x > 1$])
+  })
+
+  // Arrow down
+  line((3.5, 7.8), (3.5, 7.3), stroke: black + 1pt, mark: (end: ">"))
+
+  // Step 2: AI generates code
+  group(name: "step2", {
+    content((3.5, 7.0), text(weight: "bold", size: 10pt)[2. AI generates code])
+    rect((1.5, 6.3), (5.5, 6.8), fill: ai_color, stroke: black + 0.8pt)
+    content((3.5, 6.55), text(size: 9pt)[Code generated])
+  })
+
+  // Arrow down to proof attempt
+  line((3.5, 6.3), (3.5, 5.8), stroke: black + 1pt, mark: (end: ">"))
+
+  // Step 3: Proof attempt (decision point)
+  group(name: "step3", {
+    content((3.5, 5.5), text(weight: "bold", size: 10pt)[3. Proof attempt])
+    // Diamond shape for decision - using lines instead of polygon
+    line((3.5, 5.2), (4.2, 4.8), stroke: black + 0.8pt)
+    line((4.2, 4.8), (3.5, 4.4), stroke: black + 0.8pt)
+    line((3.5, 4.4), (2.8, 4.8), stroke: black + 0.8pt)
+    line((2.8, 4.8), (3.5, 5.2), stroke: black + 0.8pt)
+    // Fill the diamond area
+    rect((2.8, 4.4), (4.2, 5.2), fill: proof_color, stroke: none)
+    content((3.5, 4.8), text(size: 8pt)[Prove?])
+  })
+
+  // Left branch: Failure path
+  // Arrow left from diamond
+  line((2.8, 4.8), (1.5, 4.8), stroke: red + 1pt, mark: (end: ">"))
+
+  // Failure box
+  group(name: "fail", {
+    content((0.8, 4.8), text(weight: "bold", size: 9pt, fill: red)[❌ Fails])
+    rect((0.2, 4.0), (1.4, 4.6), fill: fail_color, stroke: red + 1pt)
+    content((0.8, 4.3), text(size: 8pt)[`x := x - 1;`])
+  })
+
+  // Boundary rejection
+  group(name: "reject", {
+    rect((0.2, 3.0), (1.4, 3.6), fill: boundary_color, stroke: black + 0.8pt)
+    content((0.8, 3.3), text(size: 8pt, fill: white)[Try again])
+  })
+
+  // Arrow down from fail to reject
+  line((0.8, 4.0), (0.8, 3.6), stroke: red + 1pt, mark: (end: ">"))
+
+  // Arrow back up to AI (feedback loop) - swing left
+  line((0.2, 3.3), (0.0, 3.3), stroke: black + 1pt)
+  line((0.0, 3.3), (0.0, 6.55), stroke: black + 1pt)
+  line((0.0, 6.55), (1.5, 6.55), stroke: black + 1pt, mark: (end: ">"))
+
+  // Right branch: Success path
+  // Arrow right from diamond
+  line((4.2, 4.8), (5.5, 4.8), stroke: green + 1pt, mark: (end: ">"))
+
+  // Success box
+  group(name: "success", {
+    content((6.2, 4.8), text(
+      weight: "bold",
+      size: 9pt,
+      fill: green,
+    )[✅ Succeeds])
+    rect((5.8, 4.0), (7.0, 4.6), fill: success_color, stroke: green + 1pt)
+    content((6.4, 4.3), text(size: 8pt)[`x := x + 1;`])
+  })
+
+  // Arrow down to boundary accept
+  line((6.4, 4.0), (6.4, 3.6), stroke: green + 1pt, mark: (end: ">"))
+
+  // Boundary accepts
+  group(name: "accept", {
+    content((6.4, 3.3), text(weight: "bold", size: 9pt)[4. Execute safely])
+    rect((5.8, 2.5), (7.0, 3.1), fill: success_color, stroke: green + 1pt)
+    content((6.4, 2.8), text(size: 8pt)[Code + proof])
+  })
+
+  // Labels for branches
+  content((1.5, 5.2), text(size: 8pt, fill: red)[Proof fails])
+  content((5.5, 5.2), text(size: 8pt, fill: green)[Proof succeeds])
+})

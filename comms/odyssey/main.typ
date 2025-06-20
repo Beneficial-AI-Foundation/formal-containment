@@ -1,5 +1,7 @@
 // #import "@preview/charged-ieee:0.1.3": ieee
 #import "fns.typ" as fns
+#let experiments_spec = toml("assets/experiments.toml")
+#let experiment_results = toml("assets/results_20250620-0029.toml")
 
 #let title = [*Formal Containment _draft_*]
 #let abstract = [We would like to put the AI in a box. We show how to create an _interface_ between the box and the world out of specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/Beneficial-AI-Foundation/formal-containment.]
@@ -46,7 +48,7 @@ Previously, classical AI safety warned against trying to put the AI in a box @Le
 //   image("images/frontierbox.png"),
 //   caption: [Made funnier by the reply being from the author of FrontierMath],
 // )
-Yudkowsky famously convinced people of this via a roleplay game back in the extropians mailing list days @Yudkowsky2002AIBox. Recent work from AI Control and Safeguarded AI have reignited interest in this long neglected area.
+Yudkowsky famously convinced people of this via a roleplay game back in the extropians mailing list days @Yudkowsky2002AIBox. Recent work from AI Control and Safeguarded AI has reignited interest in this long neglected area.
 
 - Like AI Control @greenblatt2024aicontrolimprovingsafety @bhatt2025ctrlzcontrollingaiagents (_Ctrl_), the current work is reasoning about getting useful work out of an untrusted (possibly misaligned) ai.
 - Like Safeguarded AI @Dalrymple2024SafeguardedAI (_SgAI_), we try to isolate the trust surface to a specification and a proof checker.
@@ -57,7 +59,7 @@ Separately, a forgotten literature on proof carrying code @necula1997proof (_PCC
 
 == Contributions
 
-We present the natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up an agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
+We present a natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/Beneficial-AI-Foundation/formal-containment] AI box in Python in which we can lock up an agent graph that writes programs in a toy language (called #imp) along with hoare @Hoare_PLF proofs in Lean.
 
 = A Formal Containment Protocol (_FCP_)
 
@@ -107,9 +109,11 @@ and denoted $"hoare" P c Q =$ #hoare_triple(prec: [$P$], command: [\<#imp\> $c$ 
 
 == Example
 
-Let's walk through an FCP trace as you'd see it if you cloned our repo.
+Let's walk through an FCP trace as you'd see it if you cloned our repo, pictured in @fig:example-trace.
 
 First, the user passes in a precondition and a postcondition. We will continue using the example in @fig:box-picture, passing in $x > 0$ and $x > 1$ for precondition and postcondition, respectively. Let's say for the sake of argument that the AI's first guess is `x := x - 1;`. Then, the proof agent will flail about until `MAX_ITERATIONS` is reached, since the program is incorrect, at which point it will report to the boundary its failed proof state. Then, the boundary replies "_try again, I'm not executing that code in the world_" and hands the program back to the AI, asking for another one. Suppose that this time, the AI finds `x := x + 1;`. This time, the proof agent converges and Lean reports an exit code of `0`. The AI sends the #imp program to the boundary and attests to it's correctness with the Lean program, which it also attaches.
+
+#figure(fns.example_trace, caption: [Example trace described.]) <fig:example-trace>
 
 The Lean program would look like this (Note it must be run with `lake build` in the appropriate lake project, as it has imports)
 #figure(
@@ -139,12 +143,9 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 
 = Experiments
 
-#let experiments_spec = toml("assets/experiments.toml")
-#let experiment_results = toml("assets/results_20250620-0029.toml")
-
 We test the following specifications
 
-#fns.format-samples-table
+#fns.format-samples-table(experiments_spec)
 
 on #fns.filter-model-pins(experiments_spec, ("snt4", "gpt41", "ops4", "o3")). For each run the #imp programmer and the prover are the same model (though in principle they need not be).
 
