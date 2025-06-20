@@ -5,12 +5,7 @@ defaultTargets = ["check"]
 [[require]]
 name = "aesop"
 git = "https://github.com/leanprover-community/aesop"
-rev = "v4.18.0"
-
-#   [[require]]
-#   name = "smt"
-#   scope = "ufmg-smite"
-#   rev = "da4ba9acf1845fe264b2bce14923f8e09fbabf28"
+rev = "v4.20.0"
 
 [[lean_lib]]
 name = "Imp"

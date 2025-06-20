@@ -9,7 +9,7 @@ This rule describes the formal containment protocol for safely interfacing an AI
 
 ## Protocol Overview
 
-A box is a program that takes a specification and asks a simple agent graph to provide an #imp program that satisfies it and prove that the program is correct with respect to the specification. If the proof is successful, then the code is passed back to the caller tagged with the proof for auditing.
+A box is a program that takes a specification and asks a simple agent graph to provide an `imp` program that satisfies it and prove that the program is correct with respect to the specification. If the proof is successful, then the code is passed back to the caller tagged with the proof for auditing.
 
 ## Implementation 
 

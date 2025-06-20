@@ -461,7 +461,7 @@ We use a simple loop scaffold. The robot in @fig:box-picture is effectively one 
 
 #display_experiment_results
 
-The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). This is hardly evidence that the program is incorrect, because our proof performance is so poor.
+The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). This is hardly evidence that the program is incorrect, because our proof performance is so poor. As of the current date, there's little we can say because _everything_ diverged.
 
 = Related Work <sec:related>
 

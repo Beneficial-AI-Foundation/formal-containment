@@ -47,4 +47,4 @@ testpaths = [
 ]
 
 [tool.uv.sources]
-pantograph = { git = "https://github.com/stanford-centaur/PyPantograph" }
+pantograph = { git = "https://github.com/stanford-centaur/PyPantograph", rev = "dc6c465a960e2770a6b6aa713d3c958eca0c9575"}
