@@ -1,0 +1,240 @@
+[_fail._fail]
+_fail = [
+    "unhandled errors in a TaskGroup (1 sub-exception)",
+]
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/8348042711430156452.lean"
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp { x := 9; }"
+tokens_spent_on_command = 969
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 0
+success = true
+tokens_spent = 1478
+
+[gt8."anthropic/claude-opus-4-20250514".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/8348042711430156452.lean"
+
+[gt8."anthropic/claude-opus-4-20250514".POS.triple]
+command = "imp { x := 9; }"
+tokens_spent_on_command = 969
+
+[gt8."anthropic/claude-opus-4-20250514".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."anthropic/claude-opus-4-20250514".POS.metadata]
+model = "anthropic/claude-opus-4-20250514"
+polarity = "Positive"
+iteration = 2
+success = true
+tokens_spent = 3550
+
+[gt8."openai/gpt-4.1-2025-04-14".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/-6532154385117258653.lean"
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp {\n  x := 9;\n}"
+tokens_spent_on_command = 828
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 0
+success = true
+tokens_spent = 1255
+
+[gt8."openai/o3-2025-04-16".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/8348042711430156452.lean"
+
+[gt8."openai/o3-2025-04-16".POS.triple]
+command = "imp { x := 9; }"
+tokens_spent_on_command = 907
+
+[gt8."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = 0"
+postcondition = "x > 8"
+metavariables = ""
+name = "gt8"
+
+[gt8."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 0
+success = true
+tokens_spent = 1847
+
+[swap."anthropic/claude-sonnet-4-20250514".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/-4171282016307541271.lean"
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 1005
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 2
+success = true
+tokens_spent = 4260
+
+[swap."openai/gpt-4.1-2025-04-14".POS]
+proof = "simp\nintros n m σ σ' hx hy hbig\ncases hbig with\n| seq htemp hseq =>\n  cases hseq with\n  | seq hxassign hyassign =>\n    cases htemp with\n    | assign _ =>\n      cases hxassign with\n      | assign _ =>\n        cases hyassign with\n        | assign _ =>\n          -- The final state is σ' = (σ[\"temp\" := σ \"x\"][\"x\" := σ \"y\"][\"y\" := σ \"x\"])\n          -- Compute x\n          have hx' : σ' \"x\" = Value.int m := by\n            simp [Env.set]\n            -- Assignments on \"x\": last affecting update is [\"x\" := σ \"y\"]\n            -- Consider \"x\" for three updates from right to left\n            -- [\"y\" := σ \"x\"]: \"x\" ≠ \"y\" → skip\n            -- [\"x\" := σ \"y\"]: \"x\" = \"x\" → this!\n            -- [\"temp\" := σ \"x\"]: \"x\" ≠ \"temp\" → skip\n            rw [if_neg (by decide : \"x\" ≠ \"temp\")]\n            rw [if_pos (by decide : \"x\" = \"x\")]\n            exact hy\n          -- Compute y\n          have hy' : σ' \"y\" = Value.int n := by\n            simp [Env.set]\n            -- \"y\" for three updates from right to left\n            -- [\"y\" := σ \"x\"]: \"y\" = \"y\" → this!\n            rw [if_neg (by decide : \"y\" ≠ \"temp\")]\n            rw [if_neg (by decide : \"y\" ≠ \"x\")]\n            rw [if_pos (by decide : \"y\" = \"y\")]\n            exact hx\n          exact And.intro hx' hy'"
+error_message = "error: /tmp/tmp88rjunfn/Artifacts/Basic.lean:10:32: unsolved goals\n⊢ ∀ (n m : Int) (σ σ' : Env),\n    σ \"x\" = Value.int n →\n      σ \"y\" = Value.int m →\n        Stmt.BigStep σ\n            (imp {\n              temp := x;\n              x := y;\n              y := temp;\n            })\n            σ' →\n          σ' \"x\" = Value.int m ∧ σ' \"y\" = Value.int n\nerror: /tmp/tmp88rjunfn/Artifacts/Basic.lean:12:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmp88rjunfn"
+
+[swap."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 858
+
+[swap."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 10
+success = false
+tokens_spent = 44370
+
+[swap."openai/o3-2025-04-16".POS]
+proof = "auto_hoare_pos"
+audit_trail = "/home/qd/Projects/safeguarded/baif/formal-containment/fcp/../experiments/artifacts/20250620-0029/-4171282016307541271.lean"
+
+[swap."openai/o3-2025-04-16".POS.triple]
+command = "imp {\n  temp := x;\n  x := y;\n  y := temp;\n}"
+tokens_spent_on_command = 940
+
+[swap."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = ~n <^> y = ~m"
+postcondition = "x = ~m <^> y = ~n"
+metavariables = "n m"
+name = "swap"
+
+[swap."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 0
+success = true
+tokens_spent = 3087
+
+[facto."anthropic/claude-sonnet-4-20250514".POS]
+proof = "intros n\napply hoare_seq\n· apply hoare_assign\n· apply hoare_while\n  · intros σ h\n    cases h with\n    | mk h1 h2 =>\n      apply hoare_seq\n      · apply hoare_assign\n      · apply hoare_assign\n  · intros σ h\n    cases h with\n    | mk h1 h2 =>\n      simp [Expr.eval, Env.get] at h2\n      push_neg at h2\n      simp at h1\n      exact h1"
+error_message = "error: /tmp/tmp6v7cihg2/Artifacts/Basic.lean:20:9: unsolved goals\nn : Int\n⊢ ValidHoareTriple (strValEq \"x\" n)\n    (imp {\n      y := 1;\n      while (0 < x) {\n        y := y * x;\n        x := x - 1;\n      }\n    })\n    (strValEq \"y\" ((fun go => go n) ?m.28))\nerror: /tmp/tmp6v7cihg2/Artifacts/Basic.lean:22:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmp6v7cihg2"
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.triple]
+command = "imp {\n  y := 1;\n  while (x > 0) {\n    y := y * x;\n    x := x - 1;\n  }\n}"
+tokens_spent_on_command = 1101
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."anthropic/claude-sonnet-4-20250514".POS.metadata]
+model = "anthropic/claude-sonnet-4-20250514"
+polarity = "Positive"
+iteration = 10
+success = false
+tokens_spent = 49180
+
+[facto."anthropic/claude-opus-4-20250514".POS]
+proof = "skip"
+error_message = "error: /tmp/tmpcbfmo8dt/Artifacts/Basic.lean:7:7: unexpected token '<='; expected ')'\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpcbfmo8dt"
+
+[facto."anthropic/claude-opus-4-20250514".POS.triple]
+command = "imp {\n  if (x <= 0) {\n    if (x = 0) {\n      y := 1;\n    } else {\n      y := 0;\n    }\n  } else {\n    y := 1;\n    while (x > 0) {\n      y := y * x;\n      x := x - 1;\n    }\n  }\n}"
+tokens_spent_on_command = 1245
+
+[facto."anthropic/claude-opus-4-20250514".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."anthropic/claude-opus-4-20250514".POS.metadata]
+model = "anthropic/claude-opus-4-20250514"
+polarity = "Positive"
+iteration = 10
+success = false
+tokens_spent = 52806
+
+[facto."openai/gpt-4.1-2025-04-14".POS]
+proof = "simp\nintros n σ σ' hx hstep\nlet rec go (x : Int) : Int :=\n  match x with\n  | .ofNat m =>\n    match m with\n    | .zero => 1\n    | .succ k => (k.succ : Int) * go (Int.ofNat k)\n  | .negSucc _ => 0\n\ncases hstep with\n| seq hy1 rest =>\n  subst hy1\n  cases rest with\n  | if_true hlt hthen =>\n    cases n with\n    | ofNat m =>\n      simp at hlt; rw [hx] at hlt; linarith\n    | negSucc k =>\n      cases hthen with\n      | assign hy0 =>\n        subst hy0\n        simp [Env.get, Env.set]\n        rfl\n  | if_false hnlt hbody =>\n    cases n with\n    | negSucc k =>\n      simp at hnlt; rw [hx] at hnlt; linarith\n    | ofNat m =>\n      revert σ σ' hx hbody\n      induction m with\n      | zero =>\n        intros σ σ' hx hbody\n        cases hbody with\n        | while_false hwhile =>\n          simp [Env.get, Env.set]\n          rfl\n        | while_true _ _ _ => contradiction\n      | succ k ih =>\n        intros σ σ' hx hbody\n        cases hbody with\n        | while_false hwhile =>\n          simp at hwhile\n          have : 0 < (k.succ : Int) := by simp\n          linarith\n        | while_true hwhile _ wbody =>\n          -- The loop body: y := y * x; x := x - 1;\n          cases wbody with\n          | seq hymul hxdec =>\n            cases hymul with\n            | assign hyu =>\n              cases hxdec with\n              | assign hxd =>\n                subst hyu\n                subst hxd\n                -- After y := y * x; x := x - 1\n                -- so y = k.succ, x = k\n                let σ2 := ((σ.set \"y\" 1).set \"y\" ((1 : Int) * (k.succ : Int))).set \"x\" ((k.succ : Int) - 1)\n                have hx2 : σ2.get \"x\" = (k : Int) := by simp [Env.get, Env.set]\n                specialize ih σ2 σ' hx2 wbody\n                simp [Env.get, Env.set] at ih\n                rw [ih]\n                simp [go]"
+error_message = "error: /tmp/tmpdn9c1nt3/Artifacts/Basic.lean:24:9: unsolved goals\n⊢ ∀ (n : Int) (σ σ' : Env),\n    σ \"x\" = Value.int n →\n      Stmt.BigStep σ\n          (imp {\n            y := 1;\n            if (x < 0) {\n              y := 0;\n            } else {\n              while (0 < x) {\n                y := y * x;\n                x := x - 1;\n              }\n            }\n          })\n          σ' →\n        σ' \"y\" = Value.int (?m.34 n)\nerror: /tmp/tmpdn9c1nt3/Artifacts/Basic.lean:26:0: unexpected identifier; expected command\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmpdn9c1nt3"
+
+[facto."openai/gpt-4.1-2025-04-14".POS.triple]
+command = "imp {\n  y := 1;\n  if (x < 0) {\n    y := 0;\n  } else {\n    while (x > 0) {\n      y := y * x;\n      x := x - 1;\n    }\n  }\n}"
+tokens_spent_on_command = 960
+
+[facto."openai/gpt-4.1-2025-04-14".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."openai/gpt-4.1-2025-04-14".POS.metadata]
+model = "openai/gpt-4.1-2025-04-14"
+polarity = "Positive"
+iteration = 10
+success = false
+tokens_spent = 80952
+
+[facto."openai/o3-2025-04-16".POS]
+proof = "simp\nauto_hoare_pos"
+error_message = "error: /tmp/tmp5paigem7/Artifacts/Basic.lean:7:7: unexpected token '<='; expected ')'\nerror: Lean exited with code 1\nSome required builds logged failures:\n- Artifacts.Basic\nerror: build failed"
+audit_trail = "/tmp/tmp5paigem7"
+
+[facto."openai/o3-2025-04-16".POS.triple]
+command = "imp {\n  if (0 <= x) {\n    y := 1;\n    while (0 < x) {\n      y := y * x;\n      x := x - 1;\n    }\n  } else {\n    y := 0;\n  }\n}"
+tokens_spent_on_command = 1935
+
+[facto."openai/o3-2025-04-16".POS.triple.specification]
+precondition = "x = ~n"
+postcondition = "y = ~(\n  let rec go := fun (x : Int) => match x with\n    | .ofNat m => match m with\n      | .zero => 1\n      | .succ k => k.succ * go (Int.ofNat k)\n    | .negSucc _ => 0\n    decreasing_by apply Nat.lt_succ_self\n    go n\n  )"
+metavariables = "n"
+name = "facto"
+
+[facto."openai/o3-2025-04-16".POS.metadata]
+model = "openai/o3-2025-04-16"
+polarity = "Positive"
+iteration = 10
+success = false
+tokens_spent = 92773

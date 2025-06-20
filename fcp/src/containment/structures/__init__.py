@@ -45,6 +45,7 @@ class LLM(Structure):
     human_name: str
     provider: str
     model_pin: str
+    dollars_per_output_millitoken: float | int
 
     @property
     def litellm_id(self) -> str:

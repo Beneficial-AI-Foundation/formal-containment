@@ -27,33 +27,34 @@ metavariables = "n"
 human_name = "hku35"
 provider = "anthropic"
 model_pin = "claude-3-5-haiku-20241022"
+dollars_per_output_millitoken = 4
 
 [[model]]
 human_name = "snt4"
 provider = "anthropic"
 model_pin = "claude-sonnet-4-20250514"
+dollars_per_output_millitoken = 15
 
 [[model]]
 human_name = "ops4"
 provider = "anthropic"
 model_pin = "claude-opus-4-20250514"
+dollars_per_output_millitoken = 75
 
 [[model]]
 human_name = "gpt41"
 provider = "openai"
 model_pin = "gpt-4.1-2025-04-14"
+dollars_per_output_millitoken = 8
 
 [[model]]
 human_name = "o4min"
 provider = "openai"
 model_pin = "o4-mini-2025-04-16"
+dollars_per_output_millitoken = 4.4
 
 [[model]]
 human_name = "o3"
 provider = "openai"
 model_pin = "o3-2025-04-16"
-
-[[model]]
-human_name = "grk3min"
-provider = "xai"
-model_pin = "grok-3-mini"
+dollars_per_output_millitoken = 8

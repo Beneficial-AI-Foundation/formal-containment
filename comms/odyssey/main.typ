@@ -327,7 +327,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
 = Experiments
 
 #let experiments_spec = toml("assets/experiments.toml")
-#let experiment_results = toml("assets/results_20250617-1655.toml")
+#let experiment_results = toml("assets/results_20250620-0029.toml")
 
 #let format-samples-table = {
   let samples = experiments_spec.sample
@@ -365,7 +365,7 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
           raw(sample.metavariables, lang: none)
         } else { [—] },
       ))
-      .flatten()
+      .flatten(),
   )
 }
 
@@ -416,11 +416,18 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
           .filter(k => k != "_fail")
           .map(model => {
             let result = experiment.at(model)
-            // Get either POS or NEG result
-            let pos_result = if "POS" in result { result.POS } else { none }
-            let neg_result = if "NEG" in result { result.NEG } else { none }
-            let metadata = if pos_result != none { pos_result.metadata } else {
+            let pos_result = if "POS" in result { result.POS } else {
+              none
+            }
+            let neg_result = if "NEG" in result { result.NEG } else {
+              none
+            }
+            let metadata = if pos_result != none {
+              pos_result.metadata
+            } else if neg_result != none {
               neg_result.metadata
+            } else {
+              none
             }
             let status = if pos_result != none {
               if metadata.success { [✅] } else { [⌛] }
@@ -432,19 +439,124 @@ This file paired with an exit code of zero pinned to a particular Lean toolchain
             } else { neg_result.triple.tokens_spent_on_command }
             let total_tokens = metadata.tokens_spent
             let ratio = if status == [⌛] { [—] } else {
-              [str(total_tokens / command_tokens)]
+              str(calc.round(total_tokens / command_tokens, digits: 3))
             }
             (
               name,
               model,
               status,
-              str(metadata.iteration),
+              str(metadata.iteration + 1),
               ratio,
             )
           })
       })
-      .flatten()
+      .flatten(),
   )
+}
+
+#let plot_verification_burden_vs_cost = {
+  import cetz.draw: *
+
+  // Extract data points
+  let data_points = ()
+
+  // Create lookup maps
+  let model_costs = (:)
+  let model_human_names = (:)
+  for model in experiments_spec.model {
+    let key = model.provider + "/" + model.model_pin
+    model_costs.insert(key, model.dollars_per_output_millitoken)
+    model_human_names.insert(key, model.human_name)
+  }
+
+  // Extract verification burden data
+  let experiment_names = ("gt8", "swap", "facto")
+  for name in experiment_names {
+    if name in experiment_results {
+      let experiment = experiment_results.at(name)
+      for model_key in experiment.keys().filter(k => k != "_fail") {
+        let result = experiment.at(model_key)
+        if "POS" in result {
+          let pos_result = result.POS
+          if "metadata" in pos_result and "triple" in pos_result {
+            let metadata = pos_result.metadata
+            let total_tokens = metadata.tokens_spent
+            let command_tokens = pos_result.triple.tokens_spent_on_command
+            let verification_burden = total_tokens / command_tokens
+
+            if model_key in model_costs and metadata.success {
+              let cost = model_costs.at(model_key)
+              let human_name = model_human_names.at(model_key)
+              data_points.push((cost, verification_burden, human_name, name))
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Find data ranges
+  let max_cost = if data_points.len() > 0 {
+    calc.max(..data_points.map(p => p.at(0)))
+  } else { 80 }
+  let max_burden = if data_points.len() > 0 {
+    calc.max(..data_points.map(p => p.at(1)))
+  } else { 10 }
+
+  cetz.canvas({
+    // Set up coordinate system
+    let plot_width = 6
+    let plot_height = 4
+    let margin = 0.8
+
+    // Draw axes
+    line((margin, margin), (margin + plot_width, margin), stroke: black)
+    line((margin, margin), (margin, margin + plot_height), stroke: black)
+
+    // Draw data points with labels
+    for point in data_points {
+      let (cost, burden, human_name, experiment_name) = point
+      let x = margin + (cost / max_cost) * plot_width
+      let y = margin + (burden / max_burden) * plot_height
+      circle((x, y), radius: 0.05, fill: blue)
+
+      // Add label next to the point
+      let label = human_name + ", " + experiment_name
+      content((x + 0.15, y + 0.1), text(size: 7pt, label))
+    }
+
+    // Add tick marks and labels
+    for i in range(5) {
+      let x = margin + (i / 4) * plot_width
+      let cost_val = (i / 4) * max_cost
+      line((x, margin), (x, margin - 0.1), stroke: black)
+      content((x, margin - 0.25), text(size: 8pt, str(calc.round(
+        cost_val,
+        digits: 0,
+      ))))
+    }
+
+    for i in range(5) {
+      let y = margin + (i / 4) * plot_height
+      let burden_val = (i / 4) * max_burden
+      line((margin, y), (margin - 0.1, y), stroke: black)
+      content((margin - 0.35, y), text(size: 8pt, str(calc.round(
+        burden_val,
+        digits: 1,
+      ))))
+    }
+
+    // Add axis labels (with more distance from tick labels)
+    content(
+      (margin + plot_width / 2, margin - 0.6),
+      [Cost (\$ per output MTok) (June 2025)],
+    )
+    content(
+      (margin - 0.8, margin + plot_height / 2),
+      [Verification Burden],
+      angle: 90deg,
+    )
+  })
 }
 
 We test the following specifications
@@ -461,7 +573,12 @@ We use a simple loop scaffold. The robot in @fig:box-picture is effectively one 
 
 #display_experiment_results
 
-The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). This is hardly evidence that the program is incorrect, because our proof performance is so poor. As of the current date, there's little we can say because _everything_ diverged.
+The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). (This is hardly evidence that the program is incorrect, because our proof performance is so poor).
+
+#figure(
+  plot_verification_burden_vs_cost,
+  caption: [Verification burden vs model cost. Each point represents a successful verification attempt.],
+)
 
 = Related Work <sec:related>
 

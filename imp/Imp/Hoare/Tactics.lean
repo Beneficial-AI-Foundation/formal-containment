@@ -47,7 +47,7 @@ elab "destructBigSteps" : tactic => destructBigStepsGo
 4. lets `aesop` polish off propositional crumbs;
 5. and (optionally) finishes linear arithmetic with `omega`.
 -/
-elab "hoare_pos" : tactic => do
+elab "auto_hoare_pos" : tactic => do
   evalTactic (← `(tactic| repeat intro))
   evalTactic (← `(tactic| destructBigSteps))
   evalTactic (← `(tactic| try simp at *))

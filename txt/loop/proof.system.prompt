@@ -19,24 +19,24 @@ open Imp
 
 example : {{astn x < y}}swap{{astn x >= y}} := by
   simp [swap]
-  hoare_pos
+  auto_hoare_pos
 
 example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
-  hoare_pos
+  auto_hoare_pos
 
 example : forall (n m : Int), {{ astn x = ~n <^> y = ~m }}swap{{ astn x = ~m <^> y = ~n }} := by
   simp [swap]
-  hoare_pos
+  auto_hoare_pos
 ```
 
 YOU SHOULD NEVER NEED THE CHARACTER `⊢`. DO NOT USE IT.
 
-You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
+You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`. These you use with apply (e.g. `apply hoare_seq`, etc.).
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`
 
-For your elucidation, here is the definition of the `hoare_pos` tactic:
+For your elucidation, here is the definition of the `auto_hoare_pos` tactic:
 ```
-elab "hoare_pos" : tactic => do
+elab "auto_hoare_pos" : tactic => do
   evalTactic (← `(tactic| repeat intro))
   evalTactic (← `(tactic| destructBigSteps))
   evalTactic (← `(tactic| try simp at *))
@@ -48,9 +48,38 @@ elab "hoare_pos" : tactic => do
 ```
 The tactic `destructBigSteps` just repeatedly runs cases on any hypothesis involving `BigStep` (the inductive big step semantics relation).
 
+If `auto_hoare_pos` doesn't one-shot it, you may have to do some of your own work with base tactics. Those proofs (hybrid of manual and tactical automation) might look like this:
+```lean
+example : {{astn x < y}}swap{{astn x >= y}} := byAdd commentMore actions
+  simp [swap]
+  intros _ _ h1 h2
+  cases h2 with
+  | seq h2_1 h2_2 =>
+    cases h2_2 with
+    | seq h2_2_1 h2_2_2 =>
+      cases h2_1 with
+      | assign h2_1_eq =>
+        cases h2_2_1 with
+        | assign h2_2_1_eq =>
+          cases h2_2_2 with
+          | assign h2_2_2_eq =>
+            simp [Env.set]
+            simp [Expr.eval] at h2_1_eq
+            simp [Expr.eval] at h2_2_1_eq
+            simp [Expr.eval] at h2_2_2_eq
+            rw [h2_2_2_eq] at h2_1_eq
+            simp [Env.get] at h2_1_eq
+            simp [Env.get] at h2_2_1_eq
+            subst h2_2_2_eq
+            rw [h2_1_eq, h2_2_1_eq] at h1
+            apply Value.lt_implies_le
+            assumption
+```
+You may additionally need to do induction over a value.
+
 ## Example response:
 """
-I can take notes here and map out my chain of thought, if I want.
+<I can take notes here and map out my chain of thought, if I want.>
 <proof>
 simp
 intros σ σ' h1 h2

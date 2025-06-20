@@ -4,12 +4,10 @@ import Imp
 open Imp
 
 example : {{astn x < y}}swap{{astn x >= y}} := by
-  simp [swap]
-  hoare_pos
+  auto_hoare_pos
 
 example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
-  hoare_pos
+  auto_hoare_pos
 
 example : forall (n m : Int), {{ astn x = ~n <^> y = ~m }}swap{{ astn x = ~m <^> y = ~n }} := by
-  simp [swap]
-  hoare_pos
+  auto_hoare_pos
