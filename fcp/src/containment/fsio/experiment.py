@@ -57,7 +57,7 @@ def _results_dict(
                 f"Experiment succeeded for {result.triple.specification.name} by {result.metadata.model}: {result}"
             )
             result_dict[result.triple.specification.name][result.metadata.model][
-                result.metadata.polarity.value
+                result.metadata.polarity.name
             ] = result.dictionary
         elif isinstance(result, Sequence):
             if len(result) < 1:

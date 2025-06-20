@@ -165,7 +165,7 @@ class ProofExpert(MCPClient):
                 lake_response.exit_code == 0
                 and SORRY_CANARY not in lake_response.stderr
             ):
-                msg = f"Proof loop converged after {iteration} iterations! for triple {triple_str}"
+                msg = f"{msg_prefix}: Proof loop converged after {iteration} iterations! for triple {triple_str}"
                 logs.info(msg)
                 break
             metadata.set_tokens_spent(self.tokens_spent)

@@ -305,21 +305,20 @@ The Lean program would look like this (Note it must be run with `lake build` in 
     open Imp
 
     example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
-
-    simp
-    intros σ σ' h1 h2
-    cases h2 with
-    | assign h2_eq =>
-      simp [Env.set]
-      simp [Expr.eval] at h2_eq
-      simp [Env.get] at h2_eq
-      cases h2_eq
-      rw [Value.int_lt]
-      simp [*]
-      simp [Value.int_lt] at h1
-      omega
+      simp
+      intros σ σ' h1 h2
+      cases h2 with
+      | assign h2_eq =>
+        simp [Env.set]
+        simp [Expr.eval] at h2_eq
+        simp [Env.get] at h2_eq
+        cases h2_eq
+        rw [Value.int_lt]
+        simp [*]
+        simp [Value.int_lt] at h1
+        omega
     ```],
-  caption: [Proof of the example hoare triple from @fig:box-picture],
+  caption: [Proof of the example hoare triple from @fig:box-picture. In practice, this can be reduced to a one-liner with our tactic `auto_hoare_pos`.],
 ) <fig:example-proof>
 
 This file paired with an exit code of zero pinned to a particular Lean toolchain (version) can be signed in a GPG context for attestation of correctness.
@@ -571,18 +570,23 @@ We use a simple loop scaffold. The robot in @fig:box-picture is effectively one 
 
 == Results
 
-#display_experiment_results
+#figure(
+  display_experiment_results,
+  caption: [Experiment results #footnote[Note that swap on `ops4` returned an unhandled exception.]. The empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations)],
+) <fig:experiment-results>
 
-The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. In the table, the empty hourglass ⌛ denotes divergence after running out of proof loop budget (hitting max iterations). (This is hardly evidence that the program is incorrect, because our proof performance is so poor).
+The *verification burden* $k$ says that if it costs $x$ tokens to complete the program, then it costs $k x$ tokens to prove it correct. Divergence is hardly evidence that the program completion is incorrect, because our proof performance is so poor.
 
 #figure(
   plot_verification_burden_vs_cost,
   caption: [Verification burden vs model cost. Each point represents a successful verification attempt.],
-)
+) <fig:burden-vs-cost>
+
+Due to our provided tactic `hoare_auto_pos`, these verification burdens are not realistic to what they'd be in more general settings. Since long proofs with base tactics are brittle (tracking hypothesis names, whitespace, etc.), a future direction is to ask the language model to synthesize tactics that shorten the proof, though the tokens spent synthesizing tactics would count against the verification burden.
 
 = Related Work <sec:related>
 
-Our work is well situated within _PCC_ @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying. Our setup is similar to that in @kamran2024pc3, who only approve code that that comes with a Dafny proof, but over there they emphasize the use of verification condition generation to make the specification elicitation from the human a little easier. TODO: say more
+Our work is well situated within _PCC_ @necula1997proof and the closely related certifying algorithms @mcconnell2011certifying. Our setup is similar to that in @kamran2024pc3, who only approve code that that comes with a Dafny proof, but over there they emphasize the use of verification condition generation to make the specification elicitation from the human a little easier.
 
 The main difference between the current work and _Ctrl_ @greenblatt2024aicontrolimprovingsafety is we don't _emphasize_ intentional subversion (as in try to elicit it for stress testing). We're keen to do this soon.
 
