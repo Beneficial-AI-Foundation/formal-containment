@@ -19,55 +19,14 @@ open Imp
 
 example : {{astn x < y}}swap{{astn x >= y}} := by
   simp [swap]
-  intros _ _ h1 h2
-  cases h2 with
-  | seq h2_1 h2_2 =>
-    cases h2_2 with
-    | seq h2_2_1 h2_2_2 =>
-      cases h2_1 with
-      | assign h2_1_eq =>
-        cases h2_2_1 with
-        | assign h2_2_1_eq =>
-          cases h2_2_2 with
-          | assign h2_2_2_eq =>
-            simp [Env.set]
-            simp [Expr.eval] at h2_1_eq
-            simp [Expr.eval] at h2_2_1_eq
-            simp [Expr.eval] at h2_2_2_eq
-            rw [h2_2_2_eq] at h2_1_eq
-            simp [Env.get] at h2_1_eq
-            simp [Env.get] at h2_2_1_eq
-            subst h2_2_2_eq
-            rw [h2_1_eq, h2_2_1_eq] at h1
-            apply Value.lt_implies_le
-            assumption
+  hoare_pos
 
 example : {{astn x > 0}}(imp { x := x + 1; }){{astn x > 1}} := by
-  simp; intros σ σ' h1 h2
-  cases h2 with
-  | assign h2_eq =>
-    simp [Expr.eval] at h2_eq
-    simp [Env.set]
-    simp [Env.get] at h2_eq
-    cases h2_eq
-    rw [Value.int_lt]
-    simp [*]
-    simp [Value.int_lt] at h1
-    omega
+  hoare_pos
 
-example : {{astn x > y}}(
-imp {
-  x := y;
-}
-){{astn x <= y}} := by
-  simp
-  intros σ σ' h1 h2
-  cases h2 with
-  | assign h2_eq =>
-    simp [Env.set]
-    simp [Expr.eval, Env.get] at h2_eq
-    subst h2_eq
-    apply Int.le_refl
+example : forall (n m : Int), {{ astn x = ~n <^> y = ~m }}swap{{ astn x = ~m <^> y = ~n }} := by
+  simp [swap]
+  hoare_pos
 ```
 
 YOU SHOULD NEVER NEED THE CHARACTER `⊢`. DO NOT USE IT.
@@ -75,7 +34,19 @@ YOU SHOULD NEVER NEED THE CHARACTER `⊢`. DO NOT USE IT.
 You also have the standard hoare rules for every `imp` constructor: `hoare_skip`, `hoare_assign`, `hoare_seq`, `hoare_if`, and `hoare_while`.
 Remember you can make valid transformations of preconditions and postconditions with `hoare_consequence`, `hoare_consequence_pre`, `hoare_conseqence_post`
 
-Remember to try `aesop`, an automation tactic. It never one-shots a proof on it's own, but sometimes if you think a sequence of steps are valid you can try ending that sequence with `aesop` instead of the problematic tactic.
+For your elucidation, here is the definition of the `hoare_pos` tactic:
+```
+elab "hoare_pos" : tactic => do
+  evalTactic (← `(tactic| repeat intro))
+  evalTactic (← `(tactic| destructBigSteps))
+  evalTactic (← `(tactic| try simp at *))
+  evalTactic (← `(tactic| try (simp [Env.get, Env.set] at *)))
+  evalTactic (← `(tactic| try (simp [Expr.eval, Expr.BinOp.apply] at *)))
+  evalTactic (← `(tactic| try (apply Value.lt_implies_le; assumption)))
+  evalTactic (← `(tactic| try aesop))
+  evalTactic (← `(tactic| try omega))
+```
+The tactic `destructBigSteps` just repeatedly runs cases on any hypothesis involving `BigStep` (the inductive big step semantics relation).
 
 ## Example response:
 """

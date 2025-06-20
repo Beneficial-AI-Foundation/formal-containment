@@ -38,6 +38,7 @@ instance : Mul Value where
   mul (a b : Value) := match a, b with
     | .int i, .int j => Value.int (i * j)
 
+@[simp]
 theorem Value.int_lt (a b : Value) : a < b ↔ (a : Int) < (b : Int) := by
   constructor <;> intros h <;>
     cases a with
@@ -47,6 +48,7 @@ theorem Value.int_lt (a b : Value) : a < b ↔ (a : Int) < (b : Int) := by
         have h' : i < j := h
         assumption
 
+@[simp]
 theorem Value.int_le (a b : Value) : a ≤ b ↔ (a : Int) ≤ (b : Int) := by
   constructor <;> intros h <;>
     cases a with
@@ -56,6 +58,7 @@ theorem Value.int_le (a b : Value) : a ≤ b ↔ (a : Int) ≤ (b : Int) := by
         have h' : i ≤ j := h
         assumption
 
+@[simp]
 theorem Value.lt_implies_le {a b : Value} : a < b → a ≤ b := by
   intros h
   cases a with
@@ -122,6 +125,16 @@ theorem get_set_different {σ : Env} : x ≠ y → (σ.set x v).get y = σ.get y
   intros
   simp [get, set, *]
 
+@[simp]
+theorem get_set_ne   (σ : Env) {x y} (v : Value) (h : x ≠ y) :
+  (σ.set y v).get x = σ.get x := by
+  simp [set, get, h]
+  intros h'
+  subst h'
+  exfalso
+  apply h
+  rfl
+
 end Env
 
 namespace Expr
@@ -148,6 +161,7 @@ Evaluates an expression, finding the value if it has one.
 
 Expressions that divide by zero don't have values - the result is undefined.
 -/
+@[simp]
 def eval (σ : Env) : Expr → Option Value
   | .const i => some $ .int i
   | .var x => σ.get x
@@ -158,3 +172,12 @@ def eval (σ : Env) : Expr → Option Value
     let v1 ← e1.eval σ
     let v2 ← e2.eval σ
     op.apply v1 v2
+
+-- evaluate the two built‑in `Expr`s that appear all the time
+@[simp]
+theorem Expr.eval_var  (σ : Env) (x : String) :
+    (Expr.var x).eval σ = σ.get x := rfl
+
+@[simp]
+theorem Expr.eval_int  (σ : Env) (n : Int) :
+    (Expr.const n).eval σ = Value.int n := rfl
