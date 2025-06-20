@@ -6,10 +6,10 @@
   subtitle: [_Proof-carrying code and AI safety_],
   author: [Quinn Dougherty],
   date: [June 26, 2025 | Trajectory Labs],
-  logo: image("images/baif.svg"),
+  logo: image("assets/img/baif.svg"),
 ))
 
-#title-slide(logo: image("images/baif.svg"))
+#title-slide(logo: image("assets/img/baif.svg"))
 
 = Example Section Title
 
