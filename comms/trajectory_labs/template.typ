@@ -167,6 +167,11 @@ The *verification burden* $k$ says that if it costs $x$ tokens to complete the p
 == Elicit subversive code as in @greenblatt2024aicontrolimprovingsafety
 - In Greenblatt et al 2024 they elicit subversive/backdoored code to stress test their protocol.
 
+#focus-slide(theme: "neon")[Strategic outlook]
+
+= Strategically...
+TODO
+
 = End
 == Thanks
 

@@ -1,1 +1,1 @@
-/home/qd/Projects/safeguarded/baif/formal-containment/comms/common/fns.typ
+./../common/fns.typ
