@@ -61,7 +61,7 @@ Spoiler alert: Yudkowsky recommends against trying this.
 
 == Somehow AI Boxing Returned
 
-Recent work from AI Control (@greenblatt2024aicontrolimprovingsafety @bhatt2025ctrlzcontrollingaiagents) and Safeguarded AI (@Dalrymple2024SafeguardedAI) is thinking through containment to bootstrap into early stages of the transition.
+Recent work from AI Control (@greenblatt2024aicontrolimprovingsafety @bhatt2025ctrlzcontrollingaiagents) and Safeguarded AI (@Dalrymple2024SafeguardedAI) is thinking through containment to bootstrap into early stages of the transition#footnote[I.e., transition to advanced AGI].
 
 == Proof-Carrying Code
 
@@ -161,10 +161,10 @@ The *verification burden* $k$ says that if it costs $x$ tokens to complete the p
 = Future Work
 #focus-slide(theme: "neon")[Future Work]
 
-== Non-toy languages and proof stacks
+=== Non-toy languages and proof stacks
 - Make realistic verification burden estimates that would apply to actually useful programming
 
-== Elicit subversive code as in @greenblatt2024aicontrolimprovingsafety
+=== Elicit subversive code as in @greenblatt2024aicontrolimprovingsafety
 - In Greenblatt et al 2024 they elicit subversive/backdoored code to stress test their protocol.
 
 #focus-slide(theme: "neon")[Strategic outlook]
@@ -172,9 +172,13 @@ The *verification burden* $k$ says that if it costs $x$ tokens to complete the p
 = Strategically...
 TODO
 
-= End
-== Thanks
+= Conclusion
 
+#figure(
+  align(center)[#scale(80%)[#image("assets/img/frontierbox.png")]],
+  caption: [Lighten up, don't forget to have a good time, etc.],
+  gap: 0.0001em,
+)
 #bibliography("refs.bib")
 
 #focus-slide(theme: "neon")[`quinn@beneficialaifoundation.org`]
