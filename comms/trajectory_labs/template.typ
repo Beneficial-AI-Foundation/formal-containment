@@ -5,7 +5,7 @@
 #let experiment_results = toml("assets/results_20250620-0029.toml")
 
 #show: unistra-theme.with(aspect-ratio: "16-9", config-info(
-  title: [Formal Containment],
+  title: [Formal Confinement],
   subtitle: [_Proof-carrying code and AI safety_],
   author: [Quinn Dougherty],
   date: [June 26, 2025 | Trajectory Labs],
@@ -35,12 +35,17 @@
   align(center)[#scale(200%)[#box_picture]],
   caption: text(
     size: 20pt,
-  )[Box protocol at example specification. The AI accepts a specification (formally $(#assertion_t) times (#assertion_t)$)) and returns proof-carrying code, with the option of returning nothing.],
+  )[Box protocol at example specification. The AI accepts a specification and returns proof-carrying code, with the option of returning nothing.],
   gap: 3.5em,
 )
 
 ==
+
 #box_figure <fig:box-picture>
+
+#focus-slide(
+  theme: "neon",
+)[`github.com/quinn-dougherty/formal-confinement`]
 
 = Background
 
@@ -50,6 +55,7 @@
 
 - In Yudkowsky 2002 @Yudkowsky2002AIBox, _AI boxing_ is the attempt to *contain* AI by policing its interface to the world.
 - In Necula 1997 @necula1997proof, _proof-carrying code_ is the attempt to *tag* code with a proof of it's correctness.
+We will also discuss the *Lampson confinement rules* @Lampson1973Confinement over ordinary programs.
 
 == AI Containment (Boxing)
 
@@ -77,9 +83,31 @@ Or the dependent pair *$(c, pi) : "program" times P c$* (i.e., $pi$ is a proof o
 
 Recently Kamran et al 2024 @kamran2024pc3 revived proof-carrying code in the form of _proof-carrying code completions_, language model calls that provide verified dafny code.
 
-= Formal Containment Protocol
+== Lampson Confinement Rules @Lampson1973Confinement
 
-#focus-slide(theme: "neon")[Formal Containment Protocol]
+#table(
+  columns: (auto, auto),
+  inset: 10pt,
+  align: horizon,
+  image("assets/img/lampson-confinement.png", width: 75%),
+  align(left)[#text(size: 20pt)[
+      #pause
+      1. Total isolation or transitivity: either it does not call any other program or if it calls another program that program is also confined.
+      #pause
+      2. Masking and enforcement: all inputs (including side-channels) must be fully specified and enforced by the caller, and input to covert channels conforms to caller's specifications.
+    ]],
+)
+
+== Lampson Confinement @Lampson1973Confinement
+
+- Our setting is sufficiently restricted that we get the Lampson confinement rules for free
+  - In future work, we'd like to make this nontrivial.
+- See also: _noninterference_ in _information-flow control_ in security
+- See Yampolskiy 2012 @yampolskiy2012leakproofing for more discussion.
+
+= Formal Confinement Protocol
+
+#focus-slide(theme: "neon")[Formal Confinement Protocol]
 
 == Box
 
@@ -105,13 +133,13 @@ $
 $
 and denoted $"hoare" P c Q =$ #hoare_triple(prec: [$P$], command: [\<#imp\> $c$ </#imp>], post: [$Q$]). A _term_ of type #hoare_triple(prec: [$P$], command: [\<#imp\> $c$ </#imp>], post: [$Q$]) is a proof that the triple is true.
 
-== Containment Protocol: example trace
+== Formal Confinement Protocol: trace
 
 #figure(
   align(center)[#fns.example_trace],
   caption: text(
     size: 19pt,
-  )[Example trace of the Formal Containment Protocol showing the decision fork at proof attempt, with failure leading to retry and success leading to safe execution.],
+  )[Example trace of the Formal Confinement Protocol showing the decision fork at proof attempt, with failure leading to retry and success leading to safe execution.],
   gap: 1em,
 ) <fig:example-trace>
 
@@ -169,8 +197,20 @@ The *verification burden* $k$ says that if it costs $x$ tokens to complete the p
 
 #focus-slide(theme: "neon")[Strategic outlook]
 
-= Strategically...
-TODO
+= Strategically
+
+== Defense in depth
+- Formal confinement is a source of swiss cheese.
+- Many other security concerns remain very important!
+
+== Doesn't work for arbitrary and scheming ASI
+- This is just a stopgap to help our successors bootstrap a more permanent fix
+- Even formal methods leave side channel attacks
+  - They do isolate the whole attack surface to side-channels, though, which is great!
+
+== Doesn't rely on any whiteboxing
+- Providers don't have to trust you with weights
+- Interpretability doesn't have to go well
 
 = Conclusion
 
@@ -182,3 +222,7 @@ TODO
 #bibliography("refs.bib")
 
 #focus-slide(theme: "neon")[`quinn@beneficialaifoundation.org`]
+#focus-slide(theme: "neon")[`gsai.substack.com`]
+#focus-slide(
+  theme: "neon",
+)[`github.com/quinn-dougherty/formal-confinement`]

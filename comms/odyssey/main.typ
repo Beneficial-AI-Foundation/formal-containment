@@ -3,8 +3,8 @@
 #let experiments_spec = toml("assets/experiments.toml")
 #let experiment_results = toml("assets/results_20250620-0029.toml")
 
-#let title = [*Formal Containment _draft_*]
-#let abstract = [We would like to put the AI in a box. We show how to create an _interface_ between the box and the world out of specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/quinn-dougherty/formal-containment.]
+#let title = [*Formal Confinement*]
+#let abstract = [We would like to put the AI in a box. We show how to create an _interface_ between the box and the world out of specifications in Lean. It is the AI's responsibility to provide a proof that its (restricted) output abides by the spec. The runnable prototype is at https://github.com/quinn-dougherty/formal-confinement.]
 #set heading(numbering: "1.")
 #set document(
   title: title,
@@ -56,9 +56,9 @@ Here, we're seeking a minimal, concrete, end-to-end prototype synthesizing a sub
 
 == Contributions
 
-We present a natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/quinn-dougherty/formal-containment] AI box in Python in which we can lock up an agent graph that writes programs in a toy language along with correctness proofs in Lean @deMoura2015Lean.
+We present a natural midpoint between _PCC_ and _Ctrl_, while for simplicity ignoring many characteristics of _SgAI_ (@sec:related). We deliver a prototype #footnote[https://github.com/quinn-dougherty/formal-confinement] AI box in Python in which we can lock up an agent graph that writes programs in a toy language along with correctness proofs in Lean @deMoura2015Lean.
 
-= A Formal Containment Protocol (_FCP_)
+= A Formal Confinement Protocol (_FCP_)
 
 #let code_example = ```<imp>
  x := x + 1
@@ -74,7 +74,7 @@ We present a natural midpoint between _PCC_ and _Ctrl_, while for simplicity ign
 
 == Overview
 
-A box is a program that takes a specification and asks a simple agent graph to provide an #imp program that satisfies it and prove that the program is correct with respect to the specification. If the proof is successful, then the code is passed back to the caller tagged with the proof for auditing.
+A box is a program that takes a specification and asks a simple agent graph to provide a program that satisfies it and prove that the program is correct with respect to the specification. If the proof is successful, then the code is passed back to the caller tagged with the proof for auditing.
 
 #figure(
   fns.box_picture(
@@ -169,7 +169,7 @@ Building on Lampson, Yampolskiy 2012 @yampolskiy2012leakproofing considers confi
   In the hopes of starting a new subfield of computer security, AI Safety Engineering, we define the Artificial Intelligence Confinement Problem (AICP) as the challenge of restricting an artificially intelligent entity to a confined environment from which it can’t exchange information with the outside environment via legitimate or covert channels if such information exchange was not authorized by the confinement authority
 ]
 
-The current formal containment work explores a restriction of Yampolskiy's AICP to the #imp programming language, where the confinement authority is the user providing precondition and postcondition backed by Lean. In fact, the setting is so restricted that we meet the Lampson rules almost for free. This makes a ripe opportunity for future work.
+The current formal confinement work explores a restriction of Yampolskiy's AICP to the #imp programming language, where the confinement authority is the user providing precondition and postcondition backed by Lean. In fact, the setting is so restricted that we meet the Lampson rules almost for free.
 
 See @Babcock2016Containment for a review of common software bugs and cybersecurity pitfalls, many of which are greatly alleviated if not outright blocked by formal verification. For something more modern, see @costa2025securingaiagentsinformationflow for the connection between LLM agents and information-flow security.
 
@@ -185,9 +185,9 @@ Our protocol instead fixes the domain to discrete #imp programs and embeds Lean 
 
 = Future Work
 
-== Non-toy languages
+== Non-toy languages <sec:nontoy-langs>
 
-There are several formal verification stacks that work on real world languages like C @pulte2023cn @sammler2021refinedc or Rust @vanhattum2022verifying @lattuada2023verusverifyingrustprograms. It is conceptually straightforward to extend our codebase to work with them rather than #imp.
+There are several formal verification stacks that work on real world languages like C @pulte2023cn @sammler2021refinedc or Rust @vanhattum2022verifying @lattuada2023verusverifyingrustprograms. It is conceptually straightforward to extend our codebase to work with them rather than #imp. In less restricted settings, we might find that we do not get the Lampson rules @Lampson1973Confinement for free.
 
 == `mcp-hardened`
 
